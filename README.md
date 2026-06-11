@@ -53,7 +53,7 @@ Not a validator. Not a schema library. A contract system — at every boundary, 
 | Structured, readable errors | No | Partial | Yes |
 | Chainable fluent API | No | No | Yes |
 | Works on functions/purity | No | No | Yes |
-| AI Copilot skills included | No | No | Yes |
+| AI skills included | No | No | Yes |
 
 ---
 
@@ -263,9 +263,9 @@ try {
 
 ---
 
-## AI Skills — Copilot-native from day one
+## AI Skills — from day one
 
-Assertcheck ships with [Copilot skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your AI assistant understands and applies the library's patterns automatically.
+Assertcheck ships with [AI skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your AI assistant understands and applies the library's patterns automatically.
 
 | Skill | What it does |
 |---|---|
