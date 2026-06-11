@@ -13,9 +13,7 @@ function last<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1261](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1261)
-
-Asserts that the last element equals `expected` — Ruby `arr.last`.
+Defined in: [src/assert.ts:98](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L98)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that the last element equals `expected` — Ruby `arr.last`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.last(pipeline, finalStep, "pipeline must end with finalStep")`
-```

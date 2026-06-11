@@ -1,6 +1,6 @@
 # Assertcheck
 
-> **Negative Space Programming for TypeScript.**  
+> **Negative Space Programming for TypeScript.**
 > Declare what cannot exist. Fail where it matters. Ship with confidence.
 
 [![npm](https://img.shields.io/npm/v/assertcheck?color=0ea5e9&label=npm)](https://www.npmjs.com/package/assertcheck)
@@ -14,18 +14,18 @@
 
 ## The problem with "defensive" code
 
-Most TypeScript codebases hide bugs behind `if (!x) return`.  
+Most TypeScript codebases hide bugs behind `if (!x) return`.
 Silent failures. No trace. No context. Hours lost in production.
 
 ```ts
-// ❌ Before — bad data propagates in silence
+// Before — bad data propagates in silence
 function chargeOrder(order: Order) {
-  if (!order || !order.amount) return  // swallowed. never caught. never debugged.
+  if (!order || !order.amount) return  // swallowed, never caught, never debugged
 }
 ```
 
 ```ts
-// ✅ After — invalid state is declared at the boundary
+// After — invalid state is declared at the boundary
 function chargeOrder(order: Order) {
   assert.notNil(order, "order is required")
   assert.positive(order.amount, "order amount must be positive")
@@ -38,7 +38,7 @@ function chargeOrder(order: Order) {
 }
 ```
 
-**Assertcheck makes invalid states impossible to ignore.**  
+**Assertcheck makes invalid states impossible to ignore.**
 Not a validator. Not a schema library. A contract system — at every boundary, for every assumption.
 
 ---
@@ -47,13 +47,13 @@ Not a validator. Not a schema library. A contract system — at every boundary, 
 
 | | `if/return` | `zod` / `yup` | **Assertcheck** |
 |---|---|---|---|
-| Fails loudly in dev | ❌ | ✅ | ✅ |
-| Zero overhead in prod | ❌ | ❌ | ✅ (`disabled` mode) |
-| Type narrowing | ❌ | ✅ | ✅ |
-| Structured, readable errors | ❌ | ⚠️ | ✅ |
-| Chainable fluent API | ❌ | ❌ | ✅ |
-| Works on functions/purity | ❌ | ❌ | ✅ |
-| AI Copilot skills included | ❌ | ❌ | ✅ |
+| Fails loudly in dev | No | Yes | Yes |
+| Zero overhead in prod | No | No | Yes (`disabled` mode) |
+| Type narrowing | No | Yes | Yes |
+| Structured, readable errors | No | Partial | Yes |
+| Chainable fluent API | No | No | Yes |
+| Works on functions/purity | No | No | Yes |
+| AI Copilot skills included | No | No | Yes |
 
 ---
 
@@ -165,6 +165,7 @@ setAssertMode("enabled")  // dev: full enforcement (default)
 ## Full API
 
 ### Existence
+
 | | |
 |---|---|
 | `assert.nil(v)` | Must be `null` or `undefined` |
@@ -173,6 +174,7 @@ setAssertMode("enabled")  // dev: full enforcement (default)
 | `assert.notEmpty(v)` | Must not be empty |
 
 ### Type guards
+
 | | Narrows to |
 |---|---|
 | `assert.string(v)` | `string` |
@@ -186,21 +188,26 @@ setAssertMode("enabled")  // dev: full enforcement (default)
 | `assert.instanceOf(v, Ctor)` | `Ctor instance` |
 
 ### Equality
+
 | | |
 |---|---|
 | `assert.equal(a, b)` | Strict `===` |
 | `assert.deepEqual(a, b)` | Deep equality with structural diff |
 
 ### Numerics
+
 `positive` · `negative` · `zero` · `greater` · `greaterOrEqual` · `less` · `lessOrEqual` · `withinRange` · `inDelta`
 
 ### Arrays _(Ruby-inspired)_
+
 `len` · `longerThan` · `shorterThan` · `includes` · `all` · `any` · `none` · `one` · `count` · `containsAll` · `containsNone` · `elementsMatch` · `subset` · `unique` · `uniqueBy` · `increasing` · `nonDecreasing` · `sortedBy` · `first` · `last` · `sumBy` · `noNils` · `flat` · `allInstanceOf` · `zippedWith` · `groupedBy` · `partition`
 
 ### Objects _(Ruby Hash-inspired)_
+
 `hasKey` · `hasKeys` · `hasExactKeys` · `hasOnlyKeys` · `hasValue` · `containsSubset` · `allValuesMatch` · `noNilValues` · `dig`
 
 ### Functions _(mathematical properties)_
+
 `returns` · `pure` · `idempotent` · `arity` · `mapsDistinct` · `homomorphic`
 
 ### Negation
@@ -318,34 +325,22 @@ Apache License 2.0 — free to use, modify, and distribute commercially as long 
 
 ## Built by Vagabond Studio
 
----
+**[Vagabond Studio](https://vagabond.work)** is a fully remote, senior-only collective of engineers and designers. We build TypeScript, Vue.js, Rails, and Django products from greenfield to production — and we stay until it ships right.
 
-### You have ambitions. You need a team that can match them.
-
-**[Vagabond Studio](mailto:hello@vagabond.work)** partners with small and mid-size companies that think bigger than their headcount.
-
-We're a fully remote, senior-only collective — engineers *and* designers working together from day one. No handoffs. No agency bloat.
+Assertcheck is one of the open-source tools we maintain as a demonstration of how we approach software: explicit contracts, zero defensive noise, and code that communicates intent at every boundary.
 
 **What we do:**
 
-- **Product engineering** — TypeScript, VueJs, Rails, Django full-stack. From greenfield to production, or embedded in your existing codebase.
-- **UI/UX design** — Interfaces that are fast to ship and fast to use. We design systems, not just screens.
+- **Product engineering** — TypeScript, Vue.js, Rails, Django. Full-stack from greenfield to production, or embedded in your existing codebase.
+- **UI/UX design** — Interfaces designed and engineered in the same team. No handoffs. No agency bloat.
 - **Technical leadership** — Architecture decisions, code reviews, and the kind of senior judgment that prevents six-month rewrites.
 
 **Who we work with:**
 
 Growing companies between 5 and 200 people who need craft-level output without building a full in-house team. Startups shipping their first real product. Scale-ups that have outgrown their MVP and need the codebase to match their ambitions.
 
-**How we work:**
+**[Book a discovery call](https://calendly.com/vagabond-studio/appel-de-decouverte-vagabond-studio)** — 30 minutes, no pitch, just a real conversation about your project.
 
-Embedded in your stack. On your timeline. Fully async-first, with structured sync when it matters. We don't disappear after delivery — we stay until it ships right.
+Or reach us directly: [hello@vagabond.work](mailto:hello@vagabond.work)
 
----
-
-**Ready to talk?**
-
-[**→ Book a discovery call**](https://calendly.com/vagabond-studio/appel-de-decouverte-vagabond-studio) — 30 minutes, no pitch, just a real conversation about your project.
-
-Or write to us directly: [hello@vagabond.work](mailto:hello@vagabond.work)
-
-*We take on 2–3 new clients per quarter. If the timing is right, let's talk.*
+_We take on 2–3 new clients per quarter._

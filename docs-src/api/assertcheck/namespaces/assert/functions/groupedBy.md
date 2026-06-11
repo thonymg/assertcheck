@@ -14,9 +14,7 @@ function groupedBy<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1411](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1411)
-
-Asserts the expected group keys produced by `_.groupBy`.
+Defined in: [src/assert.ts:104](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L104)
 
 ## Type Parameters
 
@@ -36,9 +34,3 @@ Asserts the expected group keys produced by `_.groupBy`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.groupedBy(events, "type", ["click","view","purchase"])`
-```

@@ -13,9 +13,7 @@ function len<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:761](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L761)
-
-Asserts that the array has exactly `n` elements.
+Defined in: [src/assert.ts:79](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L79)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that the array has exactly `n` elements.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.len(users, 10, "expected 10 users")`
-```

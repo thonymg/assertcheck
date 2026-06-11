@@ -13,10 +13,7 @@ function uniqueBy<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1138](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1138)
-
-Asserts that all elements are unique when mapped through `iteratee`.
-Equivalent to Ruby `arr.uniq { |x| x.key }.length == arr.length`.
+Defined in: [src/assert.ts:93](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L93)
 
 ## Type Parameters
 
@@ -35,9 +32,3 @@ Equivalent to Ruby `arr.uniq { |x| x.key }.length == arr.length`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.uniqueBy(users, "email", "duplicate emails")`
-```

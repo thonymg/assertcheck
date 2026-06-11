@@ -10,10 +10,7 @@
 function noNils<T>(arr, opts?): asserts arr is T[];
 ```
 
-Defined in: [src/assert.ts:1317](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1317)
-
-Asserts that the array contains no `null` or `undefined` values.
-Narrows the type to `NonNullable<T>[]` after the call.
+Defined in: [src/assert.ts:100](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L100)
 
 ## Type Parameters
 
@@ -31,9 +28,3 @@ Narrows the type to `NonNullable<T>[]` after the call.
 ## Returns
 
 `asserts arr is T[]`
-
-## Example
-
-```ts
-`assert.noNils(records, "records must not contain null entries")`
-```

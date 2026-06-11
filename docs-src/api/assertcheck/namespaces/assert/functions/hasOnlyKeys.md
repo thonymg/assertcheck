@@ -13,9 +13,7 @@ function hasOnlyKeys(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1589](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1589)
-
-Asserts that `obj` contains only keys from the `allowed` list.
+Defined in: [src/assert.ts:110](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L110)
 
 ## Parameters
 
@@ -28,9 +26,3 @@ Asserts that `obj` contains only keys from the `allowed` list.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.hasOnlyKeys(patch, ["name","email"], "patch contains immutable fields")`
-```

@@ -72,10 +72,10 @@ A precise before/after diff with inline comments identifying each assertion as
 Every `if (!x) return` or `?? fallback` removal is explicitly documented:
 
 ```
-⚠ Line 5: `if (!orderId) return` removed.
-→ Replaced with: assert.notNil(orderId, { msg: "orderId is required", … })
-→ Why this matters: a silent return is invisible to the caller and hides the failure
-  at its origin. An assertion surfaces it immediately with context and a stack trace.
+Removed: line 5 — `if (!orderId) return`
+Replaced with: assert.notNil(orderId, { msg: "orderId is required", … })
+Why this matters: a silent return is invisible to the caller and hides the failure
+at its origin. An assertion surfaces it immediately with context and a stack trace.
 ```
 
 ---

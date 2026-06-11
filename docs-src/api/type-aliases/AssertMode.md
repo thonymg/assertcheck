@@ -10,7 +10,7 @@
 type AssertMode = "disabled" | "warn" | "enabled";
 ```
 
-Defined in: [src/types.ts:36](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/types.ts#L36)
+Defined in: [src/types.ts:36](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/types.ts#L36)
 
 Controls how assertion failures are handled at runtime.
 

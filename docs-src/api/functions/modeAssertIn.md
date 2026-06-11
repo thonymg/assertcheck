@@ -10,7 +10,7 @@
 function modeAssertIn(env, mode): void;
 ```
 
-Defined in: [src/mode.ts:123](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/mode.ts#L123)
+Defined in: [src/mode.ts:123](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/mode.ts#L123)
 
 Overrides the assertion mode **only when the current runtime environment
 matches `env`**. Does nothing otherwise.

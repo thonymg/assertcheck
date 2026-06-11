@@ -10,9 +10,7 @@
 function flat(arr, opts?): void;
 ```
 
-Defined in: [src/assert.ts:1339](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1339)
-
-Asserts that the array has no nesting (all elements are non-array).
+Defined in: [src/assert.ts:101](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L101)
 
 ## Parameters
 
@@ -24,9 +22,3 @@ Asserts that the array has no nesting (all elements are non-array).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.flat(tags, "tags array must be flat")`
-```

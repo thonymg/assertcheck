@@ -13,9 +13,7 @@ function shorterThan<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:811](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L811)
-
-Asserts that the array has fewer than `n` elements.
+Defined in: [src/assert.ts:81](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L81)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that the array has fewer than `n` elements.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.shorterThan(queue, 1000, "queue overflow")`
-```

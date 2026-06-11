@@ -13,9 +13,7 @@ function idempotent<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1804](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1804)
-
-Asserts that `fn(fn(x))` equals `fn(x)` (idempotent function).
+Defined in: [src/assert.ts:119](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L119)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that `fn(fn(x))` equals `fn(x)` (idempotent function).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.idempotent(normalizeEmail, "Alice@Example.COM")`
-```

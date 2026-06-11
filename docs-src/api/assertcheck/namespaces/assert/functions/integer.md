@@ -10,9 +10,7 @@
 function integer(v, opts?): asserts v is number;
 ```
 
-Defined in: [src/assert.ts:242](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L242)
-
-Asserts that `v` is a finite integer (no floats, no NaN, no Infinity).
+Defined in: [src/assert.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L58)
 
 ## Parameters
 
@@ -24,9 +22,3 @@ Asserts that `v` is a finite integer (no floats, no NaN, no Infinity).
 ## Returns
 
 `asserts v is number`
-
-## Example
-
-```ts
-`assert.integer(amountCents, "amount must be integer cents")`
-```

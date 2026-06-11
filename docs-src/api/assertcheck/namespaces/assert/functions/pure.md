@@ -13,10 +13,7 @@ function pure<TArgs, TReturn>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1774](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1774)
-
-Asserts that calling `fn` twice with the same arguments produces identical
-results (referential transparency / pure function).
+Defined in: [src/assert.ts:118](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L118)
 
 ## Type Parameters
 
@@ -36,9 +33,3 @@ results (referential transparency / pure function).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.pure(calculateTax, [order])`
-```

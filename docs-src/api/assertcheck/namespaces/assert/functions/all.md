@@ -13,9 +13,7 @@ function all<T, U>(
    opts?): asserts arr is U[];
 ```
 
-Defined in: [src/assert.ts:872](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L872)
-
-Asserts that every element satisfies the predicate — Ruby `all?`.
+Defined in: [src/assert.ts:83](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L83)
 
 ## Type Parameters
 
@@ -35,18 +33,3 @@ Asserts that every element satisfies the predicate — Ruby `all?`.
 ## Returns
 
 `asserts arr is U[]`
-
-## Remarks
-
-When the predicate is a type guard `(v: T) => v is U`, the entire
-array is narrowed to `U[]` after the call.
-
-## Example
-
-```ts
-assert.all(orders, o => o.status === "paid", "all orders must be paid")
-
-// With type guard — narrows array type:
-assert.all(items, (v): v is string => typeof v === "string")
-items // string[]
-```

@@ -119,15 +119,15 @@ assert.notNil(order, {
 
 **`msg` — describe the invariant, not the violation:**
 
-| ❌ Describes the violation | ✅ Describes the invariant |
-|:--------------------------|:--------------------------|
+| Avoid | Prefer |
+|:------|:-------|
 | `"Not a string"` | `"userId must be a string"` |
 | `"Invalid order status"` | `"order must be in pending state before payment"` |
 | `"Failed"` | `"payment gateway must return a transactionId"` |
 
 **`note` — point to the actionable fix:**
 
-| ❌ Restates the problem | ✅ Points to the fix |
-|:------------------------|:--------------------|
+| Avoid | Prefer |
+|:------|:-------|
 | `"value was null"` | `"call authenticate() before accessing protected routes"` |
 | `"wrong status"` | `"call resetOrder() to return to pending state"` |

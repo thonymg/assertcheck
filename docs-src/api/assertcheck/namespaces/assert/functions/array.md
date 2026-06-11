@@ -10,15 +10,13 @@
 function array<T>(v, opts?): asserts v is T[];
 ```
 
-Defined in: [src/assert.ts:307](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L307)
-
-Asserts that `v` is an array. Narrows the type to `T[]` after the call.
+Defined in: [src/assert.ts:61](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L61)
 
 ## Type Parameters
 
-| Type Parameter | Default type | Description |
-| ------ | ------ | ------ |
-| `T` | `unknown` | The expected element type (defaults to `unknown`). |
+| Type Parameter | Default type |
+| ------ | ------ |
+| `T` | `unknown` |
 
 ## Parameters
 
@@ -30,9 +28,3 @@ Asserts that `v` is an array. Narrows the type to `T[]` after the call.
 ## Returns
 
 `asserts v is T[]`
-
-## Example
-
-```ts
-`assert.array<User>(users, "users must be an array")`
-```

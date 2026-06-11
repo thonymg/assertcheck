@@ -6,7 +6,7 @@
 
 # Class: AssertionError
 
-Defined in: [src/error.ts:56](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/error.ts#L56)
+Defined in: [src/error.ts:56](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/error.ts#L56)
 
 Error thrown when an assertion fails in `"enabled"` mode.
 
@@ -48,7 +48,7 @@ try {
 new AssertionError(opts): AssertionError;
 ```
 
-Defined in: [src/error.ts:74](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/error.ts#L74)
+Defined in: [src/error.ts:74](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/error.ts#L74)
 
 #### Parameters
 
@@ -70,10 +70,10 @@ Error.constructor
 
 | Property | Modifier | Type | Description | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ | ------ |
-| <a id="actual"></a> `actual` | `readonly` | `unknown` | The value that was actually received at the time of the assertion. | - | [src/error.ts:66](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/error.ts#L66) |
-| <a id="assertion"></a> `assertion` | `readonly` | `string` | Name of the assertion function that failed. **Example** ``"equal"`, `"all"`, `"hasExactKeys"`` | - | [src/error.ts:61](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/error.ts#L61) |
+| <a id="actual"></a> `actual` | `readonly` | `unknown` | The value that was actually received at the time of the assertion. | - | [src/error.ts:66](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/error.ts#L66) |
+| <a id="assertion"></a> `assertion` | `readonly` | `string` | Name of the assertion function that failed. **Example** ``"equal"`, `"all"`, `"hasExactKeys"`` | - | [src/error.ts:61](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/error.ts#L61) |
 | <a id="cause"></a> `cause?` | `public` | `unknown` | The cause of the error. | `Error.cause` | node\_modules/typescript/lib/lib.es2022.error.d.ts:26 |
-| <a id="expected"></a> `expected` | `readonly` | `unknown` | The value or constraint that was expected. May be a concrete value, a descriptive string, or `undefined`. | - | [src/error.ts:72](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/error.ts#L72) |
+| <a id="expected"></a> `expected` | `readonly` | `unknown` | The value or constraint that was expected. May be a concrete value, a descriptive string, or `undefined`. | - | [src/error.ts:72](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/error.ts#L72) |
 | <a id="message"></a> `message` | `public` | `string` | - | `Error.message` | node\_modules/typescript/lib/lib.es5.d.ts:1077 |
 | <a id="name"></a> `name` | `public` | `string` | - | `Error.name` | node\_modules/typescript/lib/lib.es5.d.ts:1076 |
 | <a id="stack"></a> `stack?` | `public` | `string` | - | `Error.stack` | node\_modules/typescript/lib/lib.es5.d.ts:1078 |

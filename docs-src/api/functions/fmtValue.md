@@ -10,7 +10,7 @@
 function fmtValue(v, depth?): string;
 ```
 
-Defined in: [src/format.ts:230](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/format.ts#L230)
+Defined in: [src/format.ts:230](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/format.ts#L230)
 
 Formats any JavaScript value into a compact, type-coloured string
 suitable for display in error output.

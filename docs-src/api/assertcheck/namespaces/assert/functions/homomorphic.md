@@ -15,11 +15,7 @@ function homomorphic<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1893](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1893)
-
-Asserts that `fn(combine(a, b))` equals `combine(fn(a), fn(b))`.
-Tests the homomorphism law — that a transform distributes over
-a combining operation.
+Defined in: [src/assert.ts:122](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L122)
 
 ## Type Parameters
 
@@ -40,14 +36,3 @@ a combining operation.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-assert.homomorphic(
-  normalize,
-  (a, b) => [...a, ...b],
-  [1, 2], [3, 4],
-  "normalize must distribute over concatenation"
-)
-```

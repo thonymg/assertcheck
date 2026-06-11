@@ -6,7 +6,7 @@
 
 # Class: ArrayChecker\<T\>
 
-Defined in: [src/checker.ts:99](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L99)
+Defined in: [src/checker.ts:99](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L99)
 
 Chainable assertion wrapper for arrays.
 Returned by [check](../functions/check.md) when the value is an array.
@@ -39,7 +39,7 @@ check(users)
 new ArrayChecker<T>(value): ArrayChecker<T>;
 ```
 
-Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58)
+Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L58)
 
 #### Parameters
 
@@ -59,7 +59,7 @@ Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9
 
 | Property | Modifier | Type | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="value"></a> `value` | `readonly` | `T`[] | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58) |
+| <a id="value"></a> `value` | `readonly` | `T`[] | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L58) |
 
 ## Methods
 
@@ -69,7 +69,7 @@ Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9
 all(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L131)
+Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L131)
 
 #### Parameters
 
@@ -94,7 +94,7 @@ Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/daa
 any(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L137)
+Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L137)
 
 #### Parameters
 
@@ -119,7 +119,7 @@ Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/daa
 containsAll(items, opts?): this;
 ```
 
-Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L203)
+Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L203)
 
 #### Parameters
 
@@ -144,7 +144,7 @@ Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/daa
 containsNone(items, opts?): this;
 ```
 
-Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L209)
+Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L209)
 
 #### Parameters
 
@@ -169,7 +169,7 @@ Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/daa
 elementsMatch(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L197)
+Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L197)
 
 #### Parameters
 
@@ -194,7 +194,7 @@ Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/daa
 first(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L179)
+Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L179)
 
 #### Parameters
 
@@ -219,7 +219,7 @@ Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/daa
 flat(opts?): this;
 ```
 
-Defined in: [src/checker.ts:215](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L215)
+Defined in: [src/checker.ts:215](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L215)
 
 #### Parameters
 
@@ -246,7 +246,7 @@ groupedBy(
    opts?): this;
 ```
 
-Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L221)
+Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L221)
 
 #### Parameters
 
@@ -272,7 +272,7 @@ Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/daa
 includes(item, opts?): this;
 ```
 
-Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L125)
+Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L125)
 
 #### Parameters
 
@@ -297,7 +297,7 @@ Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/daa
 last(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L185)
+Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L185)
 
 #### Parameters
 
@@ -322,7 +322,7 @@ Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/daa
 len(n, opts?): this;
 ```
 
-Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L107)
+Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L107)
 
 #### Parameters
 
@@ -347,7 +347,7 @@ Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/daa
 longerThan(n, opts?): this;
 ```
 
-Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L113)
+Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L113)
 
 #### Parameters
 
@@ -372,7 +372,7 @@ Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/daa
 none(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L143)
+Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L143)
 
 #### Parameters
 
@@ -397,7 +397,7 @@ Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/daa
 noNils(opts?): this;
 ```
 
-Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L167)
+Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L167)
 
 #### Parameters
 
@@ -421,7 +421,7 @@ Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/daa
 notEmpty(opts?): this;
 ```
 
-Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L101)
+Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L101)
 
 #### Parameters
 
@@ -445,7 +445,7 @@ Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/daa
 one(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L149)
+Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L149)
 
 #### Parameters
 
@@ -470,7 +470,7 @@ Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/daa
 shorterThan(n, opts?): this;
 ```
 
-Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L119)
+Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L119)
 
 #### Parameters
 
@@ -495,7 +495,7 @@ Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/daa
 sortedBy(iteratee, opts?): this;
 ```
 
-Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L173)
+Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L173)
 
 #### Parameters
 
@@ -520,7 +520,7 @@ Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/daa
 subset(sub, opts?): this;
 ```
 
-Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L191)
+Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L191)
 
 #### Parameters
 
@@ -545,7 +545,7 @@ Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/daa
 tap(fn): this;
 ```
 
-Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L74)
+Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L74)
 
 Runs a side-effect function with the wrapped value and returns `this`
 to allow chaining. Useful for logging or debugging mid-chain.
@@ -582,7 +582,7 @@ check(orders)
 unique(opts?): this;
 ```
 
-Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L155)
+Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L155)
 
 #### Parameters
 
@@ -606,7 +606,7 @@ Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/daa
 uniqueBy(iteratee, opts?): this;
 ```
 
-Defined in: [src/checker.ts:161](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L161)
+Defined in: [src/checker.ts:161](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L161)
 
 #### Parameters
 

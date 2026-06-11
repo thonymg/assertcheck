@@ -14,10 +14,7 @@ function inDelta(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:729](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L729)
-
-Asserts that `|actual - expected| <= delta`.
-Useful for floating-point comparisons and timing tolerances.
+Defined in: [src/assert.ts:77](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L77)
 
 ## Parameters
 
@@ -31,9 +28,3 @@ Useful for floating-point comparisons and timing tolerances.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-assert.inDelta(computed, 1.333, 0.001, "floating point result out of tolerance")
-```

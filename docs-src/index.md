@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "assertcheck"
   text: "Define what your code must never accept."
-  tagline: Production-grade · Negative Space Programming · Mode-aware · Richly formatted · Zero overhead when disabled.
+  tagline: Production-grade assertion library for TypeScript. Explicit contracts, fail-fast execution, richly formatted errors — zero overhead when silent.
   actions:
     - theme: brand
       text: Get started
@@ -17,21 +17,16 @@ hero:
       link: /api/index
 
 features:
-  - icon: ⬛
-    title: Negative Space Programming
+  - title: Negative Space Programming
     details: Assertions define the invalid states your code must never see — making contracts explicit, executable, and impossible to ignore. The boundary between valid and invalid is the most important line you write.
     link: /guide/negative-space
     linkText: Learn the principle
-  - icon: 🛡️
-    title: Fail-fast by default
-    details: Assertions are always enabled — even in production. Violations fire at their origin, not three layers later. Control enforcement per-environment with a single call to modeAssertIn().
-  - icon: 🎨
-    title: Richly formatted errors
-    details: ELM-inspired output with diffs, labels, notes, and ANSI colours. Plain text in pipes and CI. DevTools-friendly in the browser.
-  - icon: 🔗
-    title: Chainable API
-    details: check(value).noNils().uniqueBy("id").all(u => u.active) — fluent, readable, type-safe. Declare your invariants in one place.
-  - icon: ⚡
-    title: Zero overhead in disabled mode
-    details: When mode is "disabled", every assertion is a no-op. No string formatting, no allocations.
+  - title: Fail-fast by default
+    details: Violations fire at their origin, not three layers later. Control enforcement per environment with a single call to modeAssertIn() — no code changes between dev, staging, and production.
+  - title: Richly formatted errors
+    details: ELM-inspired output with diffs, labels, and notes. ANSI colours on TTY, plain text in pipes and CI, collapsible groups in browser DevTools. Respects NO_COLOR.
+  - title: Chainable API
+    details: check(value).noNils().uniqueBy("id").all(u => u.active) — fluent, readable, type-safe. Declare all invariants on a value in one place.
+  - title: Zero overhead when disabled
+    details: In "disabled" mode every assertion is a no-op. No string formatting, no object allocations. Production builds pay nothing.
 ---

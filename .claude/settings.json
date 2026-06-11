@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bun run *)"
+      "Bash(bun run *)",
+      "WebFetch(domain:lumen.theojs.cn)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:doc.theojs.cn)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/Theo-Messi/lumen/main/README.md)",
+      "Bash(curl -s https://api.github.com/repos/Theo-Messi/lumen/readme)",
+      "Bash(curl -s \"https://api.github.com/repos/Theo-Messi/lumen/contents\")"
     ]
   }
 }

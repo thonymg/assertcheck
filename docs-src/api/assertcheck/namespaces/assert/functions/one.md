@@ -13,9 +13,7 @@ function one<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:947](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L947)
-
-Asserts that exactly one element satisfies the predicate — Ruby `one?`.
+Defined in: [src/assert.ts:86](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L86)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that exactly one element satisfies the predicate — Ruby `one?`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.one(events, e => e.type === "checkout", "exactly one checkout expected")`
-```

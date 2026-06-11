@@ -13,9 +13,7 @@ function subset<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1084](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1084)
-
-Asserts that all elements of `sub` are present in `arr`.
+Defined in: [src/assert.ts:91](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L91)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that all elements of `sub` are present in `arr`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.subset(arr, required, "some required elements are missing")`
-```

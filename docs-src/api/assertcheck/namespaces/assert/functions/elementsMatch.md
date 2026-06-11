@@ -13,10 +13,7 @@ function elementsMatch<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1050](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1050)
-
-Asserts that the two arrays have the same elements regardless of order.
-Uses `_.sortBy` for a deterministic comparison (works with objects).
+Defined in: [src/assert.ts:90](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L90)
 
 ## Type Parameters
 
@@ -35,9 +32,3 @@ Uses `_.sortBy` for a deterministic comparison (works with objects).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.elementsMatch(result, expected, "wrong set of ids")`
-```

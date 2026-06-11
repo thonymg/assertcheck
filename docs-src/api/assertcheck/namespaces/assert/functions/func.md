@@ -10,9 +10,7 @@
 function func<T>(v, opts?): asserts v is T;
 ```
 
-Defined in: [src/assert.ts:364](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L364)
-
-Asserts that `v` is a function. Narrows the type to `T` after the call.
+Defined in: [src/assert.ts:63](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L63)
 
 ## Type Parameters
 
@@ -30,9 +28,3 @@ Asserts that `v` is a function. Narrows the type to `T` after the call.
 ## Returns
 
 `asserts v is T`
-
-## Example
-
-```ts
-`assert.func(handler, "handler must be a function")`
-```

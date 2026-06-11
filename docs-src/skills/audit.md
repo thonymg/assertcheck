@@ -45,20 +45,20 @@ Six boundary categories, worked through in order:
 | **E — Silent exits** | `if (!x) return` / `x ?? fallback` / `x?.field` / absorbed `catch` |
 | **F — Config/env** | `process.env.X` or `config.x.y` accessed directly |
 
-Each finding is annotated: `// ⚠ [Category] unguarded: <what the code assumes>`
+Each finding is annotated: `// [Category] unguarded: <what the code assumes>`
 
 ### Pass 2 — Risk scoring
 
 | Risk | Condition |
 |:-----|:----------|
-| 🔴 **Critical** | Unguarded nil dereferenced — will throw `Cannot read properties of null` |
-| 🟠 **High** | Silent exit — caller receives `undefined` with no trace |
-| 🟡 **Medium** | Wrong type assumed — may corrupt silently |
-| 🟢 **Low** | Missing postcondition — type system mostly covers it |
+| **Critical** | Unguarded nil dereferenced — will throw `Cannot read properties of null` |
+| **High** | Silent exit — caller receives `undefined` with no trace |
+| **Medium** | Wrong type assumed — may corrupt silently |
+| **Low** | Missing postcondition — type system mostly covers it |
 
 ### Pass 3 — Prioritized report
 
-Findings sorted by risk — 🔴 first. For each finding: location, category, risk, assumption broken, assertion to add.
+Findings sorted by risk — Critical first. For each finding: location, category, risk, assumption broken, assertion to add.
 
 ---
 
@@ -70,12 +70,12 @@ Findings sorted by risk — 🔴 first. For each finding: location, category, ri
 async function getUserTasks(user: User): Promise<Task[]> {
   let tasks: Task[] = []
   if (!user) {
-    return tasks                        // ⚠ E — silent exit: caller gets [] with no trace
+    return tasks                        // [E] silent exit: caller gets [] with no trace
   }
   try {
     tasks = await getTasksFor(user)
   } catch (e) {
-    console.log(e)                      // ⚠ E — error absorbed: failure invisible to caller
+    console.log(e)                      // [E] error absorbed: failure invisible to caller
     return tasks
   }
   return tasks
@@ -87,11 +87,11 @@ async function getUserTasks(user: User): Promise<Task[]> {
 ```
 Guard coverage: 0 / 3 boundaries protected — 3 gaps (1 high, 1 high, 1 low)
 
-| # | Line | Category | Risk    | Assumption              | Fix                            |
-|:--|:-----|:---------|:--------|:------------------------|:-------------------------------|
-| 1 | 3    | E        | 🟠 High  | user present, no trace  | assert.notNil(user, {msg:…})   |
-| 2 | 7    | E        | 🟠 High  | error absorbed silently | let it throw — remove try/catch |
-| 3 | 10   | output   | 🟢 Low   | tasks non-empty         | assert.notEmpty(tasks) if needed |
+| # | Line | Category | Risk     | Assumption              | Fix                            |
+|:--|:-----|:---------|:---------|:------------------------|:-------------------------------|
+| 1 | 3    | E        | High     | user present, no trace  | assert.notNil(user, {msg:…})   |
+| 2 | 7    | E        | High     | error absorbed silently | let it throw — remove try/catch |
+| 3 | 10   | output   | Low      | tasks non-empty         | assert.notEmpty(tasks) if needed |
 ```
 
 **Proposed fix:**

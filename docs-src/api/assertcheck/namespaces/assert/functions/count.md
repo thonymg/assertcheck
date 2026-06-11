@@ -14,9 +14,7 @@ function count<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:972](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L972)
-
-Asserts that exactly `n` elements satisfy the predicate — Ruby `count { }`.
+Defined in: [src/assert.ts:87](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L87)
 
 ## Type Parameters
 
@@ -36,9 +34,3 @@ Asserts that exactly `n` elements satisfy the predicate — Ruby `count { }`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.count(transactions, t => t.amount > 1000, 3, "expected 3 large transactions")`
-```

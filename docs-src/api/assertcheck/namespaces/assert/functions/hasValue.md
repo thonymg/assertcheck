@@ -14,10 +14,7 @@ function hasValue<T, K>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1616](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1616)
-
-Asserts that `obj[key] === expected` (deep equality via `_.isEqual`).
-The value type is inferred from `T[K]`.
+Defined in: [src/assert.ts:111](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L111)
 
 ## Type Parameters
 
@@ -38,9 +35,3 @@ The value type is inferred from `T[K]`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.hasValue(config, "port", 5432, "wrong database port")`
-```

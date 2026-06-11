@@ -13,9 +13,7 @@ function arity(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1830](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1830)
-
-Asserts that `fn.length` equals `n` (declared parameter count).
+Defined in: [src/assert.ts:120](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L120)
 
 ## Parameters
 
@@ -28,9 +26,3 @@ Asserts that `fn.length` equals `n` (declared parameter count).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.arity(transform, 1, "pipeline steps must be unary")`
-```

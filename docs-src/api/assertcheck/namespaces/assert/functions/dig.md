@@ -14,9 +14,7 @@ function dig<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1714](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1714)
-
-Asserts that the object has a value at a nested path — Ruby `hash.dig(:a, :b)`.
+Defined in: [src/assert.ts:115](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L115)
 
 ## Type Parameters
 
@@ -36,9 +34,3 @@ Asserts that the object has a value at a nested path — Ruby `hash.dig(:a, :b)`
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.dig(config, "database.pool.max", 10)`
-```

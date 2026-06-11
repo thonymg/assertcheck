@@ -10,9 +10,7 @@
 function negative(n, opts?): void;
 ```
 
-Defined in: [src/assert.ts:525](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L525)
-
-Asserts that `n` is a negative finite number (< 0).
+Defined in: [src/assert.ts:70](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L70)
 
 ## Parameters
 
@@ -24,9 +22,3 @@ Asserts that `n` is a negative finite number (< 0).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.negative(delta, "delta must be negative")`
-```

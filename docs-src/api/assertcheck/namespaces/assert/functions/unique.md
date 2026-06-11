@@ -10,9 +10,7 @@
 function unique<T>(arr, opts?): void;
 ```
 
-Defined in: [src/assert.ts:1110](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1110)
-
-Asserts that all elements are strictly unique (`indexOf` comparison).
+Defined in: [src/assert.ts:92](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L92)
 
 ## Type Parameters
 
@@ -30,9 +28,3 @@ Asserts that all elements are strictly unique (`indexOf` comparison).
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.unique(ids, "duplicate IDs detected")`
-```

@@ -13,9 +13,7 @@ function containsSubset<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1640](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1640)
-
-Asserts that `obj` contains all key-value pairs in `subset`.
+Defined in: [src/assert.ts:112](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L112)
 
 ## Type Parameters
 
@@ -34,9 +32,3 @@ Asserts that `obj` contains all key-value pairs in `subset`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.containsSubset(user, { role: "admin" }, "user must be admin")`
-```

@@ -14,10 +14,7 @@ function mapsDistinct<T, U>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:1855](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1855)
-
-Asserts that `fn(a)` and `fn(b)` produce different results.
-Useful to detect hash collisions or identity-collapse bugs.
+Defined in: [src/assert.ts:121](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L121)
 
 ## Type Parameters
 
@@ -38,9 +35,3 @@ Useful to detect hash collisions or identity-collapse bugs.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.mapsDistinct(hashFn, "user:1", "user:2", "hash collision")`
-```

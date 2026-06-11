@@ -13,10 +13,7 @@ function allInstanceOf<T>(
    opts?): asserts arr is T[];
 ```
 
-Defined in: [src/assert.ts:1361](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1361)
-
-Asserts that all elements are instances of the given constructor.
-Narrows the type to `T[]` after the call.
+Defined in: [src/assert.ts:102](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L102)
 
 ## Type Parameters
 
@@ -35,9 +32,3 @@ Narrows the type to `T[]` after the call.
 ## Returns
 
 `asserts arr is T[]`
-
-## Example
-
-```ts
-`assert.allInstanceOf(events, DomainEvent, "all events must be DomainEvent")`
-```

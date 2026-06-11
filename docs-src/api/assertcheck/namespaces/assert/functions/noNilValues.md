@@ -10,9 +10,7 @@
 function noNilValues<T>(obj, opts?): void;
 ```
 
-Defined in: [src/assert.ts:1692](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1692)
-
-Asserts that no value in `obj` is `null` or `undefined`.
+Defined in: [src/assert.ts:114](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L114)
 
 ## Type Parameters
 
@@ -30,9 +28,3 @@ Asserts that no value in `obj` is `null` or `undefined`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.noNilValues(config, "config must have no null values")`
-```

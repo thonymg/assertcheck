@@ -10,23 +10,15 @@
 function nil(v, opts?): asserts v is null | undefined;
 ```
 
-Defined in: [src/assert.ts:65](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L65)
-
-Asserts that a value is `null` or `undefined`.
+Defined in: [src/assert.ts:51](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L51)
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `v` | `unknown` | The value to check. |
-| `opts?` | `Opts` | Optional message / context. |
+| Parameter | Type |
+| ------ | ------ |
+| `v` | `unknown` |
+| `opts?` | `Opts` |
 
 ## Returns
 
 asserts v is null \| undefined
-
-## Example
-
-```ts
-assert.nil(response.error, "no error expected")
-```

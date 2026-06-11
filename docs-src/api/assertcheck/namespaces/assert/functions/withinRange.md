@@ -14,25 +14,17 @@ function withinRange(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:695](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L695)
-
-Asserts that `v` is within the closed range `[min, max]`.
+Defined in: [src/assert.ts:76](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L76)
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `v` | `number` | The value to check. |
-| `min` | `number` | Inclusive lower bound. |
-| `max` | `number` | Inclusive upper bound. |
-| `opts?` | `Opts` | Optional message / context. |
+| Parameter | Type |
+| ------ | ------ |
+| `v` | `number` |
+| `min` | `number` |
+| `max` | `number` |
+| `opts?` | `Opts` |
 
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-assert.withinRange(percentage, 0, 100, "percentage must be 0–100")
-```

@@ -10,10 +10,7 @@
 function notEmpty<T>(v, opts?): asserts v is NonNullable<T>;
 ```
 
-Defined in: [src/assert.ts:163](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L163)
-
-Asserts that a value is **not** empty.
-Uses `_.isEmpty`, which handles strings, arrays, objects, Map, and Set.
+Defined in: [src/assert.ts:54](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L54)
 
 ## Type Parameters
 
@@ -23,17 +20,11 @@ Uses `_.isEmpty`, which handles strings, arrays, objects, Map, and Set.
 
 ## Parameters
 
-| Parameter | Type | Description |
-| ------ | ------ | ------ |
-| `v` | `T` | The value to check. |
-| `opts?` | `Opts` | Optional message / context. |
+| Parameter | Type |
+| ------ | ------ |
+| `v` | `T` |
+| `opts?` | `Opts` |
 
 ## Returns
 
 `asserts v is NonNullable<T>`
-
-## Example
-
-```ts
-assert.notEmpty(users, "users list must not be empty")
-```

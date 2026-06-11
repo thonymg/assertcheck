@@ -13,10 +13,7 @@ function hasExactKeys<K>(
    opts?): asserts obj is Record<K, unknown>;
 ```
 
-Defined in: [src/assert.ts:1549](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L1549)
-
-Asserts that `obj` has **exactly** the given keys — no more, no less.
-Narrows the type to `Record<K, unknown>` after the call.
+Defined in: [src/assert.ts:109](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L109)
 
 ## Type Parameters
 
@@ -35,9 +32,3 @@ Narrows the type to `Record<K, unknown>` after the call.
 ## Returns
 
 `asserts obj is Record<K, unknown>`
-
-## Example
-
-```ts
-`assert.hasExactKeys(payload, ["id","name","email"])`
-```

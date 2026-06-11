@@ -13,9 +13,7 @@ function lessOrEqual(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:658](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/assert.ts#L658)
-
-Asserts that `a <= b`.
+Defined in: [src/assert.ts:75](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L75)
 
 ## Parameters
 
@@ -28,9 +26,3 @@ Asserts that `a <= b`.
 ## Returns
 
 `void`
-
-## Example
-
-```ts
-`assert.lessOrEqual(pageSize, 100, "page size exceeds limit")`
-```
