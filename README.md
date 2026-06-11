@@ -4,7 +4,7 @@
 > Declare what cannot exist. Fail where it matters. Ship with confidence.
 
 [![npm](https://img.shields.io/npm/v/assertcheck?color=0ea5e9&label=npm)](https://www.npmjs.com/package/assertcheck)
-[![JSR](https://jsr.io/badges/assertcheck)](https://jsr.io/assertcheck)
+[![JSR](https://jsr.io/badges/@thonymg/assertcheck)](https://jsr.io/@thonymg/assertcheck)
 [![License](https://img.shields.io/badge/license-Apache_2.0-orange)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-first-3178c6)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-ready-fbf0df)](https://bun.sh/)
