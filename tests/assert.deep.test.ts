@@ -21,7 +21,11 @@ import { assert, AssertionError, setAssertMode, getAssertMode } from "../src/ind
 
 const throws = (fn: () => void): AssertionError => {
   let caught: unknown
-  try { fn() } catch (e) { caught = e }
+  try {
+    fn()
+  } catch (e) {
+    caught = e
+  }
   expect(caught).toBeInstanceOf(AssertionError)
   return caught as AssertionError
 }
@@ -30,8 +34,12 @@ const passes = (fn: () => void) => expect(fn).not.toThrow()
 
 // Restore mode around every test
 let _savedMode: ReturnType<typeof getAssertMode>
-beforeEach(() => { _savedMode = getAssertMode() })
-afterEach(() => { setAssertMode(_savedMode) })
+beforeEach(() => {
+  _savedMode = getAssertMode()
+})
+afterEach(() => {
+  setAssertMode(_savedMode)
+})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NIL / NOT-NIL
@@ -248,7 +256,10 @@ describe("notEmpty — deep", () => {
     passes(() => assert.notEmpty([]))
   })
   it("real-world: search results must not be empty", () => {
-    const results = [{ id: 1, title: "Post A" }, { id: 2, title: "Post B" }]
+    const results = [
+      { id: 1, title: "Post A" },
+      { id: 2, title: "Post B" },
+    ]
     passes(() => assert.notEmpty(results, "search must return results"))
   })
 })
@@ -383,7 +394,8 @@ describe("integer — deep", () => {
 describe("finite — deep", () => {
   it("passes for 0", () => passes(() => assert.finite(0)))
   it("passes for -999.99", () => passes(() => assert.finite(-999.99)))
-  it("passes for Number.MAX_SAFE_INTEGER", () => passes(() => assert.finite(Number.MAX_SAFE_INTEGER)))
+  it("passes for Number.MAX_SAFE_INTEGER", () =>
+    passes(() => assert.finite(Number.MAX_SAFE_INTEGER)))
 
   it("throws for NaN", () => throws(() => assert.finite(NaN)))
   it("throws for Infinity", () => throws(() => assert.finite(Infinity)))
@@ -512,7 +524,12 @@ describe("func — deep", () => {
 })
 
 describe("instanceOf — deep", () => {
-  class Animal { name: string; constructor(n: string) { this.name = n } }
+  class Animal {
+    name: string
+    constructor(n: string) {
+      this.name = n
+    }
+  }
   class Dog extends Animal {}
   class Cat extends Animal {}
 
@@ -542,7 +559,12 @@ describe("instanceOf — deep", () => {
   })
 
   it("real-world: event must be DomainEvent", () => {
-    class DomainEvent { type: string; constructor(t: string) { this.type = t } }
+    class DomainEvent {
+      type: string
+      constructor(t: string) {
+        this.type = t
+      }
+    }
     class OrderPlaced extends DomainEvent {}
     class UserCreated extends DomainEvent {}
     const evt = new OrderPlaced("order.placed")
@@ -567,7 +589,8 @@ describe("equal — deep", () => {
   // L2 fail
   it("throws for 1 !== 2", () => throws(() => assert.equal(1, 2)))
   it("throws for 'a' !== 'b'", () => throws(() => assert.equal("a", "b")))
-  it("throws for null !== undefined", () => throws(() => assert.equal(null, undefined as unknown as null)))
+  it("throws for null !== undefined", () =>
+    throws(() => assert.equal(null, undefined as unknown as null)))
   it("throws for reference equality — different objects", () => {
     throws(() => assert.equal({ a: 1 } as unknown as number, { a: 1 } as unknown as number))
   })
@@ -644,10 +667,8 @@ describe("deepEqual — deep", () => {
     passes(() => assert.deepEqual([{ id: 1 }, { id: 2 }], [{ id: 1 }, { id: 2 }])))
 
   // L2 fail
-  it("throws for { a: 1 } vs { a: 2 }", () =>
-    throws(() => assert.deepEqual({ a: 1 }, { a: 2 })))
-  it("throws for [1,2] vs [1,3]", () =>
-    throws(() => assert.deepEqual([1, 2], [1, 3])))
+  it("throws for { a: 1 } vs { a: 2 }", () => throws(() => assert.deepEqual({ a: 1 }, { a: 2 })))
+  it("throws for [1,2] vs [1,3]", () => throws(() => assert.deepEqual([1, 2], [1, 3])))
   it("throws for different key sets", () =>
     throws(() => assert.deepEqual({ a: 1 } as unknown as { a: number; b: number }, { a: 1, b: 2 })))
 
@@ -696,7 +717,10 @@ describe("deepEqual — deep", () => {
     passes(() => assert.deepEqual(response, expected))
   })
   it("real-world: detects extra field in response", () => {
-    const response = { id: 1, name: "Alice", password: "hashed" } as unknown as { id: number; name: string }
+    const response = { id: 1, name: "Alice", password: "hashed" } as unknown as {
+      id: number
+      name: string
+    }
     const expected = { id: 1, name: "Alice" }
     throws(() => assert.deepEqual(response, expected, "response has extra field"))
   })
@@ -782,7 +806,8 @@ describe("zero — deep", () => {
     expect(err.expected).toBe(0)
   })
   it("real-world: remainder after batch processing must be zero", () => {
-    const processed = 100, total = 100
+    const processed = 100,
+      total = 100
     passes(() => assert.zero(total - processed, "all items processed"))
     throws(() => assert.zero(3, "3 items remain"))
   })
@@ -836,7 +861,8 @@ describe("greaterOrEqual — deep", () => {
     expect(err.message).toContain("7")
   })
   it("real-world: balance must cover withdrawal", () => {
-    const balance = 500, amount = 200
+    const balance = 500,
+      amount = 200
     passes(() => assert.greaterOrEqual(balance, amount, "sufficient funds"))
     throws(() => assert.greaterOrEqual(100, 200, "insufficient funds"))
   })
@@ -886,7 +912,8 @@ describe("withinRange — deep", () => {
   it("passes for 5 in [0, 10]", () => passes(() => assert.withinRange(5, 0, 10)))
   it("passes for 0 (lower bound)", () => passes(() => assert.withinRange(0, 0, 10)))
   it("passes for 10 (upper bound)", () => passes(() => assert.withinRange(10, 0, 10)))
-  it("passes for negative range: -5 in [-10, 0]", () => passes(() => assert.withinRange(-5, -10, 0)))
+  it("passes for negative range: -5 in [-10, 0]", () =>
+    passes(() => assert.withinRange(-5, -10, 0)))
 
   it("throws for -1 in [0, 10]", () => throws(() => assert.withinRange(-1, 0, 10)))
   it("throws for 11 in [0, 10]", () => throws(() => assert.withinRange(11, 0, 10)))
@@ -919,11 +946,14 @@ describe("withinRange — deep", () => {
 describe("inDelta — deep", () => {
   it("passes for |1.001 - 1.0| <= 0.01", () => passes(() => assert.inDelta(1.001, 1.0, 0.01)))
   it("passes for exact match (delta 0)", () => passes(() => assert.inDelta(5, 5, 0)))
-  it("passes for negative values within delta", () => passes(() => assert.inDelta(-1.001, -1.0, 0.01)))
+  it("passes for negative values within delta", () =>
+    passes(() => assert.inDelta(-1.001, -1.0, 0.01)))
 
   it("throws for |1.1 - 1.0| > 0.01", () => throws(() => assert.inDelta(1.1, 1.0, 0.01)))
-  it("throws when actual is above expected + delta", () => throws(() => assert.inDelta(10.5, 10.0, 0.4)))
-  it("throws when actual is below expected - delta", () => throws(() => assert.inDelta(9.5, 10.0, 0.4)))
+  it("throws when actual is above expected + delta", () =>
+    throws(() => assert.inDelta(10.5, 10.0, 0.4)))
+  it("throws when actual is below expected - delta", () =>
+    throws(() => assert.inDelta(9.5, 10.0, 0.4)))
 
   it("sets assertion = 'inDelta'", () => {
     const err = throws(() => assert.inDelta(2.0, 1.0, 0.5))
@@ -938,7 +968,7 @@ describe("inDelta — deep", () => {
     expect(err.message).toContain("excess")
   })
   it("real-world: floating-point computation tolerance", () => {
-    const computed = 0.1 + 0.2   // 0.30000000000000004
+    const computed = 0.1 + 0.2 // 0.30000000000000004
     passes(() => assert.inDelta(computed, 0.3, 1e-10))
     throws(() => assert.inDelta(computed, 0.3, 0, "exact match fails for FP"))
   })
@@ -1042,18 +1072,28 @@ describe("includes — deep", () => {
   it("real-world: required permissions", () => {
     const permissions = ["read", "write", "delete"]
     passes(() => assert.includes(permissions, "write"))
-    throws(() => assert.includes(permissions, "admin" as typeof permissions[number], "admin permission required"))
+    throws(() =>
+      assert.includes(
+        permissions,
+        "admin" as (typeof permissions)[number],
+        "admin permission required"
+      )
+    )
   })
 })
 
 describe("all — deep", () => {
-  it("passes when all match predicate", () => passes(() => assert.all([2, 4, 6], (n) => n % 2 === 0)))
+  it("passes when all match predicate", () =>
+    passes(() => assert.all([2, 4, 6], (n) => n % 2 === 0)))
   it("passes for empty array (vacuously true)", () => passes(() => assert.all([], () => false)))
   it("passes for single-element match", () => passes(() => assert.all([2], (n) => n % 2 === 0)))
 
-  it("throws when first element fails", () => throws(() => assert.all([1, 2, 4], (n) => n % 2 === 0)))
-  it("throws when last element fails", () => throws(() => assert.all([2, 4, 5], (n) => n % 2 === 0)))
-  it("throws when middle element fails", () => throws(() => assert.all([2, 3, 4], (n) => n % 2 === 0)))
+  it("throws when first element fails", () =>
+    throws(() => assert.all([1, 2, 4], (n) => n % 2 === 0)))
+  it("throws when last element fails", () =>
+    throws(() => assert.all([2, 4, 5], (n) => n % 2 === 0)))
+  it("throws when middle element fails", () =>
+    throws(() => assert.all([2, 3, 4], (n) => n % 2 === 0)))
 
   it("sets assertion = 'all'", () => {
     const err = throws(() => assert.all([1], (n) => n > 5))
@@ -1083,8 +1123,13 @@ describe("all — deep", () => {
       { id: 2, email: "c@d.com", verified: true },
     ]
     passes(() => assert.all(users, (u) => u.verified))
-    throws(() => assert.all([...users, { id: 3, email: "e@f.com", verified: false }],
-      (u) => u.verified, "all users must be verified"))
+    throws(() =>
+      assert.all(
+        [...users, { id: 3, email: "e@f.com", verified: false }],
+        (u) => u.verified,
+        "all users must be verified"
+      )
+    )
   })
 })
 
@@ -1106,16 +1151,20 @@ describe("any — deep", () => {
       { id: 2, role: "admin" },
     ]
     passes(() => assert.any(team, (m) => m.role === "admin"))
-    throws(() => assert.any([{ id: 1, role: "member" }], (m) => m.role === "admin", "need an admin"))
+    throws(() =>
+      assert.any([{ id: 1, role: "member" }], (m) => m.role === "admin", "need an admin")
+    )
   })
 })
 
 describe("none — deep", () => {
-  it("passes when no element matches", () => passes(() => assert.none([1, 3, 5], (n) => n % 2 === 0)))
+  it("passes when no element matches", () =>
+    passes(() => assert.none([1, 3, 5], (n) => n % 2 === 0)))
   it("passes for empty array", () => passes(() => assert.none([], () => true)))
 
   it("throws when one element matches", () => throws(() => assert.none([1, 2, 3], (n) => n === 2)))
-  it("throws when first element matches", () => throws(() => assert.none([2, 3, 4], (n) => n === 2)))
+  it("throws when first element matches", () =>
+    throws(() => assert.none([2, 3, 4], (n) => n === 2)))
 
   it("sets assertion = 'none'", () => {
     const err = throws(() => assert.none([1, 2], (n) => n === 2))
@@ -1126,16 +1175,25 @@ describe("none — deep", () => {
     expect(err.actual).toBe(42)
   })
   it("real-world: no banned users in active list", () => {
-    const users = [{ id: 1, banned: false }, { id: 2, banned: false }]
+    const users = [
+      { id: 1, banned: false },
+      { id: 2, banned: false },
+    ]
     passes(() => assert.none(users, (u) => u.banned))
-    throws(() => assert.none([...users, { id: 3, banned: true }],
-      (u) => u.banned, "banned user in active list"))
+    throws(() =>
+      assert.none(
+        [...users, { id: 3, banned: true }],
+        (u) => u.banned,
+        "banned user in active list"
+      )
+    )
   })
 })
 
 describe("one — deep", () => {
   it("passes when exactly one matches", () => passes(() => assert.one([1, 2, 3], (n) => n === 2)))
-  it("passes for single-element array matching", () => passes(() => assert.one([5], (n) => n === 5)))
+  it("passes for single-element array matching", () =>
+    passes(() => assert.one([5], (n) => n === 5)))
 
   it("throws when zero match", () => throws(() => assert.one([1, 3, 5], (n) => n === 2)))
   it("throws when two match", () => throws(() => assert.one([2, 2, 3], (n) => n === 2)))
@@ -1156,17 +1214,24 @@ describe("one — deep", () => {
       { id: 3, primary: false },
     ]
     passes(() => assert.one(contacts, (c) => c.primary))
-    throws(() => assert.one([...contacts, { id: 4, primary: true }],
-      (c) => c.primary, "multiple primary contacts"))
+    throws(() =>
+      assert.one(
+        [...contacts, { id: 4, primary: true }],
+        (c) => c.primary,
+        "multiple primary contacts"
+      )
+    )
   })
 })
 
 describe("count — deep", () => {
-  it("passes for 2 even numbers", () => passes(() => assert.count([1, 2, 3, 4], (n) => n % 2 === 0, 2)))
+  it("passes for 2 even numbers", () =>
+    passes(() => assert.count([1, 2, 3, 4], (n) => n % 2 === 0, 2)))
   it("passes for 0 matches", () => passes(() => assert.count([1, 3, 5], (n) => n % 2 === 0, 0)))
   it("passes for all matching", () => passes(() => assert.count([2, 4], (n) => n % 2 === 0, 2)))
 
-  it("throws when count is off by one", () => throws(() => assert.count([2, 4, 6], (n) => n % 2 === 0, 2)))
+  it("throws when count is off by one", () =>
+    throws(() => assert.count([2, 4, 6], (n) => n % 2 === 0, 2)))
   it("throws for empty array expecting 1", () => throws(() => assert.count([], () => true, 1)))
 
   it("sets assertion = 'count'", () => {
@@ -1214,12 +1279,15 @@ describe("containsAll — deep", () => {
 })
 
 describe("containsNone — deep", () => {
-  it("passes when no forbidden items present", () => passes(() => assert.containsNone([1, 2, 3], [4, 5])))
+  it("passes when no forbidden items present", () =>
+    passes(() => assert.containsNone([1, 2, 3], [4, 5])))
   it("passes for empty forbidden list", () => passes(() => assert.containsNone([1, 2], [])))
   it("passes for empty arr", () => passes(() => assert.containsNone([], [1, 2])))
 
-  it("throws when one forbidden item present", () => throws(() => assert.containsNone([1, 2, 3], [3, 4])))
-  it("throws when all forbidden items present", () => throws(() => assert.containsNone([1, 2], [1, 2])))
+  it("throws when one forbidden item present", () =>
+    throws(() => assert.containsNone([1, 2, 3], [3, 4])))
+  it("throws when all forbidden items present", () =>
+    throws(() => assert.containsNone([1, 2], [1, 2])))
 
   it("sets assertion = 'containsNone'", () => {
     const err = throws(() => assert.containsNone([1, 2], [2]))
@@ -1308,11 +1376,14 @@ describe("unique — deep", () => {
 })
 
 describe("uniqueBy — deep", () => {
-  it("passes when all keys distinct", () => passes(() => assert.uniqueBy([{ id: 1 }, { id: 2 }], "id")))
+  it("passes when all keys distinct", () =>
+    passes(() => assert.uniqueBy([{ id: 1 }, { id: 2 }], "id")))
   it("passes for empty array", () => passes(() => assert.uniqueBy([], "id")))
-  it("passes for single element", () => passes(() => assert.uniqueBy([{ email: "a@b.com" }], "email")))
+  it("passes for single element", () =>
+    passes(() => assert.uniqueBy([{ email: "a@b.com" }], "email")))
 
-  it("throws when two share same key", () => throws(() => assert.uniqueBy([{ id: 1 }, { id: 1 }], "id")))
+  it("throws when two share same key", () =>
+    throws(() => assert.uniqueBy([{ id: 1 }, { id: 1 }], "id")))
   it("throws using function iteratee", () =>
     throws(() => assert.uniqueBy([{ v: 1 }, { v: 1 }], (x) => x.v)))
 
@@ -1326,13 +1397,15 @@ describe("uniqueBy — deep", () => {
       { id: 2, email: "bob@example.com" },
     ]
     passes(() => assert.uniqueBy(users, "email"))
-    throws(() => assert.uniqueBy(
-      [...users, { id: 3, email: "alice@example.com" }],
-      "email", "duplicate email"
-    ))
+    throws(() =>
+      assert.uniqueBy([...users, { id: 3, email: "alice@example.com" }], "email", "duplicate email")
+    )
   })
   it("real-world: items grouped by SKU must have unique SKUs", () => {
-    const items = [{ sku: "A1", qty: 10 }, { sku: "B2", qty: 5 }]
+    const items = [
+      { sku: "A1", qty: 10 },
+      { sku: "B2", qty: 5 },
+    ]
     passes(() => assert.uniqueBy(items, "sku"))
     throws(() => assert.uniqueBy([...items, { sku: "A1", qty: 3 }], "sku", "duplicate SKU"))
   })
@@ -1424,7 +1497,10 @@ describe("first — deep", () => {
     throws(() => assert.first([{ id: 1 }], { id: 2 }))
   })
   it("real-world: highest priority task is first in queue", () => {
-    const queue = [{ id: 1, priority: "critical" }, { id: 2, priority: "high" }]
+    const queue = [
+      { id: 1, priority: "critical" },
+      { id: 2, priority: "high" },
+    ]
     passes(() => assert.first(queue, { id: 1, priority: "critical" }))
     throws(() => assert.first(queue, { id: 2, priority: "high" }, "wrong first item"))
   })
@@ -1449,7 +1525,8 @@ describe("last — deep", () => {
 })
 
 describe("sumBy — deep", () => {
-  it("passes for correct sum", () => passes(() => assert.sumBy([{ v: 1 }, { v: 2 }, { v: 3 }], "v", 6)))
+  it("passes for correct sum", () =>
+    passes(() => assert.sumBy([{ v: 1 }, { v: 2 }, { v: 3 }], "v", 6)))
   it("passes for empty array summing to 0", () => passes(() => assert.sumBy([], "v", 0)))
   it("passes with function iteratee", () =>
     passes(() => assert.sumBy([{ v: 10 }, { v: 20 }], (x) => x.v, 30)))
@@ -1532,7 +1609,12 @@ describe("flat — deep", () => {
 })
 
 describe("allInstanceOf — deep", () => {
-  class Event { type: string; constructor(t: string) { this.type = t } }
+  class Event {
+    type: string
+    constructor(t: string) {
+      this.type = t
+    }
+  }
   class ClickEvent extends Event {}
   class HoverEvent extends Event {}
 
@@ -1561,8 +1643,7 @@ describe("allInstanceOf — deep", () => {
 describe("zippedWith — deep", () => {
   it("passes when all pairs satisfy predicate", () =>
     passes(() => assert.zippedWith([1, 2], [1, 2], (a, b) => a === b)))
-  it("passes for empty arrays", () =>
-    passes(() => assert.zippedWith([], [], (a, b) => a === b)))
+  it("passes for empty arrays", () => passes(() => assert.zippedWith([], [], (a, b) => a === b)))
 
   it("throws when one pair fails", () =>
     throws(() => assert.zippedWith([1, 2], [1, 3], (a, b) => a === b)))
@@ -1575,10 +1656,20 @@ describe("zippedWith — deep", () => {
   })
   it("real-world: input IDs must match output IDs", () => {
     const inputs = [{ id: 1 }, { id: 2 }, { id: 3 }]
-    const outputs = [{ id: 1, result: "ok" }, { id: 2, result: "ok" }, { id: 3, result: "ok" }]
+    const outputs = [
+      { id: 1, result: "ok" },
+      { id: 2, result: "ok" },
+      { id: 3, result: "ok" },
+    ]
     passes(() => assert.zippedWith(inputs, outputs, (i, o) => i.id === o.id))
-    throws(() => assert.zippedWith(inputs, [{ id: 9, result: "ok" }, ...outputs.slice(1)],
-      (i, o) => i.id === o.id, "ID mismatch"))
+    throws(() =>
+      assert.zippedWith(
+        inputs,
+        [{ id: 9, result: "ok" }, ...outputs.slice(1)],
+        (i, o) => i.id === o.id,
+        "ID mismatch"
+      )
+    )
   })
 })
 
@@ -1660,7 +1751,13 @@ describe("hasKey — deep", () => {
     const config = { host: "localhost", port: 5432, database: "mydb" }
     passes(() => assert.hasKey(config, "host"))
     passes(() => assert.hasKey(config, "database"))
-    throws(() => assert.hasKey(config as typeof config & { password?: string }, "password", "password required"))
+    throws(() =>
+      assert.hasKey(
+        config as typeof config & { password?: string },
+        "password",
+        "password required"
+      )
+    )
   })
 })
 
@@ -1681,8 +1778,13 @@ describe("hasKeys — deep", () => {
   it("real-world: API payload must include required fields", () => {
     const payload = { userId: 1, action: "purchase", amount: 500 }
     passes(() => assert.hasKeys(payload, ["userId", "action"]))
-    throws(() => assert.hasKeys(payload as typeof payload & { signature?: string }, ["userId", "signature"],
-      "missing signature"))
+    throws(() =>
+      assert.hasKeys(
+        payload as typeof payload & { signature?: string },
+        ["userId", "signature"],
+        "missing signature"
+      )
+    )
   })
 })
 
@@ -1694,8 +1796,7 @@ describe("hasExactKeys — deep", () => {
 
   it("throws for extra key", () =>
     throws(() => assert.hasExactKeys({ a: 1, b: 2, c: 3 }, ["a", "b"])))
-  it("throws for missing key", () =>
-    throws(() => assert.hasExactKeys({ a: 1 }, ["a", "b"])))
+  it("throws for missing key", () => throws(() => assert.hasExactKeys({ a: 1 }, ["a", "b"])))
 
   it("sets assertion = 'hasExactKeys'", () => {
     const err = throws(() => assert.hasExactKeys({ a: 1, b: 2 }, ["a"]))
@@ -1712,8 +1813,13 @@ describe("hasExactKeys — deep", () => {
   it("real-world: DTO shape must match contract exactly", () => {
     const dto = { id: 1, name: "Alice", email: "a@b.com" }
     passes(() => assert.hasExactKeys(dto, ["id", "name", "email"]))
-    throws(() => assert.hasExactKeys({ ...dto, extra: "oops" } as object, ["id", "name", "email"],
-      "extra field in DTO"))
+    throws(() =>
+      assert.hasExactKeys(
+        { ...dto, extra: "oops" } as object,
+        ["id", "name", "email"],
+        "extra field in DTO"
+      )
+    )
   })
 })
 
@@ -1740,8 +1846,9 @@ describe("hasOnlyKeys — deep", () => {
   it("real-world: update patch must not include immutable fields", () => {
     const patch = { name: "Bob", email: "b@c.com" }
     passes(() => assert.hasOnlyKeys(patch, ["name", "email", "phone"]))
-    throws(() => assert.hasOnlyKeys({ ...patch, id: 99 }, ["name", "email", "phone"],
-      "cannot update id"))
+    throws(() =>
+      assert.hasOnlyKeys({ ...patch, id: 99 }, ["name", "email", "phone"], "cannot update id")
+    )
   })
 })
 
@@ -1772,13 +1879,11 @@ describe("hasValue — deep", () => {
 describe("containsSubset — deep", () => {
   it("passes when subset matches", () =>
     passes(() => assert.containsSubset({ a: 1, b: 2, c: 3 }, { a: 1, b: 2 })))
-  it("passes for empty subset", () =>
-    passes(() => assert.containsSubset({ a: 1 }, {})))
+  it("passes for empty subset", () => passes(() => assert.containsSubset({ a: 1 }, {})))
   it("passes for nested subset", () =>
     passes(() => assert.containsSubset({ a: { b: 1, c: 2 } }, { a: { b: 1, c: 2 } })))
 
-  it("throws for mismatched value", () =>
-    throws(() => assert.containsSubset({ a: 1 }, { a: 2 })))
+  it("throws for mismatched value", () => throws(() => assert.containsSubset({ a: 1 }, { a: 2 })))
   it("throws when subset key is missing", () =>
     throws(() => assert.containsSubset({ a: 1 } as { a: number; b?: number }, { b: 2 })))
 
@@ -1805,8 +1910,7 @@ describe("containsSubset — deep", () => {
 describe("allValuesMatch — deep", () => {
   it("passes when all values match predicate", () =>
     passes(() => assert.allValuesMatch({ a: 1, b: 2 }, (v) => v > 0)))
-  it("passes for empty object", () =>
-    passes(() => assert.allValuesMatch({}, () => false)))
+  it("passes for empty object", () => passes(() => assert.allValuesMatch({}, () => false)))
 
   it("throws when one value fails", () =>
     throws(() => assert.allValuesMatch({ a: 1, b: -1 }, (v) => v > 0)))
@@ -1824,20 +1928,19 @@ describe("allValuesMatch — deep", () => {
   it("real-world: inventory quantities must all be non-negative", () => {
     const inventory = { apples: 10, oranges: 5, pears: 0 }
     passes(() => assert.allValuesMatch(inventory, (v) => v >= 0))
-    throws(() => assert.allValuesMatch({ ...inventory, grapes: -2 }, (v) => v >= 0, "negative stock"))
+    throws(() =>
+      assert.allValuesMatch({ ...inventory, grapes: -2 }, (v) => v >= 0, "negative stock")
+    )
   })
 })
 
 describe("noNilValues — deep", () => {
-  it("passes when no values are nil", () =>
-    passes(() => assert.noNilValues({ a: 1, b: "x" })))
-  it("passes for empty object", () =>
-    passes(() => assert.noNilValues({})))
+  it("passes when no values are nil", () => passes(() => assert.noNilValues({ a: 1, b: "x" })))
+  it("passes for empty object", () => passes(() => assert.noNilValues({})))
   it("passes for falsy-but-not-nil values", () =>
     passes(() => assert.noNilValues({ a: 0, b: false, c: "" })))
 
-  it("throws when one value is null", () =>
-    throws(() => assert.noNilValues({ a: 1, b: null })))
+  it("throws when one value is null", () => throws(() => assert.noNilValues({ a: 1, b: null })))
   it("throws when one value is undefined", () =>
     throws(() => assert.noNilValues({ a: 1, b: undefined })))
 
@@ -1848,7 +1951,9 @@ describe("noNilValues — deep", () => {
   it("real-world: config must have all values set", () => {
     const config = { host: "localhost", port: 5432, database: "mydb" }
     passes(() => assert.noNilValues(config))
-    throws(() => assert.noNilValues({ ...config, database: null } as typeof config, "database not configured"))
+    throws(() =>
+      assert.noNilValues({ ...config, database: null } as typeof config, "database not configured")
+    )
   })
 })
 
@@ -1857,13 +1962,11 @@ describe("dig — deep", () => {
     passes(() => assert.dig({ a: { b: { c: 42 } } }, "a.b.c", 42)))
   it("passes for array path (string)", () =>
     passes(() => assert.dig({ items: [{ id: 1 }] }, "items[0].id", 1)))
-  it("passes for array-form path", () =>
-    passes(() => assert.dig({ a: { b: 1 } }, ["a", "b"], 1)))
+  it("passes for array-form path", () => passes(() => assert.dig({ a: { b: 1 } }, ["a", "b"], 1)))
 
   it("throws for wrong nested value", () =>
     throws(() => assert.dig({ a: { b: { c: 42 } } }, "a.b.c", 0)))
-  it("throws when path does not exist", () =>
-    throws(() => assert.dig({ a: 1 }, "a.b.c", 42)))
+  it("throws when path does not exist", () => throws(() => assert.dig({ a: 1 }, "a.b.c", 42)))
 
   it("sets assertion = 'dig'", () => {
     const err = throws(() => assert.dig({ a: { b: 1 } }, "a.b", 2))
@@ -1896,8 +1999,7 @@ describe("dig — deep", () => {
 describe("returns — deep", () => {
   it("passes when return value matches", () =>
     passes(() => assert.returns((x: number) => x * 2, [5], 10)))
-  it("passes for zero return value", () =>
-    passes(() => assert.returns((_: number) => 0, [42], 0)))
+  it("passes for zero return value", () => passes(() => assert.returns((_: number) => 0, [42], 0)))
   it("passes for object return (deep equal)", () =>
     passes(() => assert.returns(() => ({ id: 1 }), [], { id: 1 })))
   it("passes for multi-arg function", () =>
@@ -1929,10 +2031,8 @@ describe("returns — deep", () => {
 })
 
 describe("pure — deep", () => {
-  it("passes for pure function", () =>
-    passes(() => assert.pure((x: number) => x + 1, [1])))
-  it("passes for constant function", () =>
-    passes(() => assert.pure(() => 42, [])))
+  it("passes for pure function", () => passes(() => assert.pure((x: number) => x + 1, [1])))
+  it("passes for constant function", () => passes(() => assert.pure(() => 42, [])))
   it("passes for pure object mapper", () =>
     passes(() => assert.pure((o: { v: number }) => ({ ...o, doubled: o.v * 2 }), [{ v: 5 }])))
 
@@ -1965,8 +2065,7 @@ describe("idempotent — deep", () => {
     passes(() => assert.idempotent((s: string) => s.trim(), "  hello  ")))
   it("passes for toLower", () =>
     passes(() => assert.idempotent((s: string) => s.toLowerCase(), "Hello")))
-  it("passes for identity", () =>
-    passes(() => assert.idempotent((x: number) => x, 42)))
+  it("passes for identity", () => passes(() => assert.idempotent((x: number) => x, 42)))
   it("passes for sort (already sorted)", () =>
     passes(() => assert.idempotent((arr: number[]) => [...arr].sort(), [1, 2, 3])))
 
@@ -1992,19 +2091,15 @@ describe("idempotent — deep", () => {
 })
 
 describe("arity — deep", () => {
-  it("passes for unary function", () =>
-    passes(() => assert.arity((x: number) => x, 1)))
+  it("passes for unary function", () => passes(() => assert.arity((x: number) => x, 1)))
   it("passes for binary function", () =>
     passes(() => assert.arity((a: number, b: number) => a + b, 2)))
-  it("passes for nullary function", () =>
-    passes(() => assert.arity(() => 0, 0)))
+  it("passes for nullary function", () => passes(() => assert.arity(() => 0, 0)))
   it("passes for ternary function", () =>
     passes(() => assert.arity((a: number, b: number, c: number) => a + b + c, 3)))
 
-  it("throws for wrong arity (1 vs 2)", () =>
-    throws(() => assert.arity((a: number) => a, 2)))
-  it("throws for nullary given 1", () =>
-    throws(() => assert.arity(() => 0, 1)))
+  it("throws for wrong arity (1 vs 2)", () => throws(() => assert.arity((a: number) => a, 2)))
+  it("throws for nullary given 1", () => throws(() => assert.arity(() => 0, 1)))
 
   it("sets assertion = 'arity'", () => {
     const err = throws(() => assert.arity((a: number) => a, 2))
@@ -2051,38 +2146,48 @@ describe("homomorphic — deep", () => {
       assert.homomorphic(
         (n: number) => n * 2,
         (a: number, b: number) => a + b,
-        3, 4
-      )))
+        3,
+        4
+      )
+    ))
   it("passes for identity over any combine", () =>
     passes(() =>
       assert.homomorphic(
         (n: number) => n,
         (a: number, b: number) => a + b,
-        5, 6
-      )))
+        5,
+        6
+      )
+    ))
   it("passes for toUpperCase distributes over concat", () =>
     passes(() =>
       assert.homomorphic(
         (s: string) => s.toUpperCase(),
         (a: string, b: string) => a + b,
-        "ab", "cd"
-      )))
+        "ab",
+        "cd"
+      )
+    ))
 
   it("throws for non-homomorphic transform", () =>
     throws(() =>
       assert.homomorphic(
         (n: number) => n * n,
         (a: number, b: number) => a + b,
-        2, 3
-      )))
+        2,
+        3
+      )
+    ))
 
   it("sets assertion = 'homomorphic'", () => {
     const err = throws(() =>
       assert.homomorphic(
         (n: number) => n * n,
         (a: number, b: number) => a + b,
-        2, 3
-      ))
+        2,
+        3
+      )
+    )
     expect(err.assertion).toBe("homomorphic")
   })
   it("real-world: normalizer distributes over concatenation", () => {
@@ -2097,19 +2202,13 @@ describe("homomorphic — deep", () => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 describe("not — deep", () => {
-  it("passes when inner assertion throws", () =>
-    passes(() => assert.not(assert.equal, 1, 2)))
-  it("passes for not-includes", () =>
-    passes(() => assert.not(assert.includes, [1, 2, 3], 4)))
-  it("passes for not-nil (value is nil)", () =>
-    passes(() => assert.not(assert.notNil, null)))
-  it("passes for not-positive on 0", () =>
-    passes(() => assert.not(assert.positive, 0)))
-  it("passes for not-empty on []", () =>
-    passes(() => assert.not(assert.notEmpty, [])))
+  it("passes when inner assertion throws", () => passes(() => assert.not(assert.equal, 1, 2)))
+  it("passes for not-includes", () => passes(() => assert.not(assert.includes, [1, 2, 3], 4)))
+  it("passes for not-nil (value is nil)", () => passes(() => assert.not(assert.notNil, null)))
+  it("passes for not-positive on 0", () => passes(() => assert.not(assert.positive, 0)))
+  it("passes for not-empty on []", () => passes(() => assert.not(assert.notEmpty, [])))
 
-  it("throws when inner assertion passes", () =>
-    throws(() => assert.not(assert.equal, 1, 1)))
+  it("throws when inner assertion passes", () => throws(() => assert.not(assert.equal, 1, 1)))
   it("throws when not-includes but item IS present", () =>
     throws(() => assert.not(assert.includes, [1, 2, 3], 2)))
   it("throws when not-positive on positive number", () =>
