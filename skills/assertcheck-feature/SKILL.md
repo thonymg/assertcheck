@@ -70,7 +70,7 @@ Structure every new function with a guard block **before** the logic.
 This is the NSP pattern: chisel away the impossible, then write only what remains.
 
 ```ts
-import { assert, check } from "@assertcheck/core"
+import { assert, check } from "assertcheck"
 // docs: https://thonymg.github.io/assertcheck/
 
 function featureName(param1: Type, param2: Type): ReturnType {
@@ -110,7 +110,7 @@ function filterProductsByCategory(
 
 ```ts
 // ✅ AFTER — guard block declares the negative space
-import { assert, check } from "@assertcheck/core"
+import { assert, check } from "assertcheck"
 
 function filterProductsByCategory(
   products: Product[],

@@ -101,7 +101,7 @@ async function processPayment(orderId: string, amount: number) {
 // Hidden assumptions found: orderId silent exit, order nil, amount untyped
 
 // ✅ AFTER — guard diff to apply
-import { assert } from "@assertcheck/core"
+import { assert } from "assertcheck"
 // docs: https://thonymg.github.io/assertcheck/
 
 async function processPayment(orderId: string, amount: number, currency: string) {

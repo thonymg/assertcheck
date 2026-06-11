@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / check
+[assertcheck](../_generated.md) / check
 
 # Function: check()
 
@@ -12,7 +12,7 @@
 function check<T>(value): ArrayChecker<T>;
 ```
 
-Defined in: src/checker.ts:346
+Defined in: [src/checker.ts:346](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L346)
 
 Creates a typed chainable checker for the given value.
 
@@ -44,7 +44,7 @@ TypeScript overloads dispatch the correct checker:
 ### Example
 
 ```ts
-import { check } from "@assertcheck/core"
+import { check } from "assertcheck"
 
 // Array
 check(users)
@@ -67,7 +67,7 @@ check(amountCents).tap(v => assert.integer(v))
 function check<T>(value): ObjectChecker<T>;
 ```
 
-Defined in: src/checker.ts:347
+Defined in: [src/checker.ts:347](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L347)
 
 Creates a typed chainable checker for the given value.
 
@@ -99,7 +99,7 @@ TypeScript overloads dispatch the correct checker:
 ### Example
 
 ```ts
-import { check } from "@assertcheck/core"
+import { check } from "assertcheck"
 
 // Array
 check(users)
@@ -122,7 +122,7 @@ check(amountCents).tap(v => assert.integer(v))
 function check<T>(value): Checker<T>;
 ```
 
-Defined in: src/checker.ts:348
+Defined in: [src/checker.ts:348](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L348)
 
 Creates a typed chainable checker for the given value.
 
@@ -154,7 +154,7 @@ TypeScript overloads dispatch the correct checker:
 ### Example
 
 ```ts
-import { check } from "@assertcheck/core"
+import { check } from "assertcheck"
 
 // Array
 check(users)

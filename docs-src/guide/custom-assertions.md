@@ -5,8 +5,8 @@ assertcheck exposes its internal formatting primitives so you can build custom a
 ## Building a custom assertion
 
 ```ts
-import { buildBlock, color, fmtValue, fail, parseOpts } from "@assertcheck/core"
-import type { Opts } from "@assertcheck/core" // re-exported as AssertOptions
+import { buildBlock, color, fmtValue, fail, parseOpts } from "assertcheck"
+import type { Opts } from "assertcheck" // re-exported as AssertOptions
 
 export function assertPositiveInteger(
   value: unknown,

@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / getAssertMode
+[assertcheck](../_generated.md) / getAssertMode
 
 # Function: getAssertMode()
 
@@ -10,7 +10,7 @@
 function getAssertMode(): AssertMode;
 ```
 
-Defined in: src/mode.ts:160
+Defined in: [src/mode.ts:160](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/mode.ts#L160)
 
 Returns the current global assertion mode.
 
@@ -23,7 +23,7 @@ The active [AssertMode](../type-aliases/AssertMode.md).
 ## Example
 
 ```ts
-import { getAssertMode } from "@assertcheck/core"
+import { getAssertMode } from "assertcheck"
 
 console.log(getAssertMode()) // "enabled"
 ```

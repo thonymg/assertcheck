@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / fmtValue
+[assertcheck](../_generated.md) / fmtValue
 
 # Function: fmtValue()
 
@@ -10,7 +10,7 @@
 function fmtValue(v, depth?): string;
 ```
 
-Defined in: src/format.ts:230
+Defined in: [src/format.ts:230](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/format.ts#L230)
 
 Formats any JavaScript value into a compact, type-coloured string
 suitable for display in error output.
@@ -39,7 +39,7 @@ A formatted, optionally coloured string.
 ## Example
 
 ```ts
-import { fmtValue } from "@assertcheck/core/format"
+import { fmtValue } from "assertcheck/format"
 
 fmtValue("hello")        // → "hello"   (green in terminal)
 fmtValue(42)             // → 42        (yellow)

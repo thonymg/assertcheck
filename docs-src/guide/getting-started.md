@@ -34,24 +34,24 @@ A well-placed assertion is worth a hundred debugging sessions.
 ::: code-group
 
 ```sh [npm]
-npm install @assertcheck/core lodash
+npm install assertcheck lodash
 ```
 
 ```sh [yarn]
-yarn add @assertcheck/core lodash
+yarn add assertcheck lodash
 ```
 
 ```sh [pnpm]
-pnpm add @assertcheck/core lodash
+pnpm add assertcheck lodash
 ```
 
 ```sh [bun]
-bun add @assertcheck/core lodash
+bun add assertcheck lodash
 ```
 
 ```sh [jsr]
-deno add jsr:@assertcheck/core
-bunx jsr add @assertcheck/core
+deno add jsr:assertcheck
+bunx jsr add assertcheck
 ```
 
 :::
@@ -61,7 +61,7 @@ bunx jsr add @assertcheck/core
 Every assertion accepts an optional last parameter — a plain string or an options object — that appears in the error message. This is the most important feature to use: **always describe what the value represents**, not just what it should be.
 
 ```ts
-import { assert } from "@assertcheck/core"
+import { assert } from "assertcheck"
 
 // Without context — not very helpful on failure:
 assert.equal(order.status, "pending")
@@ -94,7 +94,7 @@ When this fails, you get a formatted error message in your terminal:
 Use `check()` for fluent, readable multi-step validation on a single value. Each step throws immediately on failure — the chain stops at the first violated assertion.
 
 ```ts
-import { check } from "@assertcheck/core"
+import { check } from "assertcheck"
 
 // Instead of writing:
 assert.notEmpty(users, "no null users")

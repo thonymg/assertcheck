@@ -9,7 +9,7 @@ Use `check()` when you are validating multiple invariants on the same value. It 
 ## Basic usage
 
 ```ts
-import { check } from "@assertcheck/core"
+import { check } from "assertcheck"
 
 check(users)
   .noNils("no null users")

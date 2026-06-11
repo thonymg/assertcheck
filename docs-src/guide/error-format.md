@@ -82,7 +82,7 @@ Use `note` to explain **what the caller should do** when this assertion fires. I
 `AssertionError` carries structured metadata:
 
 ```ts
-import { AssertionError } from "@assertcheck/core"
+import { AssertionError } from "assertcheck"
 
 try {
   assert.equal(order.status, "pending")

@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { modeAssertIn } from "@assertcheck/core"
+ * import { modeAssertIn } from "assertcheck"
  *
  * // Single call at app entry point — that's all
  * modeAssertIn("prod", "warn") // observe in prod without crashing
@@ -105,7 +105,7 @@ const envMatches = (env: Env): boolean => {
  * @example
  * ```ts
  * // app.ts — call once, at the very top of your entry point
- * import { modeAssertIn } from "@assertcheck/core"
+ * import { modeAssertIn } from "assertcheck"
  *
  * modeAssertIn("prod", "warn")
  * // → if NODE_ENV is "production" or "prod": mode becomes "warn"
@@ -152,7 +152,7 @@ export const setAssertMode = (mode: AssertMode): void => {
  *
  * @example
  * ```ts
- * import { getAssertMode } from "@assertcheck/core"
+ * import { getAssertMode } from "assertcheck"
  *
  * console.log(getAssertMode()) // "enabled"
  * ```

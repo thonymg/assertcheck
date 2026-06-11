@@ -13,7 +13,7 @@
  *
  * @example
  * ```ts
- * import { buildBlock, fmtValue } from "@assertcheck/core/format"
+ * import { buildBlock, fmtValue } from "assertcheck/format"
  *
  * const msg = buildBlock({
  *   assertion: "myAssert",
@@ -219,7 +219,7 @@ const row = (label: string, value: string, indicator = " "): string => {
  *
  * @example
  * ```ts
- * import { fmtValue } from "@assertcheck/core/format"
+ * import { fmtValue } from "assertcheck/format"
  *
  * fmtValue("hello")        // → "hello"   (green in terminal)
  * fmtValue(42)             // → 42        (yellow)
@@ -347,7 +347,7 @@ export const diffObjects = (actual: unknown, expected: unknown): string[] => {
  *
  * @example
  * ```ts
- * import { buildBlock, fmtValue } from "@assertcheck/core/format"
+ * import { buildBlock, fmtValue } from "assertcheck/format"
  *
  * const msg = buildBlock({
  *   assertion: "equal",

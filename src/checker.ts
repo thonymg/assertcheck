@@ -12,7 +12,7 @@
  *
  * @example
  * ```ts
- * import { check } from "@assertcheck/core"
+ * import { check } from "assertcheck"
  *
  * // Array chain
  * check(users)
@@ -326,7 +326,7 @@ export class ObjectChecker<T extends object> extends Checker<T> {
  *
  * @example
  * ```ts
- * import { check } from "@assertcheck/core"
+ * import { check } from "assertcheck"
  *
  * // Array
  * check(users)

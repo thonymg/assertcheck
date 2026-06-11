@@ -97,7 +97,7 @@ Guard coverage: 0 / 3 boundaries protected — 3 gaps (1 high, 1 high, 1 low)
 **Proposed fix:**
 
 ```ts
-import { assert } from "@assertcheck/core"
+import { assert } from "assertcheck"
 
 async function getUserTasks(user: User): Promise<Task[]> {
   // ── guards ───────────────────────────────────────────────────────

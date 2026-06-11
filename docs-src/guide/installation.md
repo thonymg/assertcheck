@@ -11,20 +11,20 @@
 ::: code-group
 
 ```sh [npm]
-npm install @assertcheck/core lodash
+npm install assertcheck lodash
 npm install -D @types/lodash   # optional, for IDE support
 ```
 
 ```sh [yarn]
-yarn add @assertcheck/core lodash
+yarn add assertcheck lodash
 ```
 
 ```sh [pnpm]
-pnpm add @assertcheck/core lodash
+pnpm add assertcheck lodash
 ```
 
 ```sh [bun]
-bun add @assertcheck/core lodash
+bun add assertcheck lodash
 ```
 
 :::
@@ -32,8 +32,8 @@ bun add @assertcheck/core lodash
 ## JSR (Deno / Bun)
 
 ```sh
-deno add jsr:@assertcheck/core
-bunx jsr add @assertcheck/core
+deno add jsr:assertcheck
+bunx jsr add assertcheck
 ```
 
 ## TypeScript config
@@ -52,7 +52,7 @@ assertcheck uses `.ts` extensions in imports and requires `bundler` module resol
 ## Verify the install
 
 ```ts
-import { assert } from "@assertcheck/core"
+import { assert } from "assertcheck"
 
 assert.equal(1, 1) // passes silently
 assert.equal(1, 2) // throws AssertionError with formatted output

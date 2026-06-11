@@ -1,5 +1,5 @@
 {
-  "name": "@assertcheck/core",
+  "name": "assertcheck",
   "version": "0.2.152",
   "description": "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
   "license": "Apache-2.0",
@@ -27,6 +27,9 @@
       "types": "./dist/format.d.ts"
     }
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": ["dist", "src"],
   "scripts": {
     "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm && bun build ./src/index.ts --outdir ./dist --target node --format cjs --outfile index.cjs",
@@ -38,6 +41,7 @@
     "docs:preview": "vitepress preview docs-src",
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "version": "node -e \"const fs=require('fs');const v=JSON.parse(fs.readFileSync('package.json','utf8')).version;const j=JSON.parse(fs.readFileSync('jsr.json','utf8'));j.version=v;fs.writeFileSync('jsr.json',JSON.stringify(j,null,2)+'\\n')\" && git add jsr.json",
     "prepublishOnly": "bun run build && bun run typecheck && bun run format:check",
     "release:npm": "bun run prepublishOnly && npm publish --access public",
     "release:jsr": "bun run prepublishOnly && npx jsr publish",

@@ -1,7 +1,7 @@
 /**
  * @file assert.deep.test.ts
  *
- * Deep, 6-level test suite for @assertcheck/core.
+ * Deep, 6-level test suite for assertcheck.
  *
  * Levels per assertion:
  *   L1 – basic pass

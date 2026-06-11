@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / buildBlock
+[assertcheck](../_generated.md) / buildBlock
 
 # Function: buildBlock()
 
@@ -10,7 +10,7 @@
 function buildBlock(def): string;
 ```
 
-Defined in: src/format.ts:363
+Defined in: [src/format.ts:363](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/format.ts#L363)
 
 Builds the complete formatted error block string from a BlockDef.
 
@@ -55,7 +55,7 @@ The output follows this ELM-inspired structure:
 ## Example
 
 ```ts
-import { buildBlock, fmtValue } from "@assertcheck/core/format"
+import { buildBlock, fmtValue } from "assertcheck/format"
 
 const msg = buildBlock({
   assertion: "equal",

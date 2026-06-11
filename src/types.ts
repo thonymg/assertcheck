@@ -2,7 +2,7 @@
  * @module types
  *
  * Shared types and interfaces for the assertcheck library.
- * Import from `@assertcheck/core/types` or via the root barrel.
+ * Import from `assertcheck/types` or via the root barrel.
  */
 
 // ─────────────────────────────────────────────────────────────────────────────

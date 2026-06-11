@@ -1,7 +1,7 @@
 /**
  * @file assert.test.ts
  *
- * Test suite for @assertcheck/core.
+ * Test suite for assertcheck.
  * Runs with `bun test`.
  */
 

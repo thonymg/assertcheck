@@ -3,7 +3,7 @@
   "out": "docs",
   "tsconfig": "./tsconfig.typedoc.json",
   "skipErrorChecking": true,
-  "name": "@assertcheck/core",
+  "name": "assertcheck",
   "readme": "./README.md",
   "includeVersion": true,
   "excludePrivate": true,

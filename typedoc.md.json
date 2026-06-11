@@ -3,7 +3,7 @@
   "out": "docs-src/api",
   "tsconfig": "./tsconfig.typedoc.json",
   "skipErrorChecking": true,
-  "name": "@assertcheck/core",
+  "name": "assertcheck",
   "includeVersion": true,
   "excludePrivate": true,
   "excludeInternal": true,

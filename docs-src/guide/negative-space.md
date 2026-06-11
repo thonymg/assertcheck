@@ -146,7 +146,7 @@ NSP does not require assertions to crash in production. assertcheck's three mode
 A common production pattern — fail hard in development and CI, observe in production:
 
 ```ts
-import { modeAssertIn } from "@assertcheck/core"
+import { modeAssertIn } from "assertcheck"
 
 modeAssertIn("prod", "warn")  // surface violations without crashing users
 ```

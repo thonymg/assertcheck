@@ -23,7 +23,7 @@ Mode is a single global value. One call to `modeAssertIn()` or `setAssertMode()`
 `"enabled"` is the unconditional default in every environment. You do not need to configure anything to start using assertions.
 
 ```ts
-import { assert } from "@assertcheck/core"
+import { assert } from "assertcheck"
 
 // This just works — no setup needed
 assert.notNil(userId, "userId is required")
@@ -34,7 +34,7 @@ assert.notNil(userId, "userId is required")
 Call `modeAssertIn()` **once** at your application entry point, before any assertions are evaluated:
 
 ```ts
-import { modeAssertIn } from "@assertcheck/core"
+import { modeAssertIn } from "assertcheck"
 
 modeAssertIn("prod", "warn")    // log in production without crashing
 modeAssertIn("staging", "warn") // same for staging
@@ -62,7 +62,7 @@ If you call `modeAssertIn("prod", "warn")` and then `modeAssertIn("prod", "disab
 For tests or dynamic control:
 
 ```ts
-import { setAssertMode, getAssertMode } from "@assertcheck/core"
+import { setAssertMode, getAssertMode } from "assertcheck"
 
 const saved = getAssertMode()
 setAssertMode("disabled")
@@ -76,7 +76,7 @@ setAssertMode(saved) // restore
 
 ```ts
 // app.ts — entry point
-import { modeAssertIn } from "@assertcheck/core"
+import { modeAssertIn } from "assertcheck"
 
 modeAssertIn("prod", "warn") // log to your observability platform, don't crash
 ```
@@ -85,7 +85,7 @@ modeAssertIn("prod", "warn") // log to your observability platform, don't crash
 
 ```ts
 // bin/cli.ts — entry point
-import { modeAssertIn } from "@assertcheck/core"
+import { modeAssertIn } from "assertcheck"
 
 modeAssertIn("prod", "disabled") // no output in production binaries
 ```

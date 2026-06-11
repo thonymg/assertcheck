@@ -1,5 +1,5 @@
 /**
- * @module @assertcheck/core
+ * @module assertcheck
  *
  * Production-grade assertion library for TypeScript.
  *
@@ -13,13 +13,13 @@
  *
  * ```ts
  * // 1. Standalone assertion functions — most common
- * import { assert } from "@assertcheck/core"
+ * import { assert } from "assertcheck"
  *
  * // 2. Chainable wrapper
- * import { check } from "@assertcheck/core"
+ * import { check } from "assertcheck"
  *
  * // 3. Environment-conditional mode override — call once at app boot
- * import { modeAssertIn } from "@assertcheck/core"
+ * import { modeAssertIn } from "assertcheck"
  * ```
  *
  * **Mode overview:**
@@ -33,7 +33,7 @@
  * @example
  * ```ts
  * // app.ts — one call at the entry point, everything else just works
- * import { modeAssertIn, assert, check } from "@assertcheck/core"
+ * import { modeAssertIn, assert, check } from "assertcheck"
  *
  * modeAssertIn("prod", "warn") // soft landing in production
  *

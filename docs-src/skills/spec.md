@@ -125,7 +125,7 @@ For features with entity lifecycle transitions, the spec includes a state transi
 **Resulting implementation:**
 
 ```ts
-import { assert, check } from "@assertcheck/core"
+import { assert, check } from "assertcheck"
 
 function createOrder(customerId: string, items: CartItem[]): Order {
   // ── preconditions ──────────────────────────────────────────

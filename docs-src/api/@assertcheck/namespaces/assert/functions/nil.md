@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../../../../_generated.md)
+[**assertcheck v1.0.0**](../../../../_generated.md)
 
 ***
 
-[@assertcheck/core](../../../../_generated.md) / [assert](../_generated.md) / nil
+[assertcheck](../../../../_generated.md) / [assert](../_generated.md) / nil
 
 # Function: nil()
 

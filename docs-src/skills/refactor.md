@@ -98,7 +98,7 @@ async function processPayment(orderId: string, amount: number) {
 **After — guard diff for adding `currency: string`:**
 
 ```ts
-import { assert } from "@assertcheck/core"
+import { assert } from "assertcheck"
 
 async function processPayment(orderId: string, amount: number, currency: string) {
   // ── guards ──────────────────────────────────────────────────────

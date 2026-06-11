@@ -1,6 +1,6 @@
 # API Reference
 
-Complete API reference for `@assertcheck/core`, auto-generated from JSDoc in the source code.
+Complete API reference for `assertcheck`, auto-generated from JSDoc in the source code.
 
 ::: tip Each assertion is on its own page
 Click on [`assert` namespace](/api/@assertcheck/namespaces/assert/_generated) to browse all ~50 methods, each with full signature, parameters table, and examples.

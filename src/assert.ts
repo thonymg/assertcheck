@@ -16,7 +16,7 @@
  *
  * @example
  * ```ts
- * import { assert } from "@assertcheck/core"
+ * import { assert } from "assertcheck"
  *
  * assert.equal(order.status, "pending", {
  *   msg:    "order must be pending before payment",

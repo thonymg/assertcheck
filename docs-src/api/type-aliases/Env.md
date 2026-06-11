@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / Env
+[assertcheck](../_generated.md) / Env
 
 # Type Alias: Env
 
@@ -10,7 +10,7 @@
 type Env = "prod" | "dev" | "test" | "staging" | "ci";
 ```
 
-Defined in: src/types.ts:52
+Defined in: [src/types.ts:52](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/types.ts#L52)
 
 The set of environment names recognised by [modeAssertIn](../functions/modeAssertIn.md).
 

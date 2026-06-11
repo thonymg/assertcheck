@@ -155,7 +155,7 @@ Load [references/state-machine-spec.md](references/state-machine-spec.md) for co
 **Resulting implementation:**
 
 ```ts
-import { assert, check } from "@assertcheck/core"
+import { assert, check } from "assertcheck"
 // docs: https://thonymg.github.io/assertcheck/
 
 function createOrder(customerId: string, items: CartItem[]): Order {

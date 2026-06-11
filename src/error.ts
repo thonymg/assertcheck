@@ -6,7 +6,7 @@
  *
  * @example
  * ```ts
- * import { AssertionError } from "@assertcheck/core"
+ * import { AssertionError } from "assertcheck"
  *
  * try {
  *   assert.equal(1, 2)
@@ -40,7 +40,7 @@ import type { AssertionErrorOptions } from "./types.ts"
  *
  * @example
  * ```ts
- * import { assert, AssertionError } from "@assertcheck/core"
+ * import { assert, AssertionError } from "assertcheck"
  *
  * try {
  *   assert.equal(order.status, "pending", "must be pending before payment")

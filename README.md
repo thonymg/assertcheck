@@ -3,8 +3,8 @@
 **Negative Space Programming for TypeScript.**  
 Declare what cannot exist. Fail where it matters. Ship with confidence.
 
-[![npm](https://img.shields.io/npm/v/@assertcheck/core?color=0ea5e9&label=npm)](https://www.npmjs.com/package/@assertcheck/core)
-[![JSR](https://jsr.io/badges/@assertcheck/core)](https://jsr.io/@assertcheck/core)
+[![npm](https://img.shields.io/npm/v/assertcheck?color=0ea5e9&label=npm)](https://www.npmjs.com/package/assertcheck)
+[![JSR](https://jsr.io/badges/assertcheck)](https://jsr.io/assertcheck)
 [![License](https://img.shields.io/badge/license-Apache_2.0-orange)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-first-3178c6)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-ready-fbf0df)](https://bun.sh/)
@@ -46,16 +46,16 @@ When one fires, it names the broken assumption at the exact location it was viol
 
 ```bash
 # npm / yarn / pnpm
-npm install @assertcheck/core
-yarn add @assertcheck/core
-pnpm add @assertcheck/core
+npm install assertcheck
+yarn add assertcheck
+pnpm add assertcheck
 
 # Bun
-bun add @assertcheck/core
+bun add assertcheck
 
 # Deno / JSR
-deno add jsr:@assertcheck/core
-bunx jsr add @assertcheck/core
+deno add jsr:assertcheck
+bunx jsr add assertcheck
 ```
 
 ---
@@ -63,7 +63,7 @@ bunx jsr add @assertcheck/core
 ## Quick start
 
 ```ts
-import { assert, check, setAssertMode } from "@assertcheck/core"
+import { assert, check, setAssertMode } from "assertcheck"
 
 // Single assertion
 assert.equal(order.status, "pending", {
@@ -94,7 +94,7 @@ Control the behaviour per environment — no code changes required.
 | `"enabled"` | Log + throw | All other environments |
 
 ```ts
-import { setAssertMode } from "@assertcheck/core"
+import { setAssertMode } from "assertcheck"
 
 setAssertMode("disabled") // silence everything
 setAssertMode("warn")     // observe without crashing
@@ -198,7 +198,7 @@ assert.not(assert.hasKey, patch, "id")
 ## Chainable API
 
 ```ts
-import { check } from "@assertcheck/core"
+import { check } from "assertcheck"
 
 // Arrays
 check(users)
@@ -221,7 +221,7 @@ check(config)
 ## AssertionError
 
 ```ts
-import { assert, AssertionError } from "@assertcheck/core"
+import { assert, AssertionError } from "assertcheck"
 
 try {
   assert.equal(order.status, "pending")

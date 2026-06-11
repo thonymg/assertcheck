@@ -1,12 +1,12 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / ObjectChecker
+[assertcheck](../_generated.md) / ObjectChecker
 
 # Class: ObjectChecker\<T\>
 
-Defined in: src/checker.ts:249
+Defined in: [src/checker.ts:249](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L249)
 
 Chainable assertion wrapper for plain objects.
 Returned by [check](../functions/check.md) when the value is a plain object.
@@ -43,7 +43,7 @@ check(config)
 new ObjectChecker<T>(value): ObjectChecker<T>;
 ```
 
-Defined in: src/checker.ts:58
+Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58)
 
 #### Parameters
 
@@ -63,7 +63,7 @@ Defined in: src/checker.ts:58
 
 | Property | Modifier | Type | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="value"></a> `value` | `readonly` | `T` | [`Checker`](Checker.md).[`value`](Checker.md#value) | src/checker.ts:58 |
+| <a id="value"></a> `value` | `readonly` | `T` | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58) |
 
 ## Methods
 
@@ -73,7 +73,7 @@ Defined in: src/checker.ts:58
 allValuesMatch(predicate, opts?): this;
 ```
 
-Defined in: src/checker.ts:299
+Defined in: [src/checker.ts:299](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L299)
 
 #### Parameters
 
@@ -88,7 +88,7 @@ Defined in: src/checker.ts:299
 
 #### See
 
-[assert.allValuesMatch](../@assertcheck/namespaces/assert/functions/allValuesMatch.md)
+[assert.allValuesMatch](../assertcheck/namespaces/assert/functions/allValuesMatch.md)
 
 ***
 
@@ -98,7 +98,7 @@ Defined in: src/checker.ts:299
 containsSubset(subset, opts?): this;
 ```
 
-Defined in: src/checker.ts:287
+Defined in: [src/checker.ts:287](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L287)
 
 #### Parameters
 
@@ -113,7 +113,7 @@ Defined in: src/checker.ts:287
 
 #### See
 
-[assert.containsSubset](../@assertcheck/namespaces/assert/functions/containsSubset.md)
+[assert.containsSubset](../assertcheck/namespaces/assert/functions/containsSubset.md)
 
 ***
 
@@ -123,7 +123,7 @@ Defined in: src/checker.ts:287
 deepEqual(expected, opts?): this;
 ```
 
-Defined in: src/checker.ts:281
+Defined in: [src/checker.ts:281](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L281)
 
 #### Parameters
 
@@ -138,7 +138,7 @@ Defined in: src/checker.ts:281
 
 #### See
 
-[assert.deepEqual](../@assertcheck/namespaces/assert/functions/deepEqual.md)
+[assert.deepEqual](../assertcheck/namespaces/assert/functions/deepEqual.md)
 
 ***
 
@@ -151,7 +151,7 @@ dig(
    opts?): this;
 ```
 
-Defined in: src/checker.ts:305
+Defined in: [src/checker.ts:305](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L305)
 
 #### Parameters
 
@@ -167,7 +167,7 @@ Defined in: src/checker.ts:305
 
 #### See
 
-[assert.dig](../@assertcheck/namespaces/assert/functions/dig.md)
+[assert.dig](../assertcheck/namespaces/assert/functions/dig.md)
 
 ***
 
@@ -177,7 +177,7 @@ Defined in: src/checker.ts:305
 hasExactKeys<K>(keys, opts?): ObjectChecker<Record<K, unknown>>;
 ```
 
-Defined in: src/checker.ts:269
+Defined in: [src/checker.ts:269](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L269)
 
 #### Type Parameters
 
@@ -198,7 +198,7 @@ Defined in: src/checker.ts:269
 
 #### See
 
-[assert.hasExactKeys](../@assertcheck/namespaces/assert/functions/hasExactKeys.md)
+[assert.hasExactKeys](../assertcheck/namespaces/assert/functions/hasExactKeys.md)
 
 ***
 
@@ -208,7 +208,7 @@ Defined in: src/checker.ts:269
 hasKey<K>(key, opts?): ObjectChecker<T & Record<K, unknown>>;
 ```
 
-Defined in: src/checker.ts:257
+Defined in: [src/checker.ts:257](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L257)
 
 #### Type Parameters
 
@@ -229,7 +229,7 @@ Defined in: src/checker.ts:257
 
 #### See
 
-[assert.hasKey](../@assertcheck/namespaces/assert/functions/hasKey.md)
+[assert.hasKey](../assertcheck/namespaces/assert/functions/hasKey.md)
 
 ***
 
@@ -239,7 +239,7 @@ Defined in: src/checker.ts:257
 hasKeys<K>(keys, opts?): ObjectChecker<T & Record<K, unknown>>;
 ```
 
-Defined in: src/checker.ts:263
+Defined in: [src/checker.ts:263](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L263)
 
 #### Type Parameters
 
@@ -260,7 +260,7 @@ Defined in: src/checker.ts:263
 
 #### See
 
-[assert.hasKeys](../@assertcheck/namespaces/assert/functions/hasKeys.md)
+[assert.hasKeys](../assertcheck/namespaces/assert/functions/hasKeys.md)
 
 ***
 
@@ -270,7 +270,7 @@ Defined in: src/checker.ts:263
 hasOnlyKeys(allowed, opts?): this;
 ```
 
-Defined in: src/checker.ts:275
+Defined in: [src/checker.ts:275](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L275)
 
 #### Parameters
 
@@ -285,7 +285,7 @@ Defined in: src/checker.ts:275
 
 #### See
 
-[assert.hasOnlyKeys](../@assertcheck/namespaces/assert/functions/hasOnlyKeys.md)
+[assert.hasOnlyKeys](../assertcheck/namespaces/assert/functions/hasOnlyKeys.md)
 
 ***
 
@@ -295,7 +295,7 @@ Defined in: src/checker.ts:275
 noNilValues(opts?): this;
 ```
 
-Defined in: src/checker.ts:293
+Defined in: [src/checker.ts:293](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L293)
 
 #### Parameters
 
@@ -309,7 +309,7 @@ Defined in: src/checker.ts:293
 
 #### See
 
-[assert.noNilValues](../@assertcheck/namespaces/assert/functions/noNilValues.md)
+[assert.noNilValues](../assertcheck/namespaces/assert/functions/noNilValues.md)
 
 ***
 
@@ -319,7 +319,7 @@ Defined in: src/checker.ts:293
 notEmpty(opts?): this;
 ```
 
-Defined in: src/checker.ts:251
+Defined in: [src/checker.ts:251](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L251)
 
 #### Parameters
 
@@ -333,7 +333,7 @@ Defined in: src/checker.ts:251
 
 #### See
 
-[assert.notEmpty](../@assertcheck/namespaces/assert/functions/notEmpty.md)
+[assert.notEmpty](../assertcheck/namespaces/assert/functions/notEmpty.md)
 
 ***
 
@@ -343,7 +343,7 @@ Defined in: src/checker.ts:251
 tap(fn): this;
 ```
 
-Defined in: src/checker.ts:74
+Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L74)
 
 Runs a side-effect function with the wrapped value and returns `this`
 to allow chaining. Useful for logging or debugging mid-chain.

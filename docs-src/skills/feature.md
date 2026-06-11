@@ -49,7 +49,7 @@ From your answers, it produces a **contract table**:
 Every new function is scaffolded in two sections — guards before logic:
 
 ```ts
-import { assert, check } from "@assertcheck/core"
+import { assert, check } from "assertcheck"
 
 function featureName(param1: Type, param2: Type): ReturnType {
   // ── guards — declare what must never enter ───────────────────
@@ -84,7 +84,7 @@ function filterProductsByCategory(
 **After NSP with assertcheck:**
 
 ```ts
-import { assert, check } from "@assertcheck/core"
+import { assert, check } from "assertcheck"
 
 function filterProductsByCategory(
   products: Product[],

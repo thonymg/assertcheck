@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / setAssertMode
+[assertcheck](../_generated.md) / setAssertMode
 
 # Function: setAssertMode()
 
@@ -10,7 +10,7 @@
 function setAssertMode(mode): void;
 ```
 
-Defined in: src/mode.ts:144
+Defined in: [src/mode.ts:144](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/mode.ts#L144)
 
 Directly sets the global assertion mode, regardless of environment.
 

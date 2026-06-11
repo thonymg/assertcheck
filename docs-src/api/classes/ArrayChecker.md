@@ -1,12 +1,12 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / ArrayChecker
+[assertcheck](../_generated.md) / ArrayChecker
 
 # Class: ArrayChecker\<T\>
 
-Defined in: src/checker.ts:99
+Defined in: [src/checker.ts:99](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L99)
 
 Chainable assertion wrapper for arrays.
 Returned by [check](../functions/check.md) when the value is an array.
@@ -39,7 +39,7 @@ check(users)
 new ArrayChecker<T>(value): ArrayChecker<T>;
 ```
 
-Defined in: src/checker.ts:58
+Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58)
 
 #### Parameters
 
@@ -59,7 +59,7 @@ Defined in: src/checker.ts:58
 
 | Property | Modifier | Type | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="value"></a> `value` | `readonly` | `T`[] | [`Checker`](Checker.md).[`value`](Checker.md#value) | src/checker.ts:58 |
+| <a id="value"></a> `value` | `readonly` | `T`[] | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58) |
 
 ## Methods
 
@@ -69,7 +69,7 @@ Defined in: src/checker.ts:58
 all(predicate, opts?): this;
 ```
 
-Defined in: src/checker.ts:131
+Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L131)
 
 #### Parameters
 
@@ -84,7 +84,7 @@ Defined in: src/checker.ts:131
 
 #### See
 
-[assert.all](../@assertcheck/namespaces/assert/functions/all.md)
+[assert.all](../assertcheck/namespaces/assert/functions/all.md)
 
 ***
 
@@ -94,7 +94,7 @@ Defined in: src/checker.ts:131
 any(predicate, opts?): this;
 ```
 
-Defined in: src/checker.ts:137
+Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L137)
 
 #### Parameters
 
@@ -109,7 +109,7 @@ Defined in: src/checker.ts:137
 
 #### See
 
-[assert.any](../@assertcheck/namespaces/assert/functions/any.md)
+[assert.any](../assertcheck/namespaces/assert/functions/any.md)
 
 ***
 
@@ -119,7 +119,7 @@ Defined in: src/checker.ts:137
 containsAll(items, opts?): this;
 ```
 
-Defined in: src/checker.ts:203
+Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L203)
 
 #### Parameters
 
@@ -134,7 +134,7 @@ Defined in: src/checker.ts:203
 
 #### See
 
-[assert.containsAll](../@assertcheck/namespaces/assert/functions/containsAll.md)
+[assert.containsAll](../assertcheck/namespaces/assert/functions/containsAll.md)
 
 ***
 
@@ -144,7 +144,7 @@ Defined in: src/checker.ts:203
 containsNone(items, opts?): this;
 ```
 
-Defined in: src/checker.ts:209
+Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L209)
 
 #### Parameters
 
@@ -159,7 +159,7 @@ Defined in: src/checker.ts:209
 
 #### See
 
-[assert.containsNone](../@assertcheck/namespaces/assert/functions/containsNone.md)
+[assert.containsNone](../assertcheck/namespaces/assert/functions/containsNone.md)
 
 ***
 
@@ -169,7 +169,7 @@ Defined in: src/checker.ts:209
 elementsMatch(expected, opts?): this;
 ```
 
-Defined in: src/checker.ts:197
+Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L197)
 
 #### Parameters
 
@@ -184,7 +184,7 @@ Defined in: src/checker.ts:197
 
 #### See
 
-[assert.elementsMatch](../@assertcheck/namespaces/assert/functions/elementsMatch.md)
+[assert.elementsMatch](../assertcheck/namespaces/assert/functions/elementsMatch.md)
 
 ***
 
@@ -194,7 +194,7 @@ Defined in: src/checker.ts:197
 first(expected, opts?): this;
 ```
 
-Defined in: src/checker.ts:179
+Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L179)
 
 #### Parameters
 
@@ -209,7 +209,7 @@ Defined in: src/checker.ts:179
 
 #### See
 
-[assert.first](../@assertcheck/namespaces/assert/functions/first.md)
+[assert.first](../assertcheck/namespaces/assert/functions/first.md)
 
 ***
 
@@ -219,7 +219,7 @@ Defined in: src/checker.ts:179
 flat(opts?): this;
 ```
 
-Defined in: src/checker.ts:215
+Defined in: [src/checker.ts:215](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L215)
 
 #### Parameters
 
@@ -233,7 +233,7 @@ Defined in: src/checker.ts:215
 
 #### See
 
-[assert.flat](../@assertcheck/namespaces/assert/functions/flat.md)
+[assert.flat](../assertcheck/namespaces/assert/functions/flat.md)
 
 ***
 
@@ -246,7 +246,7 @@ groupedBy(
    opts?): this;
 ```
 
-Defined in: src/checker.ts:221
+Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L221)
 
 #### Parameters
 
@@ -262,7 +262,7 @@ Defined in: src/checker.ts:221
 
 #### See
 
-[assert.groupedBy](../@assertcheck/namespaces/assert/functions/groupedBy.md)
+[assert.groupedBy](../assertcheck/namespaces/assert/functions/groupedBy.md)
 
 ***
 
@@ -272,7 +272,7 @@ Defined in: src/checker.ts:221
 includes(item, opts?): this;
 ```
 
-Defined in: src/checker.ts:125
+Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L125)
 
 #### Parameters
 
@@ -287,7 +287,7 @@ Defined in: src/checker.ts:125
 
 #### See
 
-[assert.includes](../@assertcheck/namespaces/assert/functions/includes.md)
+[assert.includes](../assertcheck/namespaces/assert/functions/includes.md)
 
 ***
 
@@ -297,7 +297,7 @@ Defined in: src/checker.ts:125
 last(expected, opts?): this;
 ```
 
-Defined in: src/checker.ts:185
+Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L185)
 
 #### Parameters
 
@@ -312,7 +312,7 @@ Defined in: src/checker.ts:185
 
 #### See
 
-[assert.last](../@assertcheck/namespaces/assert/functions/last.md)
+[assert.last](../assertcheck/namespaces/assert/functions/last.md)
 
 ***
 
@@ -322,7 +322,7 @@ Defined in: src/checker.ts:185
 len(n, opts?): this;
 ```
 
-Defined in: src/checker.ts:107
+Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L107)
 
 #### Parameters
 
@@ -337,7 +337,7 @@ Defined in: src/checker.ts:107
 
 #### See
 
-[assert.len](../@assertcheck/namespaces/assert/functions/len.md)
+[assert.len](../assertcheck/namespaces/assert/functions/len.md)
 
 ***
 
@@ -347,7 +347,7 @@ Defined in: src/checker.ts:107
 longerThan(n, opts?): this;
 ```
 
-Defined in: src/checker.ts:113
+Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L113)
 
 #### Parameters
 
@@ -362,7 +362,7 @@ Defined in: src/checker.ts:113
 
 #### See
 
-[assert.longerThan](../@assertcheck/namespaces/assert/functions/longerThan.md)
+[assert.longerThan](../assertcheck/namespaces/assert/functions/longerThan.md)
 
 ***
 
@@ -372,7 +372,7 @@ Defined in: src/checker.ts:113
 none(predicate, opts?): this;
 ```
 
-Defined in: src/checker.ts:143
+Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L143)
 
 #### Parameters
 
@@ -387,7 +387,7 @@ Defined in: src/checker.ts:143
 
 #### See
 
-[assert.none](../@assertcheck/namespaces/assert/functions/none.md)
+[assert.none](../assertcheck/namespaces/assert/functions/none.md)
 
 ***
 
@@ -397,7 +397,7 @@ Defined in: src/checker.ts:143
 noNils(opts?): this;
 ```
 
-Defined in: src/checker.ts:167
+Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L167)
 
 #### Parameters
 
@@ -411,7 +411,7 @@ Defined in: src/checker.ts:167
 
 #### See
 
-[assert.noNils](../@assertcheck/namespaces/assert/functions/noNils.md)
+[assert.noNils](../assertcheck/namespaces/assert/functions/noNils.md)
 
 ***
 
@@ -421,7 +421,7 @@ Defined in: src/checker.ts:167
 notEmpty(opts?): this;
 ```
 
-Defined in: src/checker.ts:101
+Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L101)
 
 #### Parameters
 
@@ -435,7 +435,7 @@ Defined in: src/checker.ts:101
 
 #### See
 
-[assert.notEmpty](../@assertcheck/namespaces/assert/functions/notEmpty.md)
+[assert.notEmpty](../assertcheck/namespaces/assert/functions/notEmpty.md)
 
 ***
 
@@ -445,7 +445,7 @@ Defined in: src/checker.ts:101
 one(predicate, opts?): this;
 ```
 
-Defined in: src/checker.ts:149
+Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L149)
 
 #### Parameters
 
@@ -460,7 +460,7 @@ Defined in: src/checker.ts:149
 
 #### See
 
-[assert.one](../@assertcheck/namespaces/assert/functions/one.md)
+[assert.one](../assertcheck/namespaces/assert/functions/one.md)
 
 ***
 
@@ -470,7 +470,7 @@ Defined in: src/checker.ts:149
 shorterThan(n, opts?): this;
 ```
 
-Defined in: src/checker.ts:119
+Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L119)
 
 #### Parameters
 
@@ -485,7 +485,7 @@ Defined in: src/checker.ts:119
 
 #### See
 
-[assert.shorterThan](../@assertcheck/namespaces/assert/functions/shorterThan.md)
+[assert.shorterThan](../assertcheck/namespaces/assert/functions/shorterThan.md)
 
 ***
 
@@ -495,7 +495,7 @@ Defined in: src/checker.ts:119
 sortedBy(iteratee, opts?): this;
 ```
 
-Defined in: src/checker.ts:173
+Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L173)
 
 #### Parameters
 
@@ -510,7 +510,7 @@ Defined in: src/checker.ts:173
 
 #### See
 
-[assert.sortedBy](../@assertcheck/namespaces/assert/functions/sortedBy.md)
+[assert.sortedBy](../assertcheck/namespaces/assert/functions/sortedBy.md)
 
 ***
 
@@ -520,7 +520,7 @@ Defined in: src/checker.ts:173
 subset(sub, opts?): this;
 ```
 
-Defined in: src/checker.ts:191
+Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L191)
 
 #### Parameters
 
@@ -535,7 +535,7 @@ Defined in: src/checker.ts:191
 
 #### See
 
-[assert.subset](../@assertcheck/namespaces/assert/functions/subset.md)
+[assert.subset](../assertcheck/namespaces/assert/functions/subset.md)
 
 ***
 
@@ -545,7 +545,7 @@ Defined in: src/checker.ts:191
 tap(fn): this;
 ```
 
-Defined in: src/checker.ts:74
+Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L74)
 
 Runs a side-effect function with the wrapped value and returns `this`
 to allow chaining. Useful for logging or debugging mid-chain.
@@ -582,7 +582,7 @@ check(orders)
 unique(opts?): this;
 ```
 
-Defined in: src/checker.ts:155
+Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L155)
 
 #### Parameters
 
@@ -596,7 +596,7 @@ Defined in: src/checker.ts:155
 
 #### See
 
-[assert.unique](../@assertcheck/namespaces/assert/functions/unique.md)
+[assert.unique](../assertcheck/namespaces/assert/functions/unique.md)
 
 ***
 
@@ -606,7 +606,7 @@ Defined in: src/checker.ts:155
 uniqueBy(iteratee, opts?): this;
 ```
 
-Defined in: src/checker.ts:161
+Defined in: [src/checker.ts:161](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L161)
 
 #### Parameters
 
@@ -621,4 +621,4 @@ Defined in: src/checker.ts:161
 
 #### See
 
-[assert.uniqueBy](../@assertcheck/namespaces/assert/functions/uniqueBy.md)
+[assert.uniqueBy](../assertcheck/namespaces/assert/functions/uniqueBy.md)

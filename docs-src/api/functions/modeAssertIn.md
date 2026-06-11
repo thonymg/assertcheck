@@ -1,8 +1,8 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / modeAssertIn
+[assertcheck](../_generated.md) / modeAssertIn
 
 # Function: modeAssertIn()
 
@@ -10,7 +10,7 @@
 function modeAssertIn(env, mode): void;
 ```
 
-Defined in: src/mode.ts:123
+Defined in: [src/mode.ts:123](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/mode.ts#L123)
 
 Overrides the assertion mode **only when the current runtime environment
 matches `env`**. Does nothing otherwise.
@@ -55,7 +55,7 @@ modeAssertIn("dev",     "enabled")  // explicit — same as the default
 
 ```ts
 // app.ts — call once, at the very top of your entry point
-import { modeAssertIn } from "@assertcheck/core"
+import { modeAssertIn } from "assertcheck"
 
 modeAssertIn("prod", "warn")
 // → if NODE_ENV is "production" or "prod": mode becomes "warn"

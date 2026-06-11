@@ -1,12 +1,12 @@
-[**@assertcheck/core v1.0.0**](../_generated.md)
+[**assertcheck v0.2.152**](../_generated.md)
 
 ***
 
-[@assertcheck/core](../_generated.md) / Checker
+[assertcheck](../_generated.md) / Checker
 
 # Class: Checker\<T\>
 
-Defined in: src/checker.ts:57
+Defined in: [src/checker.ts:57](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L57)
 
 Base class holding the wrapped value.
 Exposes [tap](#tap) for inline side-effects without breaking the chain.
@@ -30,7 +30,7 @@ Exposes [tap](#tap) for inline side-effects without breaking the chain.
 new Checker<T>(value): Checker<T>;
 ```
 
-Defined in: src/checker.ts:58
+Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58)
 
 #### Parameters
 
@@ -46,7 +46,7 @@ Defined in: src/checker.ts:58
 
 | Property | Modifier | Type | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="value"></a> `value` | `readonly` | `T` | src/checker.ts:58 |
+| <a id="value"></a> `value` | `readonly` | `T` | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L58) |
 
 ## Methods
 
@@ -56,7 +56,7 @@ Defined in: src/checker.ts:58
 tap(fn): this;
 ```
 
-Defined in: src/checker.ts:74
+Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/daa9b6ef77bd456225b8daa3fa0b54ae5ed8bb68/src/checker.ts#L74)
 
 Runs a side-effect function with the wrapped value and returns `this`
 to allow chaining. Useful for logging or debugging mid-chain.
