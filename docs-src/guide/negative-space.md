@@ -1,8 +1,37 @@
+<script setup>
+const furtherReading = [
+  {
+    name: 'Assertion modes',
+    desc: 'Configure enforcement per environment — crash in dev, observe in prod, zero cost when silent.',
+    link: '/guide/modes',
+    linkText: 'Configure modes',
+    icon: 'ri:settings-4-line',
+  },
+  {
+    name: 'Chainable API',
+    desc: 'check() for dense, readable invariant blocks on arrays and objects.',
+    link: '/guide/check',
+    linkText: 'Explore check()',
+    icon: 'ri:link-m',
+  },
+  {
+    name: 'Custom assertions',
+    desc: 'Extend assertcheck with domain-specific contracts that look and format native.',
+    link: '/guide/custom-assertions',
+    linkText: 'Build custom assertions',
+    icon: 'ri:tools-line',
+  },
+]
+</script>
+
 # Negative Space Programming
+
+> "Figuring out what code *doesn't* do — and why — can be positively enlightening."
+> — Fabian Giesen
 
 ## The idea
 
-In visual art, **negative space** is the empty area surrounding a subject — the sky around a bird, the background behind a figure. Paradoxically, it is often the negative space that defines the subject: without it, the form has no edge.
+In visual art, **negative space** is the area surrounding the subject — the sky around a bird, the background behind a figure. Paradoxically, it is often the negative space that defines the subject: without it, the form has no edge.
 
 The same principle applies to code.
 
@@ -10,7 +39,9 @@ The same principle applies to code.
 
 assertcheck is a direct implementation of this philosophy.
 
-## Without NSP: silent propagation
+---
+
+## The cost of defensive code
 
 ```ts
 function chargeOrder(order: Order) {
@@ -22,7 +53,15 @@ function chargeOrder(order: Order) {
 }
 ```
 
-This function defends against bad input by silently returning. The caller that passed a `null` order or a wrong-status order never finds out. Every defensive `if` is a place where a broken assumption is absorbed rather than exposed. The bug is hidden, not caught — and it will surface somewhere else, later, with no trace back to its origin.
+This function defends against bad input by silently returning. The caller that passed a `null` order or a wrong-status order never finds out. Every defensive `if` is a place where a broken assumption is absorbed rather than exposed.
+
+The bug is hidden, not caught. It will surface somewhere else — later, in a different module, with no trace back to its origin. You'll spend an hour in the debugger working backwards through three layers of code to find a null value that was created here and silently swallowed.
+
+::: danger The hidden cost of `if (!x) return`
+Every defensive return is a lie. It tells the caller "everything is fine" when something has already gone wrong. The bug exists. You just moved where it manifests — and made it harder to find.
+:::
+
+---
 
 ## With NSP: loud rejection
 
@@ -43,9 +82,13 @@ function chargeOrder(order: Order) {
 }
 ```
 
-Now every invalid state has a name, a message, and a precise error location. When `chargeOrder` is called with bad data, the assertion fires immediately — not three layers later in the payment processor with a cryptic stack trace.
+Now every invalid state has a name, a message, and a precise origin. When `chargeOrder` is called with bad data, the assertion fires immediately — not three layers later in the payment processor with a cryptic stack trace.
 
-## The negative space of a function
+The bug is caught. Exactly where it happened. With a message that tells you what to do next.
+
+---
+
+## Assertions are living contracts
 
 Every function implicitly defines a set of **invariants** — conditions that must hold for the function to behave correctly. NSP makes those invariants explicit and executable:
 
@@ -53,31 +96,10 @@ Every function implicitly defines a set of **invariants** — conditions that mu
 - `assert.positive(price)` → "non-positive prices are invalid at this stage"
 - `check(users).noNils().uniqueBy("id")` → "the users array must always be clean when passed here"
 
-Assertions are **living contracts**. They tell the reader what the function expects, and they tell the debugger exactly where an expectation was violated. Unlike comments, they cannot go stale — if they are wrong, they fire.
-
-## Fail-fast: errors at their origin
-
-The most expensive bugs are the ones that fail far from their cause. A null value created in `parseConfig()` that first throws in `renderPage()` is diagnosed by working backwards through half the call stack.
-
-NSP — and assertcheck's fail-fast default — inverts this. Assertions fire at the point of violation:
+Unlike comments, assertions cannot go stale. If an assertion is wrong, it fires. A comment that lies just sits there — silently.
 
 ```ts
-function parseConfig(raw: unknown) {
-  assert.object(raw, "config must be an object")
-  assert.hasKeys(raw as object, ["host", "port"], "missing required config keys")
-  assert.positive((raw as any).port, "port must be a positive number")
-  // ...
-}
-```
-
-If `raw.port` is missing, the assertion fires in `parseConfig`, not in the TCP socket that tried to bind to `undefined`.
-
-## Self-documenting constraints
-
-An assertion is not a comment — it is **executable documentation**. Comments rot; assertions don't. A `// userId must not be null here` comment might be stale in six months. An `assert.notNil(userId)` that fires is never stale.
-
-```ts
-// Before: a comment that might lie
+// Before: a comment that might lie six months from now
 // Note: price must be greater than 0 at this point
 function applyDiscount(price: number, pct: number) {
   return price * (1 - pct)
@@ -91,25 +113,46 @@ function applyDiscount(price: number, pct: number) {
 }
 ```
 
-The second version communicates the same constraints as the comments, but verifies them at runtime and reports violations immediately.
+---
 
-## The `assert.not` API: naming the forbidden directly
+## Fail-fast: errors at their origin
+
+The most expensive bugs are the ones that fail far from their cause. A null value created in `parseConfig()` that first throws in `renderPage()` is diagnosed by working backwards through half the call stack.
+
+NSP inverts this. Assertions fire at the point of violation:
+
+```ts
+function parseConfig(raw: unknown) {
+  assert.object(raw, "config must be an object")
+  assert.hasKeys(raw as object, ["host", "port"], "missing required config keys")
+  assert.positive((raw as any).port, "port must be a positive number")
+  // ...
+}
+```
+
+If `raw.port` is missing, the assertion fires in `parseConfig` — not in the TCP socket that tried to bind to `undefined`. The origin is the error location.
+
+---
+
+## Naming the forbidden: `assert.not`
 
 assertcheck's `assert.not` is the most literal expression of NSP — it passes if and only if the wrapped assertion *would* throw:
 
 ```ts
 assert.not(assert.equal, user.role, "admin")   // user must NOT be admin
 assert.not(assert.includes, errors, "FATAL")   // errors must contain no FATAL entry
-assert.not(assert.hasKey, patch, "id")         // id is immutable — patch must not include it
+assert.not(assert.hasKey, patch, "id")         // id is immutable — patch must not touch it
 ```
 
 Naming what must not be true is often clearer than naming what must be true. The `assert.not` wrapper makes that inversion explicit and readable.
 
+---
+
 ## Assertion density: the NASA guideline
 
-The Power of Ten rules developed by NASA for safety-critical systems include: *"use a minimum of two runtime assertions per function."*
+The Power of Ten rules, developed by NASA for safety-critical software, include: *"use a minimum of two runtime assertions per function."*
 
-This is NSP applied systematically: not just checking the final output, but asserting invariants at the function boundary and at each significant step. assertcheck's chainable API makes this density natural without the verbosity:
+This is NSP applied systematically — not just checking the final output, but asserting invariants at the function boundary and at each significant step. assertcheck's chainable API makes this density natural without verbosity:
 
 ```ts
 function processPayment(payment: Payment, account: Account) {
@@ -118,7 +161,7 @@ function processPayment(payment: Payment, account: Account) {
   assert.notNil(account, "account is required")
   assert.positive(payment.amount, "payment amount must be positive")
   assert.equal(payment.currency, account.currency, {
-    msg: "currency mismatch between payment and account",
+    msg:    "currency mismatch between payment and account",
     actual: "payment.currency",
   })
 
@@ -131,7 +174,13 @@ function processPayment(payment: Payment, account: Account) {
 }
 ```
 
-Five assertions, one function, no silent failures.
+Five assertions. One function. Zero silent failures.
+
+::: tip Assertion density as a design signal
+If you find yourself unable to write two meaningful assertions for a function, the function may be doing too little (merge it) or too much (split it). Assertion density is a proxy for cognitive complexity.
+:::
+
+---
 
 ## Mode strategy: enforcement vs. observability
 
@@ -153,12 +202,8 @@ modeAssertIn("prod", "warn")  // surface violations without crashing users
 
 Your negative space constraints remain active in production: they log instead of throw, giving visibility into cases where invariants are violated without causing downtime. Over time, a clean assertion log is proof that your negative space is holding.
 
-::: tip
-Assertion density is a design signal. If you find yourself unable to write two meaningful assertions for a function, the function may be doing too little (merge it) or too much (split it).
-:::
+---
 
 ## Further reading
 
-- [Assertion modes](/guide/modes) — how to configure enforcement per environment
-- [Chainable API](/guide/check) — `check()` for dense, readable invariant blocks
-- [Custom assertions](/guide/custom-assertions) — extend assertcheck with domain-specific contracts
+<Links :items="furtherReading" :grid="3" />

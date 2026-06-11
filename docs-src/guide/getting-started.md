@@ -1,55 +1,95 @@
+<script setup>
+const nextSteps = [
+  {
+    name: 'Negative Space Programming',
+    desc: 'Understand the design philosophy behind assertcheck and why declaring invalid states changes how you debug.',
+    link: '/guide/negative-space',
+    linkText: 'Read the principle',
+    icon: 'ri:focus-3-line',
+  },
+  {
+    name: 'Assertion modes',
+    desc: 'Configure fail-fast in dev, log-only in production, and zero overhead in hot paths — all from one line at startup.',
+    link: '/guide/modes',
+    linkText: 'Configure environments',
+    icon: 'ri:settings-4-line',
+  },
+  {
+    name: 'Error format',
+    desc: 'Learn to write assertions that produce actionable errors — with labels, diffs, and inline fix hints.',
+    link: '/guide/error-format',
+    linkText: 'Read the format guide',
+    icon: 'ri:terminal-line',
+  },
+  {
+    name: 'Chainable API',
+    desc: 'Use check() to declare multiple invariants on the same value in a single fluent expression.',
+    link: '/guide/check',
+    linkText: 'Explore check()',
+    icon: 'ri:link-m',
+  },
+]
+</script>
+
 # Getting started
 
-**assertcheck** is a production-grade assertion library for TypeScript. It gives you expressive, richly-formatted runtime assertions with zero configuration.
-
-## Why assertcheck?
-
-Most assertion libraries are designed for tests only. assertcheck is designed for **production code** — it runs in any environment (Node.js, Bun, Deno, browser), formats errors in a way that makes debugging fast, and lets you silence or soften assertions per-environment without changing your code.
+**assertcheck** is a production-grade assertion library for TypeScript. Runtime contracts that fire at the point of violation — not three layers later in a stack trace.
 
 ::: tip Negative Space Programming
-assertcheck is built around the principle of **Negative Space Programming**: define what your code *cannot accept*, not just what it should do. An assertion is a declaration of an invalid state that must never occur — not error handling, but a contract. [Learn the principle →](/guide/negative-space)
+assertcheck is built around the principle of **Negative Space Programming**: define what your code *cannot accept*, not just what it should do. An assertion is a declaration of an invalid state that must never occur — not error handling, but a living contract. [Learn the principle →](/guide/negative-space)
 :::
 
-The fail-fast consequence is immediate: instead of a null value propagating silently through five layers before causing an obscure crash, the assertion fires at the exact point where the invariant breaks:
+## The problem
+
+Most TypeScript codebases handle bad input with defensive returns. They look safe, but they aren't — they silently absorb broken assumptions, and the bug surfaces somewhere completely unrelated, much later, with no context.
 
 ```ts
-// Without NSP — bad data propagates silently
+// The standard pattern — and its hidden cost
 function chargeOrder(order: Order) {
-  if (!order || !order.amount) return // absorbed, not caught
-  // ...
-}
-
-// With NSP — bad data is rejected at the boundary
-function chargeOrder(order: Order) {
-  assert.notNil(order, "order is required")
-  assert.positive(order.amount, "order amount must be positive")
-  // ...
+  if (!order) return            // caller gets undefined, no error, no trace
+  if (!order.amount) return     // zero and negative amounts silently pass through
+  if (order.status !== "pending") return  // double-charge is now possible
 }
 ```
 
-A well-placed assertion is worth a hundred debugging sessions.
+With assertcheck, every broken assumption has a name and an origin:
+
+```ts
+import { assert } from "assertcheck"
+
+function chargeOrder(order: Order) {
+  assert.notNil(order, "order is required")
+  assert.positive(order.amount, "order amount must be positive")
+  assert.equal(order.status, "pending", {
+    msg:    "order must be pending before charge",
+    actual: "order.status",
+    note:   "call resetOrder() before retrying",
+  })
+  // If any precondition is broken, execution stops here — not somewhere downstream.
+}
+```
 
 ## Install
 
 ::: code-group
 
 ```sh [npm]
-npm install assertcheck lodash
+npm install assertcheck
 ```
 
 ```sh [yarn]
-yarn add assertcheck lodash
+yarn add assertcheck
 ```
 
 ```sh [pnpm]
-pnpm add assertcheck lodash
+pnpm add assertcheck
 ```
 
 ```sh [bun]
-bun add assertcheck lodash
+bun add assertcheck
 ```
 
-```sh [jsr]
+```sh [jsr / Deno]
 deno add jsr:assertcheck
 bunx jsr add assertcheck
 ```
@@ -58,23 +98,23 @@ bunx jsr add assertcheck
 
 ## Your first assertion
 
-Every assertion accepts an optional last parameter — a plain string or an options object — that appears in the error message. This is the most important feature to use: **always describe what the value represents**, not just what it should be.
+Every assertion accepts an optional last argument — a plain string or an options object. **Always describe what the value represents**, not just what it should be. That description is what makes failures readable at 3am during an incident.
 
 ```ts
 import { assert } from "assertcheck"
 
-// Without context — not very helpful on failure:
+// A bare assertion — technically correct, but useless when it fires
 assert.equal(order.status, "pending")
 
-// With context — tells you exactly what failed and why:
+// A contextual assertion — tells you what failed, what was expected, and what to do
 assert.equal(order.status, "pending", {
   msg:    "order must be pending before payment",
-  actual: "order.status",             // labels the actual value in the output
-  note:   "call resetOrder() first",  // hint for the developer
+  actual: "order.status",            // labels the actual value in the diff
+  note:   "call resetOrder() first", // shown as a hint in the error output
 })
 ```
 
-When this fails, you get a formatted error message in your terminal:
+When the second one fires, you get this in your terminal:
 
 ```
 ══════════════════ ● order must be pending before payment ═════
@@ -89,34 +129,37 @@ When this fails, you get a formatted error message in your terminal:
 ════════════════════════════════════════════════════════════════
 ```
 
+No stack trace archaeology. No `console.log` debugging. The error tells you exactly where to look.
+
 ## Chainable style
 
-Use `check()` for fluent, readable multi-step validation on a single value. Each step throws immediately on failure — the chain stops at the first violated assertion.
+Use `check()` when you're validating multiple invariants on the same value. Each step throws immediately on failure — the chain stops at the first violated assertion.
 
 ```ts
 import { check } from "assertcheck"
 
-// Instead of writing:
-assert.notEmpty(users, "no null users")
-assert.noNils(users, "no null users")
-assert.uniqueBy(users, "id", "duplicate user IDs detected")
-assert.all(users, u => u.active, "all users must be active")
-
-// Write this:
 check(users)
   .notEmpty("users list must not be empty")
-  .noNils("no null users")
+  .noNils("no null users allowed")
   .uniqueBy("id", "duplicate user IDs detected")
-  .all(u => u.active, "all users must be active")
+  .all(u => u.active, "all users must be active before processing")
   .sortedBy("createdAt")
 ```
 
-Both styles are equivalent at runtime — `check()` is purely a readability choice.
+Both `assert.*` and `check()` are equivalent at runtime — `check()` is a readability choice, not a different execution model.
+
+## Production-ready from day one
+
+assertcheck runs in every environment with zero setup. Enforcement level is controlled by a single call at your app entry point:
+
+```ts
+import { modeAssertIn } from "assertcheck"
+
+modeAssertIn("prod", "warn")  // log violations in production without crashing users
+```
+
+No configuration files. No per-assertion flags. One call, at startup, and every assertion in every module inherits the setting. [Read about modes →](/guide/modes)
 
 ## Next steps
 
-- Learn about [assertion modes](/guide/modes) to control behaviour per environment.
-- Understand the [error format](/guide/error-format) — how to read and interpret failures.
-- Explore the [chainable API](/guide/check) for multi-step validation.
-- Read how to [build custom assertions](/guide/custom-assertions) using the formatting primitives.
-- Browse the full [API reference](/api/index) for every assertion method and its parameters.
+<Links :items="nextSteps" :grid="2" />
