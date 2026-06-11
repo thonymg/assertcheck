@@ -1,32 +1,31 @@
 # Assertcheck
 
-**Negative Space Programming for TypeScript.**  
-Declare what cannot exist. Fail where it matters. Ship with confidence.
+> **Negative Space Programming for TypeScript.**  
+> Declare what cannot exist. Fail where it matters. Ship with confidence.
 
 [![npm](https://img.shields.io/npm/v/assertcheck?color=0ea5e9&label=npm)](https://www.npmjs.com/package/assertcheck)
 [![JSR](https://jsr.io/badges/assertcheck)](https://jsr.io/assertcheck)
 [![License](https://img.shields.io/badge/license-Apache_2.0-orange)](./LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-first-3178c6)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-ready-fbf0df)](https://bun.sh/)
-
 [![Documentation](https://img.shields.io/badge/docs-thonymg.github.io-blue)](https://thonymg.github.io/assertcheck/)
 
 ---
 
-## The idea
+## The problem with "defensive" code
 
-In visual art, **negative space** is what surrounds the subject — the void that gives it shape.
-
-In code, negative space is the set of invalid states your program should never reach.  
-Most code silently absorbs them. Assertcheck makes them impossible to ignore.
+Most TypeScript codebases hide bugs behind `if (!x) return`.  
+Silent failures. No trace. No context. Hours lost in production.
 
 ```ts
-// Before — bad data propagates in silence
+// ❌ Before — bad data propagates in silence
 function chargeOrder(order: Order) {
-  if (!order || !order.amount) return // swallowed, never caught
+  if (!order || !order.amount) return  // swallowed. never caught. never debugged.
 }
+```
 
-// After — invalid state is declared at the boundary
+```ts
+// ✅ After — invalid state is declared at the boundary
 function chargeOrder(order: Order) {
   assert.notNil(order, "order is required")
   assert.positive(order.amount, "order amount must be positive")
@@ -35,12 +34,26 @@ function chargeOrder(order: Order) {
     actual: "order.status",
     note:   "call resetOrder() before retrying",
   })
-  // from here: every assumption is verified
+  // from here: every assumption is verified, every invariant is explicit
 }
 ```
 
-Assertions are **living contracts** — executable, unforgeable, and impossible to go stale.  
-When one fires, it names the broken assumption at the exact location it was violated.
+**Assertcheck makes invalid states impossible to ignore.**  
+Not a validator. Not a schema library. A contract system — at every boundary, for every assumption.
+
+---
+
+## Why Assertcheck?
+
+| | `if/return` | `zod` / `yup` | **Assertcheck** |
+|---|---|---|---|
+| Fails loudly in dev | ❌ | ✅ | ✅ |
+| Zero overhead in prod | ❌ | ❌ | ✅ (`disabled` mode) |
+| Type narrowing | ❌ | ✅ | ✅ |
+| Structured, readable errors | ❌ | ⚠️ | ✅ |
+| Chainable fluent API | ❌ | ❌ | ✅ |
+| Works on functions/purity | ❌ | ❌ | ✅ |
+| AI Copilot skills included | ❌ | ❌ | ✅ |
 
 ---
 
@@ -64,17 +77,24 @@ bunx jsr add assertcheck
 
 ## Quick start
 
-```ts
-import { assert, check, setAssertMode } from "assertcheck"
+### Single assertions
 
-// Single assertion
+```ts
+import { assert } from "assertcheck"
+
+assert.notNil(user, "user is required")
 assert.equal(order.status, "pending", {
   msg:    "order must be pending before payment",
   actual: "order.status",
   note:   "call resetOrder() first",
 })
+```
 
-// Fluent chain
+### Fluent chains
+
+```ts
+import { check } from "assertcheck"
+
 check(users)
   .notEmpty("users list cannot be empty")
   .noNils("no null users allowed")
@@ -85,29 +105,9 @@ check(users)
 
 ---
 
-## Modes
+## Error output that actually helps
 
-Control the behaviour per environment — no code changes required.
-
-| Mode | Behaviour | Default when |
-|---|---|---|
-| `"disabled"` | No-op — zero overhead | `NODE_ENV=production` |
-| `"warn"` | Log only, no throw | Manual |
-| `"enabled"` | Log + throw | All other environments |
-
-```ts
-import { setAssertMode } from "assertcheck"
-
-setAssertMode("disabled") // silence everything
-setAssertMode("warn")     // observe without crashing
-setAssertMode("enabled")  // full enforcement
-```
-
----
-
-## Error output
-
-Failures produce structured, ELM-inspired diagnostics — not stack-trace noise.
+When an assertion fires, you get a precise, ELM-inspired diagnostic — not a 40-line stack trace.
 
 ```
 ══════════════════ ● Order status mismatch ════════════════════
@@ -122,7 +122,7 @@ Failures produce structured, ELM-inspired diagnostics — not stack-trace noise.
 ════════════════════════════════════════════════════════════════
 ```
 
-Deep equality failures include a precise structural diff:
+Deep equality failures include a structural diff, field by field:
 
 ```
 ══════════════════ ● Deep equality failed ═════════════════════
@@ -137,10 +137,28 @@ Deep equality failures include a precise structural diff:
 ════════════════════════════════════════════════════════════════
 ```
 
-Output adapts to the runtime automatically:
+Output adapts automatically:
 - **Node / Bun / Deno** — ANSI colours on TTY, plain text in pipes. Respects `NO_COLOR`.
 - **Browser** — collapsible `console.groupCollapsed` in DevTools.
-- **CI / piped** — clean plain text, no escape codes.
+- **CI** — clean plain text, no escape codes.
+
+---
+
+## Modes — no code changes between environments
+
+```ts
+import { setAssertMode } from "assertcheck"
+
+setAssertMode("disabled") // production: zero overhead, no-op
+setAssertMode("warn")     // staging: log without crashing
+setAssertMode("enabled")  // dev: full enforcement (default)
+```
+
+| Mode | Behaviour | Default when |
+|---|---|---|
+| `"disabled"` | No-op — zero overhead | `NODE_ENV=production` |
+| `"warn"` | Log only, no throw | Manual |
+| `"enabled"` | Log + throw | All other environments |
 
 ---
 
@@ -171,7 +189,7 @@ Output adapts to the runtime automatically:
 | | |
 |---|---|
 | `assert.equal(a, b)` | Strict `===` |
-| `assert.deepEqual(a, b)` | Deep equality via `_.isEqual`, with diff |
+| `assert.deepEqual(a, b)` | Deep equality with structural diff |
 
 ### Numerics
 `positive` · `negative` · `zero` · `greater` · `greaterOrEqual` · `less` · `lessOrEqual` · `withinRange` · `inDelta`
@@ -238,6 +256,31 @@ try {
 
 ---
 
+## AI Skills — Copilot-native from day one
+
+Assertcheck ships with [Copilot skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your AI assistant understands and applies the library's patterns automatically.
+
+| Skill | What it does |
+|---|---|
+| `assertcheck-audit` | Audits existing code for missing or weak assertions |
+| `assertcheck-feature` | Designs a new assertion following the library's contracts |
+| `assertcheck-refactor` | Refactors code toward negative-space programming |
+| `assertcheck-selector` | Selects the right assertion for a given scenario |
+| `assertcheck-spec` | Writes invariant-driven specs |
+
+```bash
+# Install all skills
+bunx skills add thonymg/assertcheck --skill='*'
+npx skills add thonymg/assertcheck --skill='*'
+
+# Or globally
+bunx skills add thonymg/assertcheck --skill='*' -g
+```
+
+Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills).
+
+---
+
 ## Project structure
 
 ```
@@ -269,47 +312,40 @@ bun test           # run test suite
 
 ## License
 
-Licensed under the **Apache License 2.0** — free to use, modify, and distribute in any context, commercial or otherwise, as long as you retain attribution. See [LICENSE](./LICENSE).
-
----
-
-## AI Skills
-
-Assertcheck ships with [Copilot skills](https://github.com/thonymg/assertcheck/tree/main/skills) to help your AI assistant understand and apply the library's patterns.
-
-| Skill | Purpose |
-|---|---|
-| `assertcheck-audit` | Audit existing code for missing or weak assertions |
-| `assertcheck-feature` | Design a new assertion following the library's contracts |
-| `assertcheck-refactor` | Refactor code toward negative-space programming |
-| `assertcheck-selector` | Select the right assertion for a given scenario |
-| `assertcheck-spec` | Write invariant-driven specs |
-
-### Install skills
-
-```bash
-pnpx skills add thonymg/assertcheck --skill='*'
-npx skills add thonymg/assertcheck --skill='*'
-bunx skills add thonymg/assertcheck --skill='*'
-```
-
-Or install all skills globally:
-
-```bash
-pnpx skills add thonymg/assertcheck --skill='*' -g
-npx skills add thonymg/assertcheck --skill='*' -g
-bunx skills add thonymg/assertcheck --skill='*' -g
-```
-
-Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills).
+Apache License 2.0 — free to use, modify, and distribute commercially as long as you retain attribution. See [LICENSE](./LICENSE).
 
 ---
 
 ## Built by Vagabond Studio
 
-Assertcheck is crafted and maintained by **Vagabond Studio** — a fully remote, senior-only development collective building high-quality TypeScript, Rails, and full-stack products for companies that care about craft.
+---
 
-**Looking for a team?**  
-Whether you need to ship a product from scratch, reinforce an existing team, or bring technical leadership to a complex project — we work embedded in your stack, on your timeline, fully remote.
+### You have ambitions. You need a team that can match them.
 
-→ [hello@vagabond.work](mailto:hello@vagabond.work)
+**[Vagabond Studio](mailto:hello@vagabond.work)** partners with small and mid-size companies that think bigger than their headcount.
+
+We're a fully remote, senior-only collective — engineers *and* designers working together from day one. No handoffs. No agency bloat.
+
+**What we do:**
+
+- **Product engineering** — TypeScript, VueJs, Rails, Django full-stack. From greenfield to production, or embedded in your existing codebase.
+- **UI/UX design** — Interfaces that are fast to ship and fast to use. We design systems, not just screens.
+- **Technical leadership** — Architecture decisions, code reviews, and the kind of senior judgment that prevents six-month rewrites.
+
+**Who we work with:**
+
+Growing companies between 5 and 200 people who need craft-level output without building a full in-house team. Startups shipping their first real product. Scale-ups that have outgrown their MVP and need the codebase to match their ambitions.
+
+**How we work:**
+
+Embedded in your stack. On your timeline. Fully async-first, with structured sync when it matters. We don't disappear after delivery — we stay until it ships right.
+
+---
+
+**Ready to talk?**
+
+[**→ Book a discovery call**](https://calendly.com/vagabond-studio/appel-de-decouverte-vagabond-studio) — 30 minutes, no pitch, just a real conversation about your project.
+
+Or write to us directly: [hello@vagabond.work](mailto:hello@vagabond.work)
+
+*We take on 2–3 new clients per quarter. If the timing is right, let's talk.*
