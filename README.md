@@ -278,4 +278,4 @@ Assertcheck is crafted and maintained by **Vagabond Studio** — a fully remote,
 **Looking for a team?**  
 Whether you need to ship a product from scratch, reinforce an existing team, or bring technical leadership to a complex project — we work embedded in your stack, on your timeline, fully remote.
 
-→ [amichel@getmeelo.com](mailto:amichel@getmeelo.com)
+→ [hello@vagabond.work](mailto:hello@vagabond.work)
