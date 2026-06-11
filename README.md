@@ -9,6 +9,8 @@ Declare what cannot exist. Fail where it matters. Ship with confidence.
 [![TypeScript](https://img.shields.io/badge/TypeScript-first-3178c6)](https://www.typescriptlang.org/)
 [![Bun](https://img.shields.io/badge/Bun-ready-fbf0df)](https://bun.sh/)
 
+[![Documentation](https://img.shields.io/badge/docs-thonymg.github.io-blue)](https://thonymg.github.io/assertcheck/)
+
 ---
 
 ## The idea
@@ -268,6 +270,38 @@ bun test           # run test suite
 ## License
 
 Licensed under the **Apache License 2.0** — free to use, modify, and distribute in any context, commercial or otherwise, as long as you retain attribution. See [LICENSE](./LICENSE).
+
+---
+
+## AI Skills
+
+Assertcheck ships with [Copilot skills](https://github.com/thonymg/assertcheck/tree/main/skills) to help your AI assistant understand and apply the library's patterns.
+
+| Skill | Purpose |
+|---|---|
+| `assertcheck-audit` | Audit existing code for missing or weak assertions |
+| `assertcheck-feature` | Design a new assertion following the library's contracts |
+| `assertcheck-refactor` | Refactor code toward negative-space programming |
+| `assertcheck-selector` | Select the right assertion for a given scenario |
+| `assertcheck-spec` | Write invariant-driven specs |
+
+### Install skills
+
+```bash
+pnpx skills add thonymg/assertcheck --skill='*'
+npx skills add thonymg/assertcheck --skill='*'
+bunx skills add thonymg/assertcheck --skill='*'
+```
+
+Or install all skills globally:
+
+```bash
+pnpx skills add thonymg/assertcheck --skill='*' -g
+npx skills add thonymg/assertcheck --skill='*' -g
+bunx skills add thonymg/assertcheck --skill='*' -g
+```
+
+Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills).
 
 ---
 

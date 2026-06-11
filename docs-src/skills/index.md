@@ -52,3 +52,35 @@ assertcheck-audit      → find gaps that slipped through
       ↑
 assertcheck-selector   → available at every step as a lookup
 ```
+
+---
+
+## Installation
+
+Install all skills into your project:
+
+```bash
+pnpx skills add thonymg/assertcheck --skill='*'
+npx skills add thonymg/assertcheck --skill='*'
+bunx skills add thonymg/assertcheck --skill='*'
+```
+
+Or install all skills globally:
+
+```bash
+pnpx skills add thonymg/assertcheck --skill='*' -g
+npx skills add thonymg/assertcheck --skill='*' -g
+bunx skills add thonymg/assertcheck --skill='*' -g
+```
+
+Install a single skill:
+
+```bash
+npx skills add thonymg/assertcheck --skill='assertcheck-audit'
+npx skills add thonymg/assertcheck --skill='assertcheck-feature'
+npx skills add thonymg/assertcheck --skill='assertcheck-spec'
+npx skills add thonymg/assertcheck --skill='assertcheck-refactor'
+npx skills add thonymg/assertcheck --skill='assertcheck-selector'
+```
+
+Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills).
