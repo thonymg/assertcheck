@@ -1,4 +1,4 @@
-# assertcheck
+# Assertcheck
 
 Negative Space Programming for TypeScript.  
 Declare invalid states · Fail fast · Trust the boundary · Zero overhead when disabled.
