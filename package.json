@@ -43,10 +43,11 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "version": "node -e \"const fs=require('fs');const v=JSON.parse(fs.readFileSync('package.json','utf8')).version;const j=JSON.parse(fs.readFileSync('jsr.json','utf8'));j.version=v;fs.writeFileSync('jsr.json',JSON.stringify(j,null,2)+'\\n')\" && git add jsr.json",
     "prepublishOnly": "bun run build && bun run typecheck && bun run format:check",
-    "release:npm": "bun run prepublishOnly && npm publish --access public",
-    "release:jsr": "bun run prepublishOnly && npx jsr publish",
-    "release": "bun run release:npm && bun run release:jsr",
-    "release:dry": "npm publish --dry-run"
+    "release": "bash scripts/release.sh",
+    "release:npm": "npm publish",
+    "release:jsr": "npx jsr publish",
+    "release:dry": "npm publish --dry-run",
+    "publish": "npm publish"
   },
   "keywords": ["assert", "assertion", "testing", "invariant", "typescript", "negative-space"],
   "dependencies": {
