@@ -71,45 +71,45 @@ const ansi = (codes: string, s: string): string => (ENV.hasAnsi ? `${codes}${s}$
 export const color = {
   // ── Layout
   /** Bold red — error titles and failure indicators. */
-  title: (s: string) => ansi(A.bold + A.red, s),
+  title: (s: string): string => ansi(A.bold + A.red, s),
   /** Bold cyan — section headers like "diff", "context", "note". */
-  section: (s: string) => ansi(A.bold + A.cyan, s),
+  section: (s: string): string => ansi(A.bold + A.cyan, s),
   /** Dim — secondary labels and separators. */
-  label: (s: string) => ansi(A.dim, s),
+  label: (s: string): string => ansi(A.dim, s),
   /** Dim — separator lines (─, ═). */
-  sep: (s: string) => ansi(A.dim, s),
+  sep: (s: string): string => ansi(A.dim, s),
 
   // ── Value types
   /** Green — string values. */
-  string: (s: string) => ansi(A.green, s),
+  string: (s: string): string => ansi(A.green, s),
   /** Yellow — number values. */
-  number: (s: string) => ansi(A.yellow, s),
+  number: (s: string): string => ansi(A.yellow, s),
   /** Cyan — boolean values. */
-  boolean: (s: string) => ansi(A.cyan, s),
+  boolean: (s: string): string => ansi(A.cyan, s),
   /** Dim — null / undefined. */
-  nil: (s: string) => ansi(A.dim, s),
+  nil: (s: string): string => ansi(A.dim, s),
   /** Blue — arrays. */
-  array: (s: string) => ansi(A.blue, s),
+  array: (s: string): string => ansi(A.blue, s),
   /** Magenta — plain objects. */
-  object: (s: string) => ansi(A.magenta, s),
+  object: (s: string): string => ansi(A.magenta, s),
 
   // ── Diff indicators
   /** Bold green — expected / added / missing. */
-  added: (s: string) => ansi(A.bold + A.green, s),
+  added: (s: string): string => ansi(A.bold + A.green, s),
   /** Bold red — actual / removed / unexpected. */
-  removed: (s: string) => ansi(A.bold + A.red, s),
+  removed: (s: string): string => ansi(A.bold + A.red, s),
   /** Bold yellow — changed. */
-  changed: (s: string) => ansi(A.bold + A.yellow, s),
+  changed: (s: string): string => ansi(A.bold + A.yellow, s),
   /** Dim — unchanged entries in a diff. */
-  same: (s: string) => ansi(A.dim, s),
+  same: (s: string): string => ansi(A.dim, s),
 
   // ── Miscellaneous
   /** Italic cyan — note / hint text. */
-  note: (s: string) => ansi(A.italic + A.cyan, s),
+  note: (s: string): string => ansi(A.italic + A.cyan, s),
   /** Yellow — indices and counts. */
-  index: (s: string) => ansi(A.yellow, s),
+  index: (s: string): string => ansi(A.yellow, s),
   /** Underline — paths and key names. */
-  path: (s: string) => ansi(A.underline, s),
+  path: (s: string): string => ansi(A.underline, s),
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

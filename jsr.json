@@ -1,6 +1,9 @@
 {
-  "name": "assertcheck",
+  "name": "@thonymg/assertcheck",
   "version": "0.2.152",
+  "publish": {
+    "exclude": ["docs-src/images"]
+  },
   "exports": {
     ".":          "./src/index.ts",
     "./assert":   "./src/assert.ts",

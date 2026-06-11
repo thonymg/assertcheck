@@ -45,9 +45,9 @@
     "prepublishOnly": "bun run build && bun run typecheck && bun run format:check",
     "release": "bash scripts/release.sh",
     "release:npm": "npm publish",
-    "release:jsr": "npx jsr publish",
+    "release:jsr": "npx jsr publish --allow-slow-types",
     "release:dry": "npm publish --dry-run",
-    "publish": "npm publish && npx jsr publish"
+    "publish": "npm publish && npx jsr publish --allow-slow-types"
   },
   "keywords": ["assert", "assertion", "testing", "invariant", "typescript", "negative-space"],
   "dependencies": {

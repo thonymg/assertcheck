@@ -43,10 +43,92 @@ type Opts = string | AssertOptions | undefined
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
+ * Explicit type for the assertion namespace — required for JSR slow-type compliance.
+ * @public
+ */
+export interface Assert {
+  // ── Existence
+  nil(v: unknown, opts?: Opts): asserts v is null | undefined
+  notNil<T>(v: T | null | undefined, opts?: Opts): asserts v is NonNullable<T>
+  empty(v: unknown, opts?: Opts): void
+  notEmpty<T>(v: T, opts?: Opts): asserts v is NonNullable<T>
+  // ── Type guards
+  string(v: unknown, opts?: Opts): asserts v is string
+  number(v: unknown, opts?: Opts): asserts v is number
+  integer(v: unknown, opts?: Opts): asserts v is number
+  finite(v: unknown, opts?: Opts): asserts v is number
+  boolean(v: unknown, opts?: Opts): asserts v is boolean
+  array<T = unknown>(v: unknown, opts?: Opts): asserts v is T[]
+  object<T extends object = object>(v: unknown, opts?: Opts): asserts v is T
+  func<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown>(v: unknown, opts?: Opts): asserts v is T
+  instanceOf<T>(v: unknown, ctor: new (...args: unknown[]) => T, opts?: Opts): asserts v is T
+  // ── Equality
+  equal<T>(actual: T, expected: T, opts?: Opts): void
+  deepEqual<T>(actual: T, expected: T, opts?: Opts): void
+  // ── Numerics
+  positive(n: number, opts?: Opts): void
+  negative(n: number, opts?: Opts): void
+  zero(n: number, opts?: Opts): void
+  greater(a: number, b: number, opts?: Opts): void
+  greaterOrEqual(a: number, b: number, opts?: Opts): void
+  less(a: number, b: number, opts?: Opts): void
+  lessOrEqual(a: number, b: number, opts?: Opts): void
+  withinRange(v: number, min: number, max: number, opts?: Opts): void
+  inDelta(actual: number, expected: number, delta: number, opts?: Opts): void
+  // ── Arrays
+  len<T>(arr: T[], n: number, opts?: Opts): void
+  longerThan<T>(arr: T[], n: number, opts?: Opts): void
+  shorterThan<T>(arr: T[], n: number, opts?: Opts): void
+  includes<T>(arr: T[], item: T, opts?: Opts): void
+  all<T, U extends T>(arr: T[], predicate: ((v: T) => v is U) | ((v: T) => boolean), opts?: Opts): asserts arr is U[]
+  any<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void
+  none<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void
+  one<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void
+  count<T>(arr: T[], predicate: (v: T) => boolean, n: number, opts?: Opts): void
+  containsAll<T>(arr: T[], items: T[], opts?: Opts): void
+  containsNone<T>(arr: T[], items: T[], opts?: Opts): void
+  elementsMatch<T>(a: T[], b: T[], opts?: Opts): void
+  subset<T>(arr: T[], sub: T[], opts?: Opts): void
+  unique<T>(arr: T[], opts?: Opts): void
+  uniqueBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, opts?: Opts): void
+  increasing(arr: number[], opts?: Opts): void
+  nonDecreasing(arr: number[], opts?: Opts): void
+  sortedBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, opts?: Opts): void
+  first<T>(arr: T[], expected: T, opts?: Opts): void
+  last<T>(arr: T[], expected: T, opts?: Opts): void
+  sumBy<T>(arr: T[], iteratee: string | ((value: T) => number), expected: number, opts?: Opts): void
+  noNils<T>(arr: (T | null | undefined)[], opts?: Opts): asserts arr is T[]
+  flat(arr: unknown[], opts?: Opts): void
+  allInstanceOf<T>(arr: unknown[], ctor: new (...args: unknown[]) => T, opts?: Opts): asserts arr is T[]
+  zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void
+  groupedBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, expectedGroups: string[], opts?: Opts): void
+  partition<T>(arr: T[], predicate: (v: T) => boolean, expectedMatch: number, expectedRest: number, opts?: Opts): void
+  // ── Objects
+  hasKey<T extends object, K extends string>(obj: T, key: K, opts?: Opts): asserts obj is T & Record<K, unknown>
+  hasKeys<T extends object, K extends string>(obj: T, keys: K[], opts?: Opts): asserts obj is T & Record<K, unknown>
+  hasExactKeys<K extends string>(obj: object, keys: K[], opts?: Opts): asserts obj is Record<K, unknown>
+  hasOnlyKeys(obj: object, allowed: string[], opts?: Opts): void
+  hasValue<T extends object, K extends keyof T>(obj: T, key: K, expected: T[K], opts?: Opts): void
+  containsSubset<T extends object>(obj: T, subset: Partial<T>, opts?: Opts): void
+  allValuesMatch<T extends object>(obj: T, predicate: (v: T[keyof T], k: keyof T) => boolean, opts?: Opts): void
+  noNilValues<T extends object>(obj: T, opts?: Opts): void
+  dig<T>(obj: T, path: string | string[], expected: unknown, opts?: Opts): void
+  // ── Functions
+  returns<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, args: TArgs, expected: TReturn, opts?: Opts): void
+  pure<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, args: TArgs, opts?: Opts): void
+  idempotent<T>(fn: (v: T) => T, arg: T, opts?: Opts): void
+  arity(fn: (...args: unknown[]) => unknown, n: number, opts?: Opts): void
+  mapsDistinct<T, U>(fn: (v: T) => U, a: T, b: T, opts?: Opts): void
+  homomorphic<T>(fn: (v: T) => T, combine: (a: T, b: T) => T, a: T, b: T, opts?: Opts): void
+  // ── Negation
+  not(fn: (...args: unknown[]) => void, ...args: unknown[]): void
+}
+
+/**
  * The main assertion namespace.
  * @namespace
  */
-export const assert = {
+export const assert: Assert = {
   // ═══════════════════════════════════════════════════════════════════════════
   // EXISTENCE
   // ═══════════════════════════════════════════════════════════════════════════

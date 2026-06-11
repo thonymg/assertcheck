@@ -64,7 +64,7 @@ ok "Published to npm: assertcheck@${NEW}"
 
 # ── jsr publish ────────────────────────────────────────────────────────────────
 info "Publishing to JSR..."
-npx jsr publish
+npx jsr publish --allow-slow-types
 ok "Published to JSR: assertcheck@${NEW}"
 
 # ── git commit + tag ───────────────────────────────────────────────────────────
