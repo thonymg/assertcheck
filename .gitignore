@@ -6,7 +6,6 @@ dist/
 
 # Documentation générée
 docs/
-docs-src/api/
 docs-src/.vitepress/cache/
 docs-src/.vitepress/dist/
 
