@@ -13,6 +13,7 @@ docs-src/.vitepress/dist/
 .env
 .env.local
 .env.*.local
+.claude
 
 # macOS
 .DS_Store
