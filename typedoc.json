@@ -1,0 +1,15 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "out": "docs",
+  "tsconfig": "./tsconfig.typedoc.json",
+  "skipErrorChecking": true,
+  "name": "@assertcheck/core",
+  "readme": "./README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "plugin": [],
+  "navigationLinks": {
+    "GitHub": "https://github.com/assertcheck/core"
+  }
+}

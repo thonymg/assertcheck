@@ -1,0 +1,11 @@
+{
+  "name": "@assertcheck/core",
+  "version": "1.0.0",
+  "exports": {
+    ".":          "./src/index.ts",
+    "./assert":   "./src/assert.ts",
+    "./checker":  "./src/checker.ts",
+    "./format":   "./src/format.ts",
+    "./types":    "./src/types.ts"
+  }
+}

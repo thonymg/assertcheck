@@ -1,0 +1,60 @@
+{
+  "name": "@assertcheck/core",
+  "version": "1.0.0",
+  "description": "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
+  "license": "MIT",
+  "author": "assertcheck contributors",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./assert": {
+      "import": "./dist/assert.js",
+      "types": "./dist/assert.d.ts"
+    },
+    "./checker": {
+      "import": "./dist/checker.js",
+      "types": "./dist/checker.d.ts"
+    },
+    "./format": {
+      "import": "./dist/format.js",
+      "types": "./dist/format.d.ts"
+    }
+  },
+  "files": ["dist", "src"],
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm && bun build ./src/index.ts --outdir ./dist --target node --format cjs --outfile index.cjs",
+    "typecheck": "tsc --project tsconfig.check.json",
+    "test": "bun test",
+    "docs:api":     "typedoc --options typedoc.md.json",
+    "docs:dev":     "bun run docs:api && vitepress dev docs-src",
+    "docs:build":   "bun run docs:api && vitepress build docs-src",
+    "docs:preview": "vitepress preview docs-src",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "prepublishOnly": "bun run build && bun run typecheck && bun run format:check",
+    "release:npm": "bun run prepublishOnly && npm publish --access public",
+    "release:jsr": "bun run prepublishOnly && npx jsr publish",
+    "release": "bun run release:npm && bun run release:jsr",
+    "release:dry": "npm publish --dry-run"
+  },
+  "keywords": ["assert", "assertion", "testing", "invariant", "typescript", "negative-space"],
+  "dependencies": {
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/lodash": "^4.14.0",
+    "prettier": "^3.8.4",
+    "typedoc": "^0.28.19",
+    "typedoc-plugin-markdown": "^4.12.0",
+    "typescript": "^5.4.0",
+    "vitepress": "^1.6.4"
+  }
+}

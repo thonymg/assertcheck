@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Documentation générée
+docs/
+docs-src/api/
+docs-src/.vitepress/cache/
+docs-src/.vitepress/dist/
+
+# Environnement
+.env
+.env.local
+.env.*.local
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# IDE
+.vscode/
+.idea/
+
+# Bun
+bun.lockb

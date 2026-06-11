@@ -1,0 +1,19 @@
+{
+  "entryPoints": ["./src/index.ts"],
+  "out": "docs-src/api",
+  "tsconfig": "./tsconfig.typedoc.json",
+  "skipErrorChecking": true,
+  "name": "@assertcheck/core",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "plugin": ["typedoc-plugin-markdown"],
+  "readme": "none",
+  "entryFileName": "_generated",
+  "hideBreadcrumbs": false,
+  "parametersFormat": "table",
+  "propertiesFormat": "table",
+  "enumMembersFormat": "table",
+  "useCodeBlocks": true,
+  "expandObjects": true
+}
