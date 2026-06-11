@@ -1,25 +1,87 @@
-import { defineConfig } from "vitepress"
+import { defineConfig, type HeadConfig } from "vitepress"
+
+const SITE_URL  = "https://thonymg.github.io/assertcheck"
+const OG_IMAGE  = `${SITE_URL}/og-image.png`
+const SITE_DESC = "Production-grade assertion library for TypeScript. Declare invalid states explicitly, fail fast at the point of violation, and ship with confidence. 50+ assertions, chainable API, zero overhead in production."
 
 export default defineConfig({
   title: "assertcheck",
-  description:
-    "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
+  description: SITE_DESC,
   lang: "en-US",
   base: "/assertcheck/",
   ignoreDeadLinks: [/\/api\/@assertcheck\//],
 
-  head: [["link", { rel: "icon", href: "/logo.svg" }]],
+  head: [
+    // Favicon
+    ["link", { rel: "icon",       href: "/assertcheck/logo.svg", type: "image/svg+xml" }],
+    ["link", { rel: "icon",       href: "/assertcheck/logo.svg" }],
+
+    // Theme color (browser UI, PWA)
+    ["meta", { name: "theme-color",            content: "#3b82f6" }],
+    ["meta", { name: "msapplication-TileColor",content: "#3b82f6" }],
+
+    // SEO
+    ["meta", { name: "robots",   content: "index, follow" }],
+    ["meta", { name: "author",   content: "Vagabond Studio" }],
+    ["meta", { name: "keywords", content: "TypeScript, assertion, runtime, contracts, invariants, debugging, NSP, negative space programming, fail-fast, test, Bun, Deno, Node.js" }],
+
+    // OpenGraph — defaults (overridden per page via transformHead)
+    ["meta", { property: "og:type",        content: "website" }],
+    ["meta", { property: "og:site_name",   content: "assertcheck" }],
+    ["meta", { property: "og:locale",      content: "en_US" }],
+    ["meta", { property: "og:url",         content: SITE_URL }],
+    ["meta", { property: "og:title",       content: "assertcheck — Negative Space Programming for TypeScript" }],
+    ["meta", { property: "og:description", content: SITE_DESC }],
+    ["meta", { property: "og:image",       content: OG_IMAGE }],
+    ["meta", { property: "og:image:secure_url", content: OG_IMAGE }],
+    ["meta", { property: "og:image:type",  content: "image/png" }],
+    ["meta", { property: "og:image:width", content: "1364" }],
+    ["meta", { property: "og:image:height",content: "872" }],
+    ["meta", { property: "og:image:alt",   content: "assertcheck — declare invalid states explicitly, fail fast at the boundary" }],
+
+    // Twitter / X
+    ["meta", { name: "twitter:card",        content: "summary_large_image" }],
+    ["meta", { name: "twitter:site",        content: "@vagabondstudio" }],
+    ["meta", { name: "twitter:creator",     content: "@vagabondstudio" }],
+    ["meta", { name: "twitter:title",       content: "assertcheck — Negative Space Programming for TypeScript" }],
+    ["meta", { name: "twitter:description", content: SITE_DESC }],
+    ["meta", { name: "twitter:image",       content: OG_IMAGE }],
+    ["meta", { name: "twitter:image:alt",   content: "assertcheck — declare invalid states explicitly, fail fast at the boundary" }],
+
+    // LinkedIn (uses OG tags — already covered above)
+    // Discord (uses OG tags — already covered above)
+  ],
+
+  // Override og:title and og:description per page based on frontmatter
+  transformHead({ pageData, siteData }) {
+    const head: HeadConfig[] = []
+
+    const pageTitle       = pageData.frontmatter.title as string | undefined
+    const pageDescription = pageData.frontmatter.description as string | undefined
+
+    const title       = pageTitle
+      ? `${pageTitle} | assertcheck`
+      : "assertcheck — Negative Space Programming for TypeScript"
+    const description = pageDescription ?? siteData.description
+
+    head.push(["meta", { property: "og:title",        content: title }])
+    head.push(["meta", { property: "og:description",  content: description }])
+    head.push(["meta", { name:     "twitter:title",       content: title }])
+    head.push(["meta", { name:     "twitter:description", content: description }])
+
+    return head
+  },
 
   themeConfig: {
     logo: "/logo.svg",
     siteTitle: "assertcheck",
 
     nav: [
-      { text: "Guide", link: "/guide/getting-started" },
-      { text: "API", link: "/api/" },
-      { text: "Skills", link: "/skills/" },
-      { text: "Changelog", link: "https://github.com/thonymg/assertcheck/releases" },
-      { text: "Vagabond Studio", link: "https://vagabond.work" },
+      { text: "Guide",          link: "/guide/getting-started" },
+      { text: "API",            link: "/api/" },
+      { text: "Skills",         link: "/skills/" },
+      { text: "Changelog",      link: "https://github.com/thonymg/assertcheck/releases" },
+      { text: "Vagabond Studio",link: "https://vagabond.work" },
     ],
 
     sidebar: {
@@ -28,16 +90,16 @@ export default defineConfig({
           text: "Introduction",
           items: [
             { text: "Getting started", link: "/guide/getting-started" },
-            { text: "Installation", link: "/guide/installation" },
+            { text: "Installation",    link: "/guide/installation" },
           ],
         },
         {
           text: "Core concepts",
           items: [
             { text: "Negative Space Programming", link: "/guide/negative-space" },
-            { text: "Assertion modes", link: "/guide/modes" },
-            { text: "Error format", link: "/guide/error-format" },
-            { text: "Chainable API (check)", link: "/guide/check" },
+            { text: "Assertion modes",            link: "/guide/modes" },
+            { text: "Error format",               link: "/guide/error-format" },
+            { text: "Chainable API (check)",      link: "/guide/check" },
           ],
         },
         {
@@ -57,9 +119,9 @@ export default defineConfig({
         {
           text: "Skills",
           items: [
-            { text: "assertcheck-feature", link: "/skills/feature" },
-            { text: "assertcheck-audit", link: "/skills/audit" },
-            { text: "assertcheck-spec", link: "/skills/spec" },
+            { text: "assertcheck-feature",  link: "/skills/feature" },
+            { text: "assertcheck-audit",    link: "/skills/audit" },
+            { text: "assertcheck-spec",     link: "/skills/spec" },
             { text: "assertcheck-refactor", link: "/skills/refactor" },
             { text: "assertcheck-selector", link: "/skills/selector" },
           ],
@@ -73,27 +135,27 @@ export default defineConfig({
         {
           text: "assert",
           items: [
-            { text: "Overview", link: "/api/@assertcheck/namespaces/assert/_generated" },
-            { text: "equal / deepEqual", link: "/api/@assertcheck/namespaces/assert/functions/equal" },
-            { text: "nil / notNil / empty", link: "/api/@assertcheck/namespaces/assert/functions/nil" },
-            { text: "all / any / none", link: "/api/@assertcheck/namespaces/assert/functions/all" },
-            { text: "hasKey / hasKeys", link: "/api/@assertcheck/namespaces/assert/functions/hasKey" },
-            { text: "not", link: "/api/@assertcheck/namespaces/assert/functions/not" },
+            { text: "Overview",           link: "/api/@assertcheck/namespaces/assert/_generated" },
+            { text: "equal / deepEqual",  link: "/api/@assertcheck/namespaces/assert/functions/equal" },
+            { text: "nil / notNil / empty",link: "/api/@assertcheck/namespaces/assert/functions/nil" },
+            { text: "all / any / none",   link: "/api/@assertcheck/namespaces/assert/functions/all" },
+            { text: "hasKey / hasKeys",   link: "/api/@assertcheck/namespaces/assert/functions/hasKey" },
+            { text: "not",                link: "/api/@assertcheck/namespaces/assert/functions/not" },
           ],
         },
         {
           text: "check()",
           items: [
-            { text: "check()", link: "/api/functions/check" },
-            { text: "ArrayChecker", link: "/api/classes/ArrayChecker" },
-            { text: "ObjectChecker", link: "/api/classes/ObjectChecker" },
-            { text: "Checker (base)", link: "/api/classes/Checker" },
+            { text: "check()",          link: "/api/functions/check" },
+            { text: "ArrayChecker",     link: "/api/classes/ArrayChecker" },
+            { text: "ObjectChecker",    link: "/api/classes/ObjectChecker" },
+            { text: "Checker (base)",   link: "/api/classes/Checker" },
           ],
         },
         {
           text: "Mode",
           items: [
-            { text: "modeAssertIn()", link: "/api/functions/modeAssertIn" },
+            { text: "modeAssertIn()",  link: "/api/functions/modeAssertIn" },
             { text: "setAssertMode()", link: "/api/functions/setAssertMode" },
             { text: "getAssertMode()", link: "/api/functions/getAssertMode" },
           ],
@@ -101,17 +163,17 @@ export default defineConfig({
         {
           text: "Errors & formatting",
           items: [
-            { text: "AssertionError", link: "/api/classes/AssertionError" },
-            { text: "buildBlock()", link: "/api/functions/buildBlock" },
-            { text: "fmtValue()", link: "/api/functions/fmtValue" },
+            { text: "AssertionError",  link: "/api/classes/AssertionError" },
+            { text: "buildBlock()",    link: "/api/functions/buildBlock" },
+            { text: "fmtValue()",      link: "/api/functions/fmtValue" },
           ],
         },
         {
           text: "Types",
           items: [
-            { text: "AssertOptions", link: "/api/interfaces/AssertOptions" },
-            { text: "AssertMode", link: "/api/type-aliases/AssertMode" },
-            { text: "Env", link: "/api/type-aliases/Env" },
+            { text: "AssertOptions",   link: "/api/interfaces/AssertOptions" },
+            { text: "AssertMode",      link: "/api/type-aliases/AssertMode" },
+            { text: "Env",             link: "/api/type-aliases/Env" },
           ],
         },
       ],
