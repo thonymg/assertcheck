@@ -1,28 +1,30 @@
 # Assertcheck
 
-Negative Space Programming for TypeScript.  
-Declare invalid states · Fail fast · Trust the boundary · Zero overhead when disabled.
+**Negative Space Programming for TypeScript.**  
+Declare what cannot exist. Fail where it matters. Ship with confidence.
+
+[![npm](https://img.shields.io/npm/v/@assertcheck/core?color=0ea5e9&label=npm)](https://www.npmjs.com/package/@assertcheck/core)
+[![JSR](https://jsr.io/badges/@assertcheck/core)](https://jsr.io/@assertcheck/core)
+[![License](https://img.shields.io/badge/license-Apache_2.0-orange)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-first-3178c6)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-ready-fbf0df)](https://bun.sh/)
 
 ---
 
-## Negative Space Programming
+## The idea
 
-assertcheck is built around the principle of **Negative Space Programming** — defining what your code *cannot accept* is just as important as defining what it does.
+In visual art, **negative space** is what surrounds the subject — the void that gives it shape.
 
-In visual art, negative space is the empty area around a subject that gives the subject its shape. In code, negative space is the set of **invalid states and broken assumptions** you make explicit, rather than leaving them as silent bugs.
-
-Without assertions, bad data propagates silently:
+In code, negative space is the set of invalid states your program should never reach.  
+Most code silently absorbs them. Assertcheck makes them impossible to ignore.
 
 ```ts
+// Before — bad data propagates in silence
 function chargeOrder(order: Order) {
-  if (!order || !order.amount) return // absorbed, never caught
-  // ...
+  if (!order || !order.amount) return // swallowed, never caught
 }
-```
 
-With assertcheck, you declare the negative space at the boundary:
-
-```ts
+// After — invalid state is declared at the boundary
 function chargeOrder(order: Order) {
   assert.notNil(order, "order is required")
   assert.positive(order.amount, "order amount must be positive")
@@ -31,11 +33,12 @@ function chargeOrder(order: Order) {
     actual: "order.status",
     note:   "call resetOrder() before retrying",
   })
-  // ...
+  // from here: every assumption is verified
 }
 ```
 
-Assertions are **living contracts**: executable, impossible to ignore, and impossible to go stale. When one fires, it names the broken assumption at the exact location it was violated — not three call-stack frames later.
+Assertions are **living contracts** — executable, unforgeable, and impossible to go stale.  
+When one fires, it names the broken assumption at the exact location it was violated.
 
 ---
 
@@ -43,14 +46,14 @@ Assertions are **living contracts**: executable, impossible to ignore, and impos
 
 ```bash
 # npm / yarn / pnpm
-npm install @assertcheck/core lodash
-yarn add @assertcheck/core lodash
-pnpm add @assertcheck/core lodash
+npm install @assertcheck/core
+yarn add @assertcheck/core
+pnpm add @assertcheck/core
 
 # Bun
-bun add @assertcheck/core lodash
+bun add @assertcheck/core
 
-# JSR (Deno / Bun)
+# Deno / JSR
 deno add jsr:@assertcheck/core
 bunx jsr add @assertcheck/core
 ```
@@ -62,20 +65,18 @@ bunx jsr add @assertcheck/core
 ```ts
 import { assert, check, setAssertMode } from "@assertcheck/core"
 
-// Explicit mode — overrides auto-detection
-setAssertMode("enabled")
-
-// Standalone assertion
+// Single assertion
 assert.equal(order.status, "pending", {
   msg:    "order must be pending before payment",
   actual: "order.status",
   note:   "call resetOrder() first",
 })
 
-// Chainable wrapper
+// Fluent chain
 check(users)
+  .notEmpty("users list cannot be empty")
   .noNils("no null users allowed")
-  .uniqueBy("id", "duplicate user IDs")
+  .uniqueBy("id", "duplicate user IDs detected")
   .all(u => u.active, "all users must be active")
   .sortedBy("createdAt")
 ```
@@ -84,11 +85,13 @@ check(users)
 
 ## Modes
 
-| Mode         | Behaviour              | Default when            |
-|--------------|------------------------|-------------------------|
-| `"disabled"` | No-op — zero overhead  | `NODE_ENV=production`   |
-| `"warn"`     | Log only, no throw     | Manual                  |
-| `"enabled"`  | Log + throw            | All other environments  |
+Control the behaviour per environment — no code changes required.
+
+| Mode | Behaviour | Default when |
+|---|---|---|
+| `"disabled"` | No-op — zero overhead | `NODE_ENV=production` |
+| `"warn"` | Log only, no throw | Manual |
+| `"enabled"` | Log + throw | All other environments |
 
 ```ts
 import { setAssertMode } from "@assertcheck/core"
@@ -102,7 +105,7 @@ setAssertMode("enabled")  // full enforcement
 
 ## Error output
 
-Failures produce an ELM-inspired formatted block:
+Failures produce structured, ELM-inspired diagnostics — not stack-trace noise.
 
 ```
 ══════════════════ ● Order status mismatch ════════════════════
@@ -117,7 +120,7 @@ Failures produce an ELM-inspired formatted block:
 ════════════════════════════════════════════════════════════════
 ```
 
-Deep equality failures include a structured diff:
+Deep equality failures include a precise structural diff:
 
 ```
 ══════════════════ ● Deep equality failed ═════════════════════
@@ -132,17 +135,17 @@ Deep equality failures include a structured diff:
 ════════════════════════════════════════════════════════════════
 ```
 
-Output adapts to the runtime:
-- **Node.js / Bun / Deno** — ANSI colours on TTY, plain text in pipes. Respects `NO_COLOR`.
+Output adapts to the runtime automatically:
+- **Node / Bun / Deno** — ANSI colours on TTY, plain text in pipes. Respects `NO_COLOR`.
 - **Browser** — collapsible `console.groupCollapsed` in DevTools.
-- **Disabled / piped CI** — plain text, no escape codes.
+- **CI / piped** — clean plain text, no escape codes.
 
 ---
 
-## API overview
+## Full API
 
 ### Existence
-| Function | Description |
+| | |
 |---|---|
 | `assert.nil(v)` | Must be `null` or `undefined` |
 | `assert.notNil(v)` | Must not be `null` or `undefined` — narrows to `NonNullable<T>` |
@@ -150,7 +153,7 @@ Output adapts to the runtime:
 | `assert.notEmpty(v)` | Must not be empty |
 
 ### Type guards
-| Function | Narrows to |
+| | Narrows to |
 |---|---|
 | `assert.string(v)` | `string` |
 | `assert.number(v)` | `number` |
@@ -163,7 +166,7 @@ Output adapts to the runtime:
 | `assert.instanceOf(v, Ctor)` | `Ctor instance` |
 
 ### Equality
-| Function | Description |
+| | |
 |---|---|
 | `assert.equal(a, b)` | Strict `===` |
 | `assert.deepEqual(a, b)` | Deep equality via `_.isEqual`, with diff |
@@ -181,7 +184,8 @@ Output adapts to the runtime:
 `returns` · `pure` · `idempotent` · `arity` · `mapsDistinct` · `homomorphic`
 
 ### Negation
-`assert.not(fn, ...args)` — the **only** negation API. Wraps any assertion.
+
+`assert.not(fn, ...args)` — the only negation API. Wraps any assertion.
 
 ```ts
 assert.not(assert.equal, user.role, "admin")
@@ -196,7 +200,7 @@ assert.not(assert.hasKey, patch, "id")
 ```ts
 import { check } from "@assertcheck/core"
 
-// Arrays → ArrayChecker<T>
+// Arrays
 check(users)
   .notEmpty()
   .noNils()
@@ -205,7 +209,7 @@ check(users)
   .sortedBy("createdAt")
   .len(10)
 
-// Objects → ObjectChecker<T>
+// Objects
 check(config)
   .hasKeys(["host", "port"])
   .noNilValues()
@@ -232,16 +236,6 @@ try {
 
 ---
 
-## Build with Bun
-
-```bash
-bun run build      # compile to ./dist
-bun run typecheck  # tsc --noEmit
-bun test           # run test suite
-```
-
----
-
 ## Project structure
 
 ```
@@ -261,6 +255,27 @@ tests/
 
 ---
 
+## Build
+
+```bash
+bun run build      # compile to ./dist
+bun run typecheck  # tsc --noEmit
+bun test           # run test suite
+```
+
+---
+
 ## License
 
-MIT
+Licensed under the **Apache License 2.0** — free to use, modify, and distribute in any context, commercial or otherwise, as long as you retain attribution. See [LICENSE](./LICENSE).
+
+---
+
+## Built by Vagabond Studio
+
+Assertcheck is crafted and maintained by **Vagabond Studio** — a fully remote, senior-only development collective building high-quality TypeScript, Rails, and full-stack products for companies that care about craft.
+
+**Looking for a team?**  
+Whether you need to ship a product from scratch, reinforce an existing team, or bring technical leadership to a complex project — we work embedded in your stack, on your timeline, fully remote.
+
+→ [amichel@getmeelo.com](mailto:amichel@getmeelo.com)

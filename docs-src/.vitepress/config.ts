@@ -17,7 +17,8 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/guide/getting-started" },
       { text: "API", link: "/api/" },
-      { text: "Changelog", link: "https://github.com/assertcheck/core/releases" },
+      { text: "Skills", link: "/skills/" },
+      { text: "Changelog", link: "https://github.com/assertcheck/" },
     ],
 
     sidebar: {
@@ -42,6 +43,24 @@ export default defineConfig({
           text: "Recipes",
           items: [
             { text: "Custom assertions", link: "/guide/custom-assertions" },
+          ],
+        },
+      ],
+      "/skills/": [
+        {
+          text: "AI Workflows",
+          items: [
+            { text: "Overview", link: "/skills/" },
+          ],
+        },
+        {
+          text: "Skills",
+          items: [
+            { text: "assertcheck-feature", link: "/skills/feature" },
+            { text: "assertcheck-audit", link: "/skills/audit" },
+            { text: "assertcheck-spec", link: "/skills/spec" },
+            { text: "assertcheck-refactor", link: "/skills/refactor" },
+            { text: "assertcheck-selector", link: "/skills/selector" },
           ],
         },
       ],
@@ -97,11 +116,16 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: "github", link: "https://github.com/assertcheck/core" }],
+    socialLinks: [
+      { icon: "github", link: "https://github.com/assertcheck/" },
+      { icon: "linkedin", link: "https://www.linkedin.com/company/105997457/" },
+      { icon: "website", link: "https://vagabond.work/" },
+
+    ],
 
     footer: {
-      message: "Released under the MIT License.",
-      copyright: "Copyright © 2024-present assertcheck contributors",
+      message: "Released under the Apache License 2.0.",
+      copyright: "Copyright © 2024-present assertcheck contributors · Built by <a href=\"https://vagabond.work\" target=\"_blank\">Vagabond Studio</a>",
     },
 
     search: { provider: "local" },
