@@ -119,4 +119,4 @@ Both styles are equivalent at runtime — `check()` is purely a readability choi
 - Understand the [error format](/guide/error-format) — how to read and interpret failures.
 - Explore the [chainable API](/guide/check) for multi-step validation.
 - Read how to [build custom assertions](/guide/custom-assertions) using the formatting primitives.
-- Browse the full [API reference](/api/) for every assertion method and its parameters.
+- Browse the full [API reference](/api/index) for every assertion method and its parameters.

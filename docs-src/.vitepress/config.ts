@@ -6,6 +6,7 @@ export default defineConfig({
     "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
   lang: "en-US",
   base: "/assertcheck/",
+  ignoreDeadLinks: [/\/api\/@assertcheck\//],
 
   head: [["link", { rel: "icon", href: "/logo.svg" }]],
 

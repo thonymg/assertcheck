@@ -14,7 +14,7 @@ hero:
       link: /guide/negative-space
     - theme: alt
       text: API reference
-      link: /api/
+      link: /api/index
 
 features:
   - icon: ⬛
