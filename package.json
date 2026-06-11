@@ -47,7 +47,7 @@
     "release:npm": "npm publish",
     "release:jsr": "npx jsr publish",
     "release:dry": "npm publish --dry-run",
-    "publish": "npm publish"
+    "publish": "npm publish && npx jsr publish"
   },
   "keywords": ["assert", "assertion", "testing", "invariant", "typescript", "negative-space"],
   "dependencies": {
