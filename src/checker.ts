@@ -31,7 +31,8 @@
  * ```
  */
 
-import _ from "lodash"
+import { isPlainObject } from "lodash"
+import type { ValueIteratee } from "lodash"
 import { assert } from "./assert.ts"
 import type { AssertOptions } from "./types.ts"
 
@@ -158,7 +159,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
   }
 
   /** @see {@link assert.uniqueBy} */
-  uniqueBy(iteratee: _.ValueIteratee<T>, opts?: Opts): this {
+  uniqueBy(iteratee: ValueIteratee<T>, opts?: Opts): this {
     assert.uniqueBy(this.value, iteratee, opts)
     return this
   }
@@ -170,7 +171,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
   }
 
   /** @see {@link assert.sortedBy} */
-  sortedBy(iteratee: _.ValueIteratee<T>, opts?: Opts): this {
+  sortedBy(iteratee: ValueIteratee<T>, opts?: Opts): this {
     assert.sortedBy(this.value, iteratee, opts)
     return this
   }
@@ -218,7 +219,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
   }
 
   /** @see {@link assert.groupedBy} */
-  groupedBy(iteratee: _.ValueIteratee<T>, expectedGroups: string[], opts?: Opts): this {
+  groupedBy(iteratee: ValueIteratee<T>, expectedGroups: string[], opts?: Opts): this {
     assert.groupedBy(this.value, iteratee, expectedGroups, opts)
     return this
   }
@@ -348,6 +349,6 @@ export function check<T extends object>(value: T): ObjectChecker<T>
 export function check<T>(value: T): Checker<T>
 export function check(value: unknown): unknown {
   if (Array.isArray(value)) return new ArrayChecker(value)
-  if (_.isPlainObject(value)) return new ObjectChecker(value as object)
+  if (isPlainObject(value)) return new ObjectChecker(value as object)
   return new Checker(value)
 }

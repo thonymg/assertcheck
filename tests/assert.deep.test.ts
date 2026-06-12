@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from "bun:test"
-import { assert, AssertionError, setAssertMode, getAssertMode } from "../src/index.ts"
+import { assert, AssertionError, setAssertMode, getAssertMode } from "./index.shim.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS

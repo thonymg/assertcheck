@@ -1,14 +1,16 @@
 {
   "name": "@thonymg/assertcheck",
-  "version": "0.2.152",
+  "version": "0.3.21",
   "publish": {
-    "exclude": ["docs-src/images"]
+    "exclude": [
+      "docs-src/images"
+    ]
   },
   "exports": {
-    ".":          "./src/index.ts",
-    "./assert":   "./src/assert.ts",
-    "./checker":  "./src/checker.ts",
-    "./format":   "./src/format.ts",
-    "./types":    "./src/types.ts"
+    ".": "./src/index.ts",
+    "./assert": "./src/assert.ts",
+    "./checker": "./src/checker.ts",
+    "./format": "./src/format.ts",
+    "./types": "./src/types.ts"
   }
 }

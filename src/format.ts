@@ -27,7 +27,7 @@
  * ```
  */
 
-import _ from "lodash"
+import { isPlainObject, union, isEqual } from "lodash"
 import { ENV } from "./env.ts"
 import type { BlockDef, RowDef } from "./types.ts"
 
@@ -283,7 +283,7 @@ export const fmtValue = (v: unknown, depth = 0): string => {
  * @internal
  */
 export const diffObjects = (actual: unknown, expected: unknown): string[] => {
-  if (!_.isPlainObject(actual) || !_.isPlainObject(expected)) {
+  if (!isPlainObject(actual) || !isPlainObject(expected)) {
     return [
       row("expected", fmtValue(expected), color.added("+")),
       row("actual", fmtValue(actual), color.removed("✗")),
@@ -292,10 +292,10 @@ export const diffObjects = (actual: unknown, expected: unknown): string[] => {
 
   const a = actual as Record<string, unknown>
   const e = expected as Record<string, unknown>
-  const keys = _.union(Object.keys(a), Object.keys(e))
+  const keys = union(Object.keys(a), Object.keys(e))
 
   return keys.flatMap<string>((k) => {
-    if (_.isEqual(a[k], e[k])) return [row(k, fmtValue(a[k]), color.same("·"))]
+    if (isEqual(a[k], e[k])) return [row(k, fmtValue(a[k]), color.same("·"))]
 
     if (!(k in a)) return [row(k, fmtValue(e[k]), color.added("+")) + color.added("  ← missing")]
 

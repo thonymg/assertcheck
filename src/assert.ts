@@ -26,7 +26,15 @@
  * ```
  */
 
-import _ from "lodash"
+import {
+  isNil, isEmpty, isString, isNumber, isInteger, isFinite, isBoolean,
+  isArray, isPlainObject, isFunction, isEqual,
+  size as _size, includes, difference, differenceWith,
+  intersection, sortBy, uniq, iteratee as _iteratee,
+  first, last, sumBy, zip, groupBy, keys as _keys,
+  partition, has, get,
+} from "lodash"
+import type { ValueIteratee } from "lodash"
 import { isDisabled } from "./mode.ts"
 import { fail } from "./fail.ts"
 import { buildBlock, fmtValue, color, parseOpts, diffObjects } from "./format.ts"
@@ -90,10 +98,10 @@ export interface Assert {
   elementsMatch<T>(a: T[], b: T[], opts?: Opts): void
   subset<T>(arr: T[], sub: T[], opts?: Opts): void
   unique<T>(arr: T[], opts?: Opts): void
-  uniqueBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, opts?: Opts): void
+  uniqueBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void
   increasing(arr: number[], opts?: Opts): void
   nonDecreasing(arr: number[], opts?: Opts): void
-  sortedBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, opts?: Opts): void
+  sortedBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void
   first<T>(arr: T[], expected: T, opts?: Opts): void
   last<T>(arr: T[], expected: T, opts?: Opts): void
   sumBy<T>(arr: T[], iteratee: string | ((value: T) => number), expected: number, opts?: Opts): void
@@ -101,7 +109,7 @@ export interface Assert {
   flat(arr: unknown[], opts?: Opts): void
   allInstanceOf<T>(arr: unknown[], ctor: new (...args: unknown[]) => T, opts?: Opts): asserts arr is T[]
   zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void
-  groupedBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, expectedGroups: string[], opts?: Opts): void
+  groupedBy<T>(arr: T[], iteratee: ValueIteratee<T>, expectedGroups: string[], opts?: Opts): void
   partition<T>(arr: T[], predicate: (v: T) => boolean, expectedMatch: number, expectedRest: number, opts?: Opts): void
   // ── Objects
   hasKey<T extends object, K extends string>(obj: T, key: K, opts?: Opts): asserts obj is T & Record<K, unknown>
@@ -146,7 +154,7 @@ export const assert: Assert = {
    */
   nil(v: unknown, opts?: Opts): asserts v is null | undefined {
     if (isDisabled()) return
-    if (_.isNil(v)) return
+    if (isNil(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "nil",
@@ -183,7 +191,7 @@ export const assert: Assert = {
    */
   notNil<T>(v: T | null | undefined, opts?: Opts): asserts v is NonNullable<T> {
     if (isDisabled()) return
-    if (!_.isNil(v)) return
+    if (!isNil(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "notNil",
@@ -203,7 +211,7 @@ export const assert: Assert = {
 
   /**
    * Asserts that a value is empty.
-   * Uses `_.isEmpty`, which handles strings, arrays, objects, Map, and Set.
+   * Uses `isEmpty`, which handles strings, arrays, objects, Map, and Set.
    *
    * @param v    - The value to check.
    * @param opts - Optional message / context.
@@ -215,7 +223,7 @@ export const assert: Assert = {
    */
   empty(v: unknown, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEmpty(v)) return
+    if (isEmpty(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "empty",
@@ -232,7 +240,7 @@ export const assert: Assert = {
 
   /**
    * Asserts that a value is **not** empty.
-   * Uses `_.isEmpty`, which handles strings, arrays, objects, Map, and Set.
+   * Uses `isEmpty`, which handles strings, arrays, objects, Map, and Set.
    *
    * @param v    - The value to check.
    * @param opts - Optional message / context.
@@ -244,7 +252,7 @@ export const assert: Assert = {
    */
   notEmpty<T>(v: T, opts?: Opts): asserts v is NonNullable<T> {
     if (isDisabled()) return
-    if (!_.isEmpty(v as unknown)) return
+    if (!isEmpty(v as unknown)) return
     const o = parseOpts(opts)
     fail({
       assertion: "notEmpty",
@@ -269,7 +277,7 @@ export const assert: Assert = {
    */
   string(v: unknown, opts?: Opts): asserts v is string {
     if (isDisabled()) return
-    if (_.isString(v)) return
+    if (isString(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "string",
@@ -296,7 +304,7 @@ export const assert: Assert = {
    */
   number(v: unknown, opts?: Opts): asserts v is number {
     if (isDisabled()) return
-    if (_.isNumber(v)) return
+    if (isNumber(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "number",
@@ -323,7 +331,7 @@ export const assert: Assert = {
    */
   integer(v: unknown, opts?: Opts): asserts v is number {
     if (isDisabled()) return
-    if (_.isInteger(v)) return
+    if (isInteger(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "integer",
@@ -344,7 +352,7 @@ export const assert: Assert = {
    */
   finite(v: unknown, opts?: Opts): asserts v is number {
     if (isDisabled()) return
-    if (_.isFinite(v)) return
+    if (isFinite(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "finite",
@@ -365,7 +373,7 @@ export const assert: Assert = {
    */
   boolean(v: unknown, opts?: Opts): asserts v is boolean {
     if (isDisabled()) return
-    if (_.isBoolean(v)) return
+    if (isBoolean(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "boolean",
@@ -388,7 +396,7 @@ export const assert: Assert = {
    */
   array<T = unknown>(v: unknown, opts?: Opts): asserts v is T[] {
     if (isDisabled()) return
-    if (_.isArray(v)) return
+    if (isArray(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "array",
@@ -418,7 +426,7 @@ export const assert: Assert = {
    */
   object<T extends object = object>(v: unknown, opts?: Opts): asserts v is T {
     if (isDisabled()) return
-    if (_.isPlainObject(v)) return
+    if (isPlainObject(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "object",
@@ -448,7 +456,7 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts v is T {
     if (isDisabled()) return
-    if (_.isFunction(v)) return
+    if (isFunction(v)) return
     const o = parseOpts(opts)
     fail({
       assertion: "func",
@@ -543,7 +551,7 @@ export const assert: Assert = {
   },
 
   /**
-   * Asserts deep equality using `_.isEqual`.
+   * Asserts deep equality using `isEqual`.
    * Works on objects, arrays, and nested structures.
    *
    * @param actual   - The value under test.
@@ -557,7 +565,7 @@ export const assert: Assert = {
    */
   deepEqual<T>(actual: T, expected: T, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(actual, expected)) return
+    if (isEqual(actual, expected)) return
     const o = parseOpts(opts)
     fail({
       assertion: "deepEqual",
@@ -582,7 +590,7 @@ export const assert: Assert = {
    */
   positive(n: number, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isFinite(n) && n > 0) return
+    if (isFinite(n) && n > 0) return
     const o = parseOpts(opts)
     fail({
       assertion: "positive",
@@ -606,7 +614,7 @@ export const assert: Assert = {
    */
   negative(n: number, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isFinite(n) && n < 0) return
+    if (isFinite(n) && n < 0) return
     const o = parseOpts(opts)
     fail({
       assertion: "negative",
@@ -842,7 +850,7 @@ export const assert: Assert = {
    */
   len<T>(arr: T[], n: number, opts?: Opts): void {
     if (isDisabled()) return
-    const size = _.size(arr)
+    const size = _size(arr)
     if (size === n) return
     const o = parseOpts(opts)
     fail({
@@ -867,7 +875,7 @@ export const assert: Assert = {
    */
   longerThan<T>(arr: T[], n: number, opts?: Opts): void {
     if (isDisabled()) return
-    const size = _.size(arr)
+    const size = _size(arr)
     if (size > n) return
     const o = parseOpts(opts)
     fail({
@@ -892,7 +900,7 @@ export const assert: Assert = {
    */
   shorterThan<T>(arr: T[], n: number, opts?: Opts): void {
     if (isDisabled()) return
-    const size = _.size(arr)
+    const size = _size(arr)
     if (size < n) return
     const o = parseOpts(opts)
     fail({
@@ -912,12 +920,12 @@ export const assert: Assert = {
   },
 
   /**
-   * Asserts that the array contains the given item (using `_.includes`).
+   * Asserts that the array contains the given item (using `includes`).
    * @example `assert.includes(roles, "admin", "admin role required")`
    */
   includes<T>(arr: T[], item: T, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.includes(arr, item)) return
+    if (includes(arr, item)) return
     const o = parseOpts(opts)
     fail({
       assertion: "includes",
@@ -1078,7 +1086,7 @@ export const assert: Assert = {
    */
   containsAll<T>(arr: T[], items: T[], opts?: Opts): void {
     if (isDisabled()) return
-    const missing = _.difference(items, arr)
+    const missing = difference(items, arr)
     if (!missing.length) return
     const o = parseOpts(opts)
     fail({
@@ -1104,7 +1112,7 @@ export const assert: Assert = {
    */
   containsNone<T>(arr: T[], items: T[], opts?: Opts): void {
     if (isDisabled()) return
-    const found = _.intersection(arr, items)
+    const found = intersection(arr, items)
     if (!found.length) return
     const o = parseOpts(opts)
     fail({
@@ -1126,15 +1134,15 @@ export const assert: Assert = {
 
   /**
    * Asserts that the two arrays have the same elements regardless of order.
-   * Uses `_.sortBy` for a deterministic comparison (works with objects).
+   * Uses `sortBy` for a deterministic comparison (works with objects).
    * @example `assert.elementsMatch(result, expected, "wrong set of ids")`
    */
   elementsMatch<T>(a: T[], b: T[], opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(_.sortBy(a), _.sortBy(b))) return
+    if (isEqual(sortBy(a), sortBy(b))) return
     const o = parseOpts(opts)
-    const only_a = _.differenceWith(a, b, _.isEqual)
-    const only_b = _.differenceWith(b, a, _.isEqual)
+    const only_a = differenceWith(a, b, isEqual)
+    const only_b = differenceWith(b, a, isEqual)
     fail({
       assertion: "elementsMatch",
       message: buildBlock({
@@ -1165,7 +1173,7 @@ export const assert: Assert = {
    */
   subset<T>(arr: T[], sub: T[], opts?: Opts): void {
     if (isDisabled()) return
-    const missing = _.difference(sub, arr)
+    const missing = difference(sub, arr)
     if (!missing.length) return
     const o = parseOpts(opts)
     fail({
@@ -1199,7 +1207,7 @@ export const assert: Assert = {
       message: buildBlock({
         assertion: "unique",
         title: o.msg ?? "Duplicate elements found",
-        rows: _.uniq(dupes).map((d) => ({
+        rows: uniq(dupes).map((d) => ({
           label: "duplicate",
           value: fmtValue(d),
           indicator: color.removed("✗"),
@@ -1217,9 +1225,9 @@ export const assert: Assert = {
    * Equivalent to Ruby `arr.uniq { |x| x.key }.length == arr.length`.
    * @example `assert.uniqueBy(users, "email", "duplicate emails")`
    */
-  uniqueBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, opts?: Opts): void {
+  uniqueBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void {
     if (isDisabled()) return
-    const fn = _.iteratee(iteratee) as (v: T) => unknown
+    const fn = _iteratee(iteratee) as (v: T) => unknown
     const vals = arr.map(fn)
     const dupes = vals.filter((v, i) => vals.indexOf(v) !== i)
     if (!dupes.length) return
@@ -1229,7 +1237,7 @@ export const assert: Assert = {
       message: buildBlock({
         assertion: "uniqueBy",
         title: o.msg ?? "Duplicate values for iteratee",
-        rows: _.uniq(dupes).map((d) => ({
+        rows: uniq(dupes).map((d) => ({
           label: "duplicate",
           value: fmtValue(d),
           indicator: color.removed("✗"),
@@ -1295,9 +1303,9 @@ export const assert: Assert = {
    * Asserts that the array is sorted by the given iteratee — Ruby `sort_by`.
    * @example `assert.sortedBy(events, "timestamp", "events must be chronological")`
    */
-  sortedBy<T>(arr: T[], iteratee: _.ValueIteratee<T>, opts?: Opts): void {
+  sortedBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(arr, _.sortBy(arr, iteratee))) return
+    if (isEqual(arr, sortBy(arr, iteratee))) return
     const o = parseOpts(opts)
     fail({
       assertion: "sortedBy",
@@ -1318,7 +1326,7 @@ export const assert: Assert = {
    */
   first<T>(arr: T[], expected: T, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(_.first(arr), expected)) return
+    if (isEqual(first(arr), expected)) return
     const o = parseOpts(opts)
     fail({
       assertion: "first",
@@ -1327,11 +1335,11 @@ export const assert: Assert = {
         title: o.msg ?? "Unexpected first element",
         rows: [
           { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
-          { label: "actual", value: fmtValue(_.first(arr)), indicator: color.removed("✗") },
+          { label: "actual", value: fmtValue(first(arr)), indicator: color.removed("✗") },
         ],
         note: o.note,
       }),
-      actual: _.first(arr),
+      actual: first(arr),
       expected,
     })
   },
@@ -1342,7 +1350,7 @@ export const assert: Assert = {
    */
   last<T>(arr: T[], expected: T, opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(_.last(arr), expected)) return
+    if (isEqual(last(arr), expected)) return
     const o = parseOpts(opts)
     fail({
       assertion: "last",
@@ -1351,17 +1359,17 @@ export const assert: Assert = {
         title: o.msg ?? "Unexpected last element",
         rows: [
           { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
-          { label: "actual", value: fmtValue(_.last(arr)), indicator: color.removed("✗") },
+          { label: "actual", value: fmtValue(last(arr)), indicator: color.removed("✗") },
         ],
         note: o.note,
       }),
-      actual: _.last(arr),
+      actual: last(arr),
       expected,
     })
   },
 
   /**
-   * Asserts that `_.sumBy(arr, iteratee)` equals `expected` — Ruby `arr.sum`.
+   * Asserts that `sumBy(arr, iteratee)` equals `expected` — Ruby `arr.sum`.
    * @example `assert.sumBy(lineItems, "totalCents", invoiceTotal, "line items must match invoice")`
    */
   sumBy<T>(
@@ -1371,7 +1379,7 @@ export const assert: Assert = {
     opts?: Opts
   ): void {
     if (isDisabled()) return
-    const actual = _.sumBy(arr, iteratee)
+    const actual = sumBy(arr, iteratee)
     if (actual === expected) return
     const o = parseOpts(opts)
     fail({
@@ -1398,7 +1406,7 @@ export const assert: Assert = {
    */
   noNils<T>(arr: (T | null | undefined)[], opts?: Opts): asserts arr is T[] {
     if (isDisabled()) return
-    const i = arr.findIndex(_.isNil)
+    const i = arr.findIndex(isNil)
     if (i === -1) return
     const o = parseOpts(opts)
     fail({
@@ -1420,7 +1428,7 @@ export const assert: Assert = {
    */
   flat(arr: unknown[], opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(arr, arr.flat(Infinity))) return
+    if (isEqual(arr, arr.flat(Infinity))) return
     const o = parseOpts(opts)
     fail({
       assertion: "flat",
@@ -1470,7 +1478,7 @@ export const assert: Assert = {
    */
   zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void {
     if (isDisabled()) return
-    const bad = _.zip(a, b).find(([x, y]) => !predicate(x as A, y as B))
+    const bad = zip(a, b).find(([x, y]) => !predicate(x as A, y as B))
     if (!bad) return
     const o = parseOpts(opts)
     fail({
@@ -1487,19 +1495,19 @@ export const assert: Assert = {
   },
 
   /**
-   * Asserts the expected group keys produced by `_.groupBy`.
+   * Asserts the expected group keys produced by `groupBy`.
    * @example `assert.groupedBy(events, "type", ["click","view","purchase"])`
    */
   groupedBy<T>(
     arr: T[],
-    iteratee: _.ValueIteratee<T>,
+    iteratee: ValueIteratee<T>,
     expectedGroups: string[],
     opts?: Opts
   ): void {
     if (isDisabled()) return
-    const groups = _.groupBy(arr, iteratee)
-    const missing = _.difference(expectedGroups, Object.keys(groups))
-    const extra = _.difference(Object.keys(groups), expectedGroups)
+    const groups = groupBy(arr, iteratee)
+    const missing = difference(expectedGroups, Object.keys(groups))
+    const extra = difference(Object.keys(groups), expectedGroups)
     if (!missing.length && !extra.length) return
     const o = parseOpts(opts)
     fail({
@@ -1527,7 +1535,7 @@ export const assert: Assert = {
   },
 
   /**
-   * Asserts the sizes of both partitions produced by `_.partition`.
+   * Asserts the sizes of both partitions produced by `partition`.
    * @example `assert.partition(jobs, j => j.done, 8, 2, "8 done, 2 pending")`
    */
   partition<T>(
@@ -1538,7 +1546,7 @@ export const assert: Assert = {
     opts?: Opts
   ): void {
     if (isDisabled()) return
-    const [matched, rest] = _.partition(arr, predicate)
+    const [matched, rest] = partition(arr, predicate)
     if (matched.length === expectedMatch && rest.length === expectedRest) return
     const o = parseOpts(opts)
     fail({
@@ -1574,7 +1582,7 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts obj is T & Record<K, unknown> {
     if (isDisabled()) return
-    if (_.has(obj, key)) return
+    if (has(obj, key)) return
     const o = parseOpts(opts)
     fail({
       assertion: "hasKey",
@@ -1603,7 +1611,7 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts obj is T & Record<K, unknown> {
     if (isDisabled()) return
-    const missing = keys.filter((k) => !_.has(obj, k))
+    const missing = keys.filter((k) => !has(obj, k))
     if (!missing.length) return
     const o = parseOpts(opts)
     fail({
@@ -1634,9 +1642,9 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts obj is Record<K, unknown> {
     if (isDisabled()) return
-    const actual = _.keys(obj)
-    const missing = _.difference(keys, actual)
-    const extra = _.difference(actual, keys)
+    const actual = _keys(obj)
+    const missing = difference(keys, actual)
+    const extra = difference(actual, keys)
     if (!missing.length && !extra.length) return
     const o = parseOpts(opts)
     fail({
@@ -1670,7 +1678,7 @@ export const assert: Assert = {
    */
   hasOnlyKeys(obj: object, allowed: string[], opts?: Opts): void {
     if (isDisabled()) return
-    const extra = _.difference(_.keys(obj), allowed)
+    const extra = difference(_keys(obj), allowed)
     if (!extra.length) return
     const o = parseOpts(opts)
     fail({
@@ -1691,13 +1699,13 @@ export const assert: Assert = {
   },
 
   /**
-   * Asserts that `obj[key] === expected` (deep equality via `_.isEqual`).
+   * Asserts that `obj[key] === expected` (deep equality via `isEqual`).
    * The value type is inferred from `T[K]`.
    * @example `assert.hasValue(config, "port", 5432, "wrong database port")`
    */
   hasValue<T extends object, K extends keyof T>(obj: T, key: K, expected: T[K], opts?: Opts): void {
     if (isDisabled()) return
-    if (_.isEqual(obj[key], expected)) return
+    if (isEqual(obj[key], expected)) return
     const o = parseOpts(opts)
     fail({
       assertion: "hasValue",
@@ -1721,7 +1729,7 @@ export const assert: Assert = {
    */
   containsSubset<T extends object>(obj: T, subset: Partial<T>, opts?: Opts): void {
     if (isDisabled()) return
-    const bad = (_.keys(subset) as (keyof T)[]).find((k) => !_.isEqual(obj[k], subset[k]))
+    const bad = (_keys(subset) as (keyof T)[]).find((k) => !isEqual(obj[k], subset[k]))
     if (bad === undefined) return
     const o = parseOpts(opts)
     fail({
@@ -1751,7 +1759,7 @@ export const assert: Assert = {
     opts?: Opts
   ): void {
     if (isDisabled()) return
-    const bad = (_.keys(obj) as (keyof T)[]).find((k) => !predicate(obj[k], k))
+    const bad = (_keys(obj) as (keyof T)[]).find((k) => !predicate(obj[k], k))
     if (bad === undefined) return
     const o = parseOpts(opts)
     fail({
@@ -1773,7 +1781,7 @@ export const assert: Assert = {
    */
   noNilValues<T extends object>(obj: T, opts?: Opts): void {
     if (isDisabled()) return
-    const bad = (_.keys(obj) as (keyof T)[]).find((k) => _.isNil(obj[k]))
+    const bad = (_keys(obj) as (keyof T)[]).find((k) => isNil(obj[k]))
     if (bad === undefined) return
     const o = parseOpts(opts)
     fail({
@@ -1795,8 +1803,8 @@ export const assert: Assert = {
    */
   dig<T>(obj: T, path: string | string[], expected: unknown, opts?: Opts): void {
     if (isDisabled()) return
-    const actual = _.get(obj as object, path)
-    if (_.isEqual(actual, expected)) return
+    const actual = get(obj as object, path)
+    if (isEqual(actual, expected)) return
     const o = parseOpts(opts)
     fail({
       assertion: "dig",
@@ -1830,7 +1838,7 @@ export const assert: Assert = {
   ): void {
     if (isDisabled()) return
     const actual = fn(...args)
-    if (_.isEqual(actual, expected)) return
+    if (isEqual(actual, expected)) return
     const o = parseOpts(opts)
     fail({
       assertion: "returns",
@@ -1861,7 +1869,7 @@ export const assert: Assert = {
     if (isDisabled()) return
     const r1 = fn(...args)
     const r2 = fn(...args)
-    if (_.isEqual(r1, r2)) return
+    if (isEqual(r1, r2)) return
     const o = parseOpts(opts)
     fail({
       assertion: "pure",
@@ -1887,7 +1895,7 @@ export const assert: Assert = {
     if (isDisabled()) return
     const r1 = fn(arg)
     const r2 = fn(r1)
-    if (_.isEqual(r1, r2)) return
+    if (isEqual(r1, r2)) return
     const o = parseOpts(opts)
     fail({
       assertion: "idempotent",
@@ -1938,7 +1946,7 @@ export const assert: Assert = {
     if (isDisabled()) return
     const ra = fn(a)
     const rb = fn(b)
-    if (!_.isEqual(ra, rb)) return
+    if (!isEqual(ra, rb)) return
     const o = parseOpts(opts)
     fail({
       assertion: "mapsDistinct",
@@ -1976,7 +1984,7 @@ export const assert: Assert = {
     if (isDisabled()) return
     const combined = fn(combine(a, b))
     const distributed = combine(fn(a), fn(b))
-    if (_.isEqual(combined, distributed)) return
+    if (isEqual(combined, distributed)) return
     const o = parseOpts(opts)
     fail({
       assertion: "homomorphic",

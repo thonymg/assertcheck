@@ -1,6 +1,6 @@
 {
   "name": "assertcheck",
-  "version": "0.2.152",
+  "version": "0.3.21",
   "description": "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
   "license": "Apache-2.0",
   "author": "Anthony Michel (@thonymg) - Vagabond Studio (https://vagabond.work)",
@@ -32,9 +32,11 @@
   },
   "files": ["dist", "src"],
   "scripts": {
-    "build": "bun build ./src/index.ts --outdir ./dist --target node --format esm && bun build ./src/index.ts --outdir ./dist --target node --format cjs --outfile index.cjs",
+    "build": "rm -rf dist && bun build ./src/index.ts --outdir ./dist --target node --format esm --external lodash --minify && bun build ./src/index.ts --outdir ./dist --target node --format cjs --outfile index.cjs --external lodash --minify",
     "typecheck": "tsc --project tsconfig.check.json",
     "test": "bun test",
+    "test:src": "bun test",
+    "test:dist": "cp tests/index.shim.ts /tmp/shim.bak.ts && cp tests/index.shim.dist.ts tests/index.shim.ts && bun test; cp /tmp/shim.bak.ts tests/index.shim.ts",
     "docs:api": "typedoc --options typedoc.md.json",
     "docs:dev": "bun run docs:api && vitepress dev docs-src",
     "docs:build": "bun run docs:api && vitepress build docs-src",

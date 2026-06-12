@@ -53,9 +53,12 @@ const ENV_ALIASES: Record<Env, string[]> = {
  * Returns `""` when `process` is not available (browser / Deno without flag).
  * @internal
  */
+// Indirection via variable prevents bundlers from inlining process.env.NODE_ENV
+// at build time — the value must be read at runtime.
+const _NODE_ENV_KEY = "NODE_ENV"
 const currentNodeEnv = (): string => {
   if (typeof process === "undefined") return ""
-  return (process.env["NODE_ENV"] ?? "").toLowerCase().trim()
+  return (process.env[_NODE_ENV_KEY] ?? "").toLowerCase().trim()
 }
 
 /**
