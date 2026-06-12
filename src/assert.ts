@@ -27,12 +27,34 @@
  */
 
 import {
-  isNil, isEmpty, isString, isNumber, isInteger, isFinite, isBoolean,
-  isArray, isPlainObject, isFunction, isEqual,
-  size as _size, includes, difference, differenceWith,
-  intersection, sortBy, uniq, iteratee as _iteratee,
-  first, last, sumBy, zip, groupBy, keys as _keys,
-  partition, has, get,
+  isNil,
+  isEmpty,
+  isString,
+  isNumber,
+  isInteger,
+  isFinite,
+  isBoolean,
+  isArray,
+  isPlainObject,
+  isFunction,
+  isEqual,
+  size as _size,
+  includes,
+  difference,
+  differenceWith,
+  intersection,
+  sortBy,
+  uniq,
+  iteratee as _iteratee,
+  first,
+  last,
+  sumBy,
+  zip,
+  groupBy,
+  keys as _keys,
+  partition,
+  has,
+  get,
 } from "lodash"
 import type { ValueIteratee } from "lodash"
 import { isDisabled } from "./mode.ts"
@@ -68,7 +90,10 @@ export interface Assert {
   boolean(v: unknown, opts?: Opts): asserts v is boolean
   array<T = unknown>(v: unknown, opts?: Opts): asserts v is T[]
   object<T extends object = object>(v: unknown, opts?: Opts): asserts v is T
-  func<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown>(v: unknown, opts?: Opts): asserts v is T
+  func<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown>(
+    v: unknown,
+    opts?: Opts
+  ): asserts v is T
   instanceOf<T>(v: unknown, ctor: new (...args: unknown[]) => T, opts?: Opts): asserts v is T
   // ── Equality
   equal<T>(actual: T, expected: T, opts?: Opts): void
@@ -88,7 +113,11 @@ export interface Assert {
   longerThan<T>(arr: T[], n: number, opts?: Opts): void
   shorterThan<T>(arr: T[], n: number, opts?: Opts): void
   includes<T>(arr: T[], item: T, opts?: Opts): void
-  all<T, U extends T>(arr: T[], predicate: ((v: T) => v is U) | ((v: T) => boolean), opts?: Opts): asserts arr is U[]
+  all<T, U extends T>(
+    arr: T[],
+    predicate: ((v: T) => v is U) | ((v: T) => boolean),
+    opts?: Opts
+  ): asserts arr is U[]
   any<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void
   none<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void
   one<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void
@@ -107,23 +136,58 @@ export interface Assert {
   sumBy<T>(arr: T[], iteratee: string | ((value: T) => number), expected: number, opts?: Opts): void
   noNils<T>(arr: (T | null | undefined)[], opts?: Opts): asserts arr is T[]
   flat(arr: unknown[], opts?: Opts): void
-  allInstanceOf<T>(arr: unknown[], ctor: new (...args: unknown[]) => T, opts?: Opts): asserts arr is T[]
+  allInstanceOf<T>(
+    arr: unknown[],
+    ctor: new (...args: unknown[]) => T,
+    opts?: Opts
+  ): asserts arr is T[]
   zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void
   groupedBy<T>(arr: T[], iteratee: ValueIteratee<T>, expectedGroups: string[], opts?: Opts): void
-  partition<T>(arr: T[], predicate: (v: T) => boolean, expectedMatch: number, expectedRest: number, opts?: Opts): void
+  partition<T>(
+    arr: T[],
+    predicate: (v: T) => boolean,
+    expectedMatch: number,
+    expectedRest: number,
+    opts?: Opts
+  ): void
   // ── Objects
-  hasKey<T extends object, K extends string>(obj: T, key: K, opts?: Opts): asserts obj is T & Record<K, unknown>
-  hasKeys<T extends object, K extends string>(obj: T, keys: K[], opts?: Opts): asserts obj is T & Record<K, unknown>
-  hasExactKeys<K extends string>(obj: object, keys: K[], opts?: Opts): asserts obj is Record<K, unknown>
+  hasKey<T extends object, K extends string>(
+    obj: T,
+    key: K,
+    opts?: Opts
+  ): asserts obj is T & Record<K, unknown>
+  hasKeys<T extends object, K extends string>(
+    obj: T,
+    keys: K[],
+    opts?: Opts
+  ): asserts obj is T & Record<K, unknown>
+  hasExactKeys<K extends string>(
+    obj: object,
+    keys: K[],
+    opts?: Opts
+  ): asserts obj is Record<K, unknown>
   hasOnlyKeys(obj: object, allowed: string[], opts?: Opts): void
   hasValue<T extends object, K extends keyof T>(obj: T, key: K, expected: T[K], opts?: Opts): void
   containsSubset<T extends object>(obj: T, subset: Partial<T>, opts?: Opts): void
-  allValuesMatch<T extends object>(obj: T, predicate: (v: T[keyof T], k: keyof T) => boolean, opts?: Opts): void
+  allValuesMatch<T extends object>(
+    obj: T,
+    predicate: (v: T[keyof T], k: keyof T) => boolean,
+    opts?: Opts
+  ): void
   noNilValues<T extends object>(obj: T, opts?: Opts): void
   dig<T>(obj: T, path: string | string[], expected: unknown, opts?: Opts): void
   // ── Functions
-  returns<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, args: TArgs, expected: TReturn, opts?: Opts): void
-  pure<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, args: TArgs, opts?: Opts): void
+  returns<TArgs extends unknown[], TReturn>(
+    fn: (...args: TArgs) => TReturn,
+    args: TArgs,
+    expected: TReturn,
+    opts?: Opts
+  ): void
+  pure<TArgs extends unknown[], TReturn>(
+    fn: (...args: TArgs) => TReturn,
+    args: TArgs,
+    opts?: Opts
+  ): void
   idempotent<T>(fn: (v: T) => T, arg: T, opts?: Opts): void
   arity(fn: (...args: unknown[]) => unknown, n: number, opts?: Opts): void
   mapsDistinct<T, U>(fn: (v: T) => U, a: T, b: T, opts?: Opts): void
@@ -1498,12 +1562,7 @@ export const assert: Assert = {
    * Asserts the expected group keys produced by `groupBy`.
    * @example `assert.groupedBy(events, "type", ["click","view","purchase"])`
    */
-  groupedBy<T>(
-    arr: T[],
-    iteratee: ValueIteratee<T>,
-    expectedGroups: string[],
-    opts?: Opts
-  ): void {
+  groupedBy<T>(arr: T[], iteratee: ValueIteratee<T>, expectedGroups: string[], opts?: Opts): void {
     if (isDisabled()) return
     const groups = groupBy(arr, iteratee)
     const missing = difference(expectedGroups, Object.keys(groups))
