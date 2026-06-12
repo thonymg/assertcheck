@@ -1,4 +1,4 @@
-# Assertcheck
+# AssertCheck
 
 > **Negative Space Programming for TypeScript.**
 > Declare what cannot exist. Fail where it matters. Ship with confidence.
@@ -45,15 +45,15 @@ Not a validator. Not a schema library. A contract system — at every boundary, 
 
 ## Why Assertcheck?
 
-| | `if/return` | `zod` / `yup` | **Assertcheck** |
-|---|---|---|---|
-| Fails loudly in dev | No | Yes | Yes |
-| Zero overhead in prod | No | No | Yes (`disabled` mode) |
-| Type narrowing | No | Yes | Yes |
-| Structured, readable errors | No | Partial | Yes |
-| Chainable fluent API | No | No | Yes |
-| Works on functions/purity | No | No | Yes |
-| AI skills included | No | No | Yes |
+| | `if/return` | `node:assert` | `zod` / `yup` | **Assertcheck** |
+|---|---|---|---|---|
+| Fails loudly in dev | No | Yes | Yes | Yes |
+| Zero overhead in prod | No | No | No | Yes (`disabled` mode) |
+| Type narrowing | No | No | Yes | Yes |
+| Structured, readable errors | No | Partial | Partial | Yes |
+| Chainable fluent API | No | No | No | Yes |
+| Works on functions/purity | No | No | No | Yes |
+| AI skills included | No | No | No | Yes |
 
 ---
 

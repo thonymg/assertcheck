@@ -27,10 +27,10 @@ export default defineConfig({
 
     // OpenGraph — defaults (overridden per page via transformHead)
     ["meta", { property: "og:type",        content: "website" }],
-    ["meta", { property: "og:site_name",   content: "assertcheck" }],
+    ["meta", { property: "og:site_name",   content: "AssertCheck" }],
     ["meta", { property: "og:locale",      content: "en_US" }],
     ["meta", { property: "og:url",         content: SITE_URL }],
-    ["meta", { property: "og:title",       content: "assertcheck — Negative Space Programming for TypeScript" }],
+    ["meta", { property: "og:title",       content: "AssertCheck — Negative Space Programming for TypeScript" }],
     ["meta", { property: "og:description", content: SITE_DESC }],
     ["meta", { property: "og:image",       content: OG_IMAGE }],
     ["meta", { property: "og:image:secure_url", content: OG_IMAGE }],
@@ -43,10 +43,10 @@ export default defineConfig({
     ["meta", { name: "twitter:card",        content: "summary_large_image" }],
     ["meta", { name: "twitter:site",        content: "@vagabondstudio" }],
     ["meta", { name: "twitter:creator",     content: "@vagabondstudio" }],
-    ["meta", { name: "twitter:title",       content: "assertcheck — Negative Space Programming for TypeScript" }],
+    ["meta", { name: "twitter:title",       content: "AssertCheck — Negative Space Programming for TypeScript" }],
     ["meta", { name: "twitter:description", content: SITE_DESC }],
     ["meta", { name: "twitter:image",       content: OG_IMAGE }],
-    ["meta", { name: "twitter:image:alt",   content: "assertcheck — declare invalid states explicitly, fail fast at the boundary" }],
+    ["meta", { name: "twitter:image:alt",   content: "AssertCheck — declare invalid states explicitly, fail fast at the boundary" }],
 
     // LinkedIn (uses OG tags — already covered above)
     // Discord (uses OG tags — already covered above)
@@ -60,8 +60,8 @@ export default defineConfig({
     const pageDescription = pageData.frontmatter.description as string | undefined
 
     const title       = pageTitle
-      ? `${pageTitle} | assertcheck`
-      : "assertcheck — Negative Space Programming for TypeScript"
+      ? `${pageTitle} | AssertCheck`
+      : "AssertCheck — Negative Space Programming for TypeScript"
     const description = pageDescription ?? siteData.description
 
     head.push(["meta", { property: "og:title",        content: title }])
@@ -74,7 +74,7 @@ export default defineConfig({
 
   themeConfig: {
     logo: "/logo.svg",
-    siteTitle: "assertcheck",
+    siteTitle: "AssertCheck",
 
     nav: [
       { text: "Guide",          link: "/guide/getting-started" },
@@ -119,11 +119,11 @@ export default defineConfig({
         {
           text: "Skills",
           items: [
-            { text: "assertcheck-feature",  link: "/skills/feature" },
-            { text: "assertcheck-audit",    link: "/skills/audit" },
-            { text: "assertcheck-spec",     link: "/skills/spec" },
-            { text: "assertcheck-refactor", link: "/skills/refactor" },
-            { text: "assertcheck-selector", link: "/skills/selector" },
+            { text: "AssertCheck Feature",  link: "/skills/feature" },
+            { text: "AssertCheck Audit",    link: "/skills/audit" },
+            { text: "AssertCheck Spec",     link: "/skills/spec" },
+            { text: "AssertCheck Refactor", link: "/skills/refactor" },
+            { text: "AssertCheck Selector", link: "/skills/selector" },
           ],
         },
       ],

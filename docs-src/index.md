@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: "assertcheck"
+  name: "AssertCheck"
   text: "Define what your code must never accept."
   tagline: Production-grade assertion library for TypeScript. Explicit contracts, fail-fast execution, richly formatted errors — zero overhead when silent.
   actions:
@@ -10,7 +10,7 @@ hero:
       text: Get started
       link: /guide/getting-started
     - theme: alt
-      text: Why assertcheck?
+      text: Why AssertCheck?
       link: /guide/negative-space
     - theme: alt
       text: API reference
@@ -39,11 +39,11 @@ Static types are a compile-time promise. At runtime, that promise is gone.
 Every `null` you thought was impossible, every shape you assumed was enforced — they all arrive anyway.
 The standard response is defensive code: `if (!x) return`. Silent. Invisible. The bug propagates.
 
-assertcheck replaces that with a **contract system**: declare what must never happen, fire exactly where it happens, and surface exactly what went wrong.
+AssertCheck replaces that with a **contract system**: declare what must never happen, fire exactly where it happens, and surface exactly what went wrong.
 
 ::: code-group
 
-```ts [Without assertcheck — silent failures]
+```ts [Without AssertCheck — silent failures]
 function chargeOrder(order: Order) {
   if (!order) return                       // absorbed — caller gets undefined, no trace
   if (!order.amount) return               // absorbed — negative amounts silently pass
@@ -53,7 +53,7 @@ function chargeOrder(order: Order) {
 }
 ```
 
-```ts [With assertcheck — explicit contracts]
+```ts [With AssertCheck — explicit contracts]
 function chargeOrder(order: Order) {
   assert.notNil(order, "order is required")
   assert.positive(order.amount, "order amount must be positive")
@@ -111,17 +111,17 @@ Output adapts automatically: ANSI on TTY, plain text in CI, `console.groupCollap
 
 ## Why not Zod? Why not if/return?
 
-| | `if/return` | `zod` / `yup` | **assertcheck** |
-|---|:---:|:---:|:---:|
-| Fails loudly in dev | — | Yes | Yes |
-| Zero overhead in prod | — | — | Yes (`disabled` mode) |
-| Type narrowing | — | Yes | Yes |
-| Structured, readable errors | — | Partial | Yes |
-| Chainable fluent API | — | — | Yes |
-| Enforces function invariants | — | — | Yes |
-| AI Copilot skills included | — | — | Yes |
+| | `if/return` | `node:assert` | `zod` / `yup` | **assertcheck** |
+|---|:---:|:---:|:---:|:---:|
+| Fails loudly in dev | — | Yes | Yes | Yes |
+| Zero overhead in prod | — | — | — | Yes (`disabled` mode) |
+| Type narrowing | — | — | Yes | Yes |
+| Structured, readable errors | — | Partial | Partial | Yes |
+| Chainable fluent API | — | — | — | Yes |
+| Enforces function invariants | — | — | — | Yes |
+| AI Copilot skills included | — | — | — | Yes |
 
-Zod and Yup are schema validators — they validate data that comes in from the outside (forms, APIs, JSON). assertcheck is a **contract system** — it enforces invariants at every internal boundary: function arguments, state transitions, external responses, collection shapes. The two are complementary, not competing.
+Zod and Yup are schema validators — they validate data that comes in from the outside (forms, APIs, JSON). AssertCheck is a **contract system** — it enforces invariants at every internal boundary: function arguments, state transitions, external responses, collection shapes. The two are complementary, not competing.
 
 ---
 
@@ -190,9 +190,9 @@ No configuration. No polyfills. No runtime dependencies beyond `lodash`.
 
 ## Built by Vagabond Studio
 
-assertcheck is maintained by **[Vagabond Studio](https://vagabond.work)** — a fully remote, senior-only collective of engineers and designers.
+AssertCheck is maintained by **[Vagabond Studio](https://vagabond.work)** — a fully remote, senior-only collective of engineers and designers.
 
-We build TypeScript, Vue.js, Rails, and Django products from greenfield to production. assertcheck is how we guard every internal boundary in every service we ship.
+We build TypeScript, Vue.js, Rails, and Django products from greenfield to production. AssertCheck is how we guard every internal boundary in every service we ship.
 
 [Book a discovery call](https://calendly.com/vagabond-studio/appel-de-decouverte-vagabond-studio) · [hello@vagabond.work](mailto:hello@vagabond.work)
 

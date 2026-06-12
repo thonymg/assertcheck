@@ -33,7 +33,7 @@ const sections = [
 
 # API Reference
 
-Complete reference for `assertcheck`, generated from JSDoc in the source code.
+Complete reference for `AssertCheck`, generated from JSDoc in the source code.
 
 <Links :items="sections" :grid="2" />
 
