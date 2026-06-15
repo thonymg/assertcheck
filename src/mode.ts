@@ -174,3 +174,51 @@ export const isDisabled = (): boolean => _mode === "disabled"
  * @internal
  */
 export const isWarn = (): boolean => _mode === "warn"
+
+/**
+ * Runs `fn` in a temporary mode, then restores the previous mode —
+ * even if `fn` throws or rejects.
+ *
+ * @remarks
+ * Prefer this over paired `setAssertMode` / `getAssertMode` calls in tests.
+ * The `finally` block guarantees restoration regardless of success or failure,
+ * making mode leakage between test suites structurally impossible.
+ *
+ * Supports both synchronous and asynchronous callbacks:
+ * - sync `fn` → mode is restored synchronously on return or throw.
+ * - async `fn` → mode is restored via `Promise.prototype.finally` on
+ *   resolution or rejection.
+ *
+ * @example
+ * ```ts
+ * // Sync — no beforeEach/afterEach needed
+ * withMode("disabled", () => {
+ *   assert.equal(1, 2) // no-op, mode is restored after this block
+ * })
+ *
+ * // Async
+ * await withMode("warn", async () => {
+ *   await assert.resolves(processPayment(order))
+ * })
+ * ```
+ */
+export function withMode<T>(mode: AssertMode, fn: () => Promise<T>): Promise<T>
+export function withMode<T>(mode: AssertMode, fn: () => T): T
+export function withMode<T>(mode: AssertMode, fn: () => T | Promise<T>): T | Promise<T> {
+  const prev = _mode
+  _mode = mode
+  let result: T | Promise<T>
+  try {
+    result = fn()
+  } catch (e) {
+    _mode = prev
+    throw e
+  }
+  if (result instanceof Promise) {
+    return result.finally(() => {
+      _mode = prev
+    }) as Promise<T>
+  }
+  _mode = prev
+  return result
+}

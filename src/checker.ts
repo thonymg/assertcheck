@@ -165,9 +165,9 @@ export class ArrayChecker<T> extends Checker<T[]> {
   }
 
   /** @see {@link assert.noNils} */
-  noNils(opts?: Opts): this {
+  noNils(opts?: Opts): ArrayChecker<NonNullable<T>> {
     _call(assert.noNils, this.value as (T | null | undefined)[], opts)
-    return this
+    return this as unknown as ArrayChecker<NonNullable<T>>
   }
 
   /** @see {@link assert.sortedBy} */
@@ -221,6 +221,53 @@ export class ArrayChecker<T> extends Checker<T[]> {
   /** @see {@link assert.groupedBy} */
   groupedBy(iteratee: ValueIteratee<T>, expectedGroups: string[], opts?: Opts): this {
     assert.groupedBy(this.value, iteratee, expectedGroups, opts)
+    return this
+  }
+
+  /** @see {@link assert.count} */
+  count(predicate: (v: T) => boolean, n: number, opts?: Opts): this {
+    assert.count(this.value, predicate, n, opts)
+    return this
+  }
+
+  /** @see {@link assert.increasing} */
+  increasing(this: ArrayChecker<number>, opts?: Opts): ArrayChecker<number> {
+    assert.increasing(this.value, opts)
+    return this
+  }
+
+  /** @see {@link assert.nonDecreasing} */
+  nonDecreasing(this: ArrayChecker<number>, opts?: Opts): ArrayChecker<number> {
+    assert.nonDecreasing(this.value, opts)
+    return this
+  }
+
+  /** @see {@link assert.sumBy} */
+  sumBy(iteratee: string | ((value: T) => number), expected: number, opts?: Opts): this {
+    assert.sumBy(this.value, iteratee, expected, opts)
+    return this
+  }
+
+  /** @see {@link assert.allInstanceOf} */
+  allInstanceOf<U, TArgs extends unknown[]>(ctor: new (...args: TArgs) => U, opts?: Opts): ArrayChecker<U> {
+    _call(assert.allInstanceOf, this.value, ctor, opts)
+    return this as unknown as ArrayChecker<U>
+  }
+
+  /** @see {@link assert.zippedWith} */
+  zippedWith<B>(other: B[], predicate: (a: T, b: B) => boolean, opts?: Opts): this {
+    assert.zippedWith(this.value, other, predicate, opts)
+    return this
+  }
+
+  /** @see {@link assert.partition} */
+  partition(
+    predicate: (v: T) => boolean,
+    expectedMatch: number,
+    expectedRest: number,
+    opts?: Opts
+  ): this {
+    assert.partition(this.value, predicate, expectedMatch, expectedRest, opts)
     return this
   }
 }

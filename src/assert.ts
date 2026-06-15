@@ -69,6 +69,39 @@ import type { AssertOptions } from "./types.ts"
 type Opts = string | AssertOptions | undefined
 
 // ─────────────────────────────────────────────────────────────────────────────
+// ASYNC HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Accepts either a ready Promise or a zero-arg thunk returning one.
+ * The thunk form captures synchronous throws that happen before the Promise
+ * is even created (e.g. argument validation in the callee).
+ * @internal
+ */
+type Awaitable<T> = Promise<T> | (() => Promise<T>)
+
+/** Executes an Awaitable and always returns, never throws. @internal */
+const awaitIt = <T>(v: Awaitable<T>): Promise<T> => (typeof v === "function" ? v() : v)
+
+/** Settled outcome — resolved value or rejection reason. @internal */
+type AwaitOutcome<T> = { ok: true; value: T } | { ok: false; error: unknown }
+
+const settle = async <T>(v: Awaitable<T>): Promise<AwaitOutcome<T>> => {
+  try {
+    return { ok: true, value: await awaitIt(v) }
+  } catch (e) {
+    return { ok: false, error: e }
+  }
+}
+
+/** Extracts a readable message from any thrown value. @internal */
+const rejectionMsg = (e: unknown): string => (e instanceof Error ? e.message : String(e))
+
+/** Extracts a readable type name from any thrown value. @internal */
+const rejectionName = (e: unknown): string =>
+  e instanceof Error ? e.constructor.name : typeof e
+
+// ─────────────────────────────────────────────────────────────────────────────
 // ASSERT
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -90,11 +123,12 @@ export interface Assert {
   boolean(v: unknown, opts?: Opts): asserts v is boolean
   array<T = unknown>(v: unknown, opts?: Opts): asserts v is T[]
   object<T extends object = object>(v: unknown, opts?: Opts): asserts v is T
-  func<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  func<T extends (...args: any[]) => unknown = (...args: any[]) => unknown>(
     v: unknown,
     opts?: Opts
   ): asserts v is T
-  instanceOf<T>(v: unknown, ctor: new (...args: unknown[]) => T, opts?: Opts): asserts v is T
+  instanceOf<T, TArgs extends unknown[]>(v: unknown, ctor: new (...args: TArgs) => T, opts?: Opts): asserts v is T
   // ── Equality
   equal<T>(actual: T, expected: T, opts?: Opts): void
   deepEqual<T>(actual: T, expected: T, opts?: Opts): void
@@ -136,9 +170,9 @@ export interface Assert {
   sumBy<T>(arr: T[], iteratee: string | ((value: T) => number), expected: number, opts?: Opts): void
   noNils<T>(arr: (T | null | undefined)[], opts?: Opts): asserts arr is T[]
   flat(arr: unknown[], opts?: Opts): void
-  allInstanceOf<T>(
+  allInstanceOf<T, TArgs extends unknown[]>(
     arr: unknown[],
-    ctor: new (...args: unknown[]) => T,
+    ctor: new (...args: TArgs) => T,
     opts?: Opts
   ): asserts arr is T[]
   zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void
@@ -189,11 +223,36 @@ export interface Assert {
     opts?: Opts
   ): void
   idempotent<T>(fn: (v: T) => T, arg: T, opts?: Opts): void
-  arity(fn: (...args: unknown[]) => unknown, n: number, opts?: Opts): void
+  arity<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, n: number, opts?: Opts): void
   mapsDistinct<T, U>(fn: (v: T) => U, a: T, b: T, opts?: Opts): void
   homomorphic<T>(fn: (v: T) => T, combine: (a: T, b: T) => T, a: T, b: T, opts?: Opts): void
   // ── Negation
-  not(fn: (...args: unknown[]) => void, ...args: unknown[]): void
+  not<TArgs extends unknown[]>(fn: (...args: TArgs) => void, ...args: TArgs): void
+  // ── Async — rejection
+  rejects<E extends Error, TArgs extends unknown[]>(
+    promise: Awaitable<unknown>,
+    ctorOrOpts?: (new (...args: TArgs) => E) | Opts,
+    opts?: Opts
+  ): Promise<void>
+  rejectsWithMessage(promise: Awaitable<unknown>, message: string, opts?: Opts): Promise<void>
+  rejectsMatching(promise: Awaitable<unknown>, pattern: RegExp, opts?: Opts): Promise<void>
+  rejectsSatisfying(
+    promise: Awaitable<unknown>,
+    predicate: (err: unknown) => boolean,
+    opts?: Opts
+  ): Promise<void>
+  // ── Async — resolution
+  resolves<T>(promise: Awaitable<T>, opts?: Opts): Promise<T>
+  resolvesWith<T>(promise: Awaitable<T>, expected: T, opts?: Opts): Promise<void>
+  resolvesSatisfying<T>(
+    promise: Awaitable<T>,
+    predicate: (v: T) => boolean,
+    opts?: Opts
+  ): Promise<void>
+  resolvesNotNil<T>(
+    promise: Awaitable<T | null | undefined>,
+    opts?: Opts
+  ): Promise<NonNullable<T>>
 }
 
 /**
@@ -515,7 +574,8 @@ export const assert: Assert = {
    * Asserts that `v` is a function. Narrows the type to `T` after the call.
    * @example `assert.func(handler, "handler must be a function")`
    */
-  func<T extends (...args: unknown[]) => unknown = (...args: unknown[]) => unknown>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  func<T extends (...args: any[]) => unknown = (...args: any[]) => unknown>(
     v: unknown,
     opts?: Opts
   ): asserts v is T {
@@ -555,7 +615,7 @@ export const assert: Assert = {
    * err.field // TypeScript knows err is ValidationError
    * ```
    */
-  instanceOf<T>(v: unknown, ctor: new (...args: unknown[]) => T, opts?: Opts): asserts v is T {
+  instanceOf<T, TArgs extends unknown[]>(v: unknown, ctor: new (...args: TArgs) => T, opts?: Opts): asserts v is T {
     if (isDisabled()) return
     if (v instanceof ctor) return
     const o = parseOpts(opts)
@@ -1512,9 +1572,9 @@ export const assert: Assert = {
    * Narrows the type to `T[]` after the call.
    * @example `assert.allInstanceOf(events, DomainEvent, "all events must be DomainEvent")`
    */
-  allInstanceOf<T>(
+  allInstanceOf<T, TArgs extends unknown[]>(
     arr: unknown[],
-    ctor: new (...args: unknown[]) => T,
+    ctor: new (...args: TArgs) => T,
     opts?: Opts
   ): asserts arr is T[] {
     if (isDisabled()) return
@@ -1976,7 +2036,7 @@ export const assert: Assert = {
    * Asserts that `fn.length` equals `n` (declared parameter count).
    * @example `assert.arity(transform, 1, "pipeline steps must be unary")`
    */
-  arity(fn: (...args: unknown[]) => unknown, n: number, opts?: Opts): void {
+  arity<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, n: number, opts?: Opts): void {
     if (isDisabled()) return
     if (fn.length === n) return
     const o = parseOpts(opts)
@@ -2088,7 +2148,7 @@ export const assert: Assert = {
    * assert.not(assert.hasKey, patch, "id")
    * ```
    */
-  not(fn: (...args: unknown[]) => void, ...args: unknown[]): void {
+  not<TArgs extends unknown[]>(fn: (...args: TArgs) => void, ...args: TArgs): void {
     if (isDisabled()) return
     let threw = false
     try {
@@ -2111,5 +2171,502 @@ export const assert: Assert = {
         ],
       }),
     })
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ASYNC — REJECTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Asserts that an async value rejects.
+   *
+   * @remarks
+   * Accepts either a `Promise` or a **thunk** (`() => Promise<T>`).
+   * Use the thunk form when the async operation might throw synchronously
+   * before a Promise is even returned — those errors are otherwise invisible.
+   *
+   * Optionally narrows the rejection by constructor, message, pattern, or
+   * custom predicate — see the sibling methods below.
+   *
+   * @param promise    - A Promise or zero-arg async thunk.
+   * @param ctorOrOpts - Optional error constructor or options shorthand.
+   * @param opts       - Optional message / context (when `ctor` is provided).
+   *
+   * @example
+   * ```ts
+   * // any rejection
+   * await assert.rejects(processPayment(badOrder), "must reject")
+   *
+   * // typed rejection — checks instanceof
+   * await assert.rejects(processPayment(badOrder), PaymentError, {
+   *   msg:  "must throw PaymentError for invalid orders",
+   *   note: "check that the validator runs before charge()",
+   * })
+   *
+   * // thunk form — captures sync throws during argument setup
+   * await assert.rejects(() => riskyFactory(null), "factory must reject null input")
+   * ```
+   */
+  async rejects<E extends Error, TArgs extends unknown[]>(
+    promise: Awaitable<unknown>,
+    ctorOrOpts?: (new (...args: TArgs) => E) | Opts,
+    opts?: Opts
+  ): Promise<void> {
+    if (isDisabled()) return
+    const isCtor = typeof ctorOrOpts === "function"
+    const ctor = isCtor ? (ctorOrOpts as new (...args: TArgs) => E) : undefined
+    const o = parseOpts(isCtor ? opts : (ctorOrOpts as Opts))
+    const outcome = await settle(promise)
+    if (outcome.ok) {
+      fail({
+        assertion: "rejects",
+        message: buildBlock({
+          assertion: "rejects",
+          title: o.msg ?? "Expected promise to reject",
+          rows: [
+            {
+              label: "result",
+              value: color.removed("resolved — expected rejection"),
+              indicator: color.removed("✗"),
+            },
+            { label: "resolved to", value: fmtValue(outcome.value) },
+          ],
+          note: o.note,
+        }),
+      })
+      return
+    }
+    if (ctor && !(outcome.error instanceof ctor)) {
+      fail({
+        assertion: "rejects",
+        message: buildBlock({
+          assertion: "rejects",
+          title: o.msg ?? `Expected rejection to be instance of ${ctor.name}`,
+          rows: [
+            { label: "expected", value: color.added(ctor.name), indicator: color.added("+") },
+            {
+              label: "received",
+              value: color.removed(rejectionName(outcome.error)),
+              indicator: color.removed("✗"),
+            },
+            { label: "message", value: fmtValue(rejectionMsg(outcome.error)) },
+          ],
+          note: o.note,
+        }),
+        actual: outcome.error,
+        expected: ctor.name,
+      })
+    }
+  },
+
+  /**
+   * Asserts that an async value rejects **and** the rejection message equals
+   * `message` (strict equality after coercing non-Error values to string).
+   *
+   * @example
+   * ```ts
+   * await assert.rejectsWithMessage(
+   *   processPayment(expiredCard),
+   *   "card expired",
+   *   "payment must report card expiry",
+   * )
+   * ```
+   */
+  async rejectsWithMessage(
+    promise: Awaitable<unknown>,
+    message: string,
+    opts?: Opts
+  ): Promise<void> {
+    if (isDisabled()) return
+    const o = parseOpts(opts)
+    const outcome = await settle(promise)
+    if (outcome.ok) {
+      fail({
+        assertion: "rejectsWithMessage",
+        message: buildBlock({
+          assertion: "rejectsWithMessage",
+          title: o.msg ?? "Expected promise to reject",
+          rows: [
+            {
+              label: "result",
+              value: color.removed("resolved — expected rejection"),
+              indicator: color.removed("✗"),
+            },
+          ],
+          note: o.note,
+        }),
+      })
+      return
+    }
+    const actual = rejectionMsg(outcome.error)
+    if (actual !== message) {
+      fail({
+        assertion: "rejectsWithMessage",
+        message: buildBlock({
+          assertion: "rejectsWithMessage",
+          title: o.msg ?? "Rejection message mismatch",
+          rows: [
+            { label: "expected", value: fmtValue(message), indicator: color.added("+") },
+            { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
+          ],
+          note: o.note,
+        }),
+        actual,
+        expected: message,
+      })
+    }
+  },
+
+  /**
+   * Asserts that an async value rejects **and** the rejection message matches
+   * `pattern`.
+   *
+   * @example
+   * ```ts
+   * await assert.rejectsMatching(
+   *   processPayment(badCard),
+   *   /card (expired|declined)/,
+   *   "payment must report card error",
+   * )
+   * ```
+   */
+  async rejectsMatching(
+    promise: Awaitable<unknown>,
+    pattern: RegExp,
+    opts?: Opts
+  ): Promise<void> {
+    if (isDisabled()) return
+    const o = parseOpts(opts)
+    const outcome = await settle(promise)
+    if (outcome.ok) {
+      fail({
+        assertion: "rejectsMatching",
+        message: buildBlock({
+          assertion: "rejectsMatching",
+          title: o.msg ?? "Expected promise to reject",
+          rows: [
+            {
+              label: "result",
+              value: color.removed("resolved — expected rejection"),
+              indicator: color.removed("✗"),
+            },
+          ],
+          note: o.note,
+        }),
+      })
+      return
+    }
+    const actual = rejectionMsg(outcome.error)
+    if (!pattern.test(actual)) {
+      fail({
+        assertion: "rejectsMatching",
+        message: buildBlock({
+          assertion: "rejectsMatching",
+          title: o.msg ?? "Rejection message does not match pattern",
+          rows: [
+            { label: "pattern", value: color.added(String(pattern)), indicator: color.added("+") },
+            { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
+          ],
+          note: o.note,
+        }),
+        actual,
+        expected: String(pattern),
+      })
+    }
+  },
+
+  /**
+   * Asserts that an async value rejects **and** the rejection value satisfies
+   * `predicate`. Works with any thrown value — Error instances, plain objects,
+   * strings, numbers.
+   *
+   * @example
+   * ```ts
+   * // assert a specific HTTP status code on the rejection
+   * await assert.rejectsSatisfying(
+   *   fetchUser(id),
+   *   (err) => err instanceof ApiError && err.status === 404,
+   *   "missing user must return 404",
+   * )
+   * ```
+   */
+  async rejectsSatisfying(
+    promise: Awaitable<unknown>,
+    predicate: (err: unknown) => boolean,
+    opts?: Opts
+  ): Promise<void> {
+    if (isDisabled()) return
+    const o = parseOpts(opts)
+    const outcome = await settle(promise)
+    if (outcome.ok) {
+      fail({
+        assertion: "rejectsSatisfying",
+        message: buildBlock({
+          assertion: "rejectsSatisfying",
+          title: o.msg ?? "Expected promise to reject",
+          rows: [
+            {
+              label: "result",
+              value: color.removed("resolved — expected rejection"),
+              indicator: color.removed("✗"),
+            },
+          ],
+          note: o.note,
+        }),
+      })
+      return
+    }
+    if (!predicate(outcome.error)) {
+      fail({
+        assertion: "rejectsSatisfying",
+        message: buildBlock({
+          assertion: "rejectsSatisfying",
+          title: o.msg ?? "Rejection did not satisfy predicate",
+          rows: [
+            {
+              label: "type",
+              value: fmtValue(rejectionName(outcome.error)),
+              indicator: color.removed("✗"),
+            },
+            { label: "message", value: fmtValue(rejectionMsg(outcome.error)) },
+          ],
+          note: o.note,
+        }),
+        actual: outcome.error,
+        expected: "match predicate",
+      })
+    }
+  },
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ASYNC — RESOLUTION
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Asserts that an async value resolves without throwing.
+   * Returns the resolved value for immediate inline use.
+   *
+   * @remarks
+   * In `"disabled"` mode, still awaits and returns the value — a complete
+   * no-op would break inline usage like `const user = await assert.resolves(fetchUser(id))`.
+   *
+   * @param promise - A Promise or zero-arg async thunk.
+   * @param opts    - Optional message / context.
+   * @returns The resolved value.
+   *
+   * @example
+   * ```ts
+   * // assert + use the value inline, no separate variable
+   * const user = await assert.resolves(fetchUser(id), "must not throw")
+   * assert.notNil(user.email, "user must have an email")
+   * ```
+   */
+  async resolves<T>(promise: Awaitable<T>, opts?: Opts): Promise<T> {
+    const outcome = await settle(promise)
+    if (outcome.ok) return outcome.value
+    if (isDisabled()) return undefined as T
+    const o = parseOpts(opts)
+    fail({
+      assertion: "resolves",
+      message: buildBlock({
+        assertion: "resolves",
+        title: o.msg ?? "Expected promise to resolve",
+        rows: [
+          {
+            label: "thrown",
+            value: fmtValue(rejectionMsg(outcome.error)),
+            indicator: color.removed("✗"),
+          },
+          { label: "type", value: fmtValue(rejectionName(outcome.error)) },
+        ],
+        note: o.note,
+      }),
+      actual: outcome.error,
+      expected: "resolved",
+    })
+    return undefined as T
+  },
+
+  /**
+   * Asserts that an async value resolves **and** the resolved value deeply
+   * equals `expected`.
+   *
+   * @param promise  - A Promise or zero-arg async thunk.
+   * @param expected - The expected resolved value (deep equality).
+   * @param opts     - Optional message / context.
+   *
+   * @example
+   * ```ts
+   * await assert.resolvesWith(getDefaultCurrency(), "USD", "default must be USD")
+   *
+   * await assert.resolvesWith(fetchStatus(orderId), "paid", {
+   *   msg:  "order must be paid after charge",
+   *   note: "check that charge() commits before fetchStatus()",
+   * })
+   * ```
+   */
+  async resolvesWith<T>(promise: Awaitable<T>, expected: T, opts?: Opts): Promise<void> {
+    if (isDisabled()) return
+    const o = parseOpts(opts)
+    const outcome = await settle(promise)
+    if (!outcome.ok) {
+      fail({
+        assertion: "resolvesWith",
+        message: buildBlock({
+          assertion: "resolvesWith",
+          title: o.msg ?? "Promise rejected — expected resolution",
+          rows: [
+            {
+              label: "thrown",
+              value: fmtValue(rejectionMsg(outcome.error)),
+              indicator: color.removed("✗"),
+            },
+            { label: "type", value: fmtValue(rejectionName(outcome.error)) },
+          ],
+          note: o.note,
+        }),
+        actual: outcome.error,
+        expected,
+      })
+      return
+    }
+    if (!isEqual(outcome.value, expected)) {
+      fail({
+        assertion: "resolvesWith",
+        message: buildBlock({
+          assertion: "resolvesWith",
+          title: o.msg ?? "Resolved value mismatch",
+          diff: { actual: outcome.value, expected },
+          note: o.note,
+        }),
+        actual: outcome.value,
+        expected,
+      })
+    }
+  },
+
+  /**
+   * Asserts that an async value resolves **and** the resolved value satisfies
+   * `predicate`.
+   *
+   * @param promise   - A Promise or zero-arg async thunk.
+   * @param predicate - A function that receives the resolved value and returns `boolean`.
+   * @param opts      - Optional message / context.
+   *
+   * @example
+   * ```ts
+   * await assert.resolvesSatisfying(
+   *   fetchUser(id),
+   *   (user) => user.active && user.email.includes("@"),
+   *   "user must be active with a valid email",
+   * )
+   * ```
+   */
+  async resolvesSatisfying<T>(
+    promise: Awaitable<T>,
+    predicate: (v: T) => boolean,
+    opts?: Opts
+  ): Promise<void> {
+    if (isDisabled()) return
+    const o = parseOpts(opts)
+    const outcome = await settle(promise)
+    if (!outcome.ok) {
+      fail({
+        assertion: "resolvesSatisfying",
+        message: buildBlock({
+          assertion: "resolvesSatisfying",
+          title: o.msg ?? "Promise rejected — expected resolution",
+          rows: [
+            {
+              label: "thrown",
+              value: fmtValue(rejectionMsg(outcome.error)),
+              indicator: color.removed("✗"),
+            },
+          ],
+          note: o.note,
+        }),
+        actual: outcome.error,
+        expected: "resolved",
+      })
+      return
+    }
+    if (!predicate(outcome.value)) {
+      fail({
+        assertion: "resolvesSatisfying",
+        message: buildBlock({
+          assertion: "resolvesSatisfying",
+          title: o.msg ?? "Resolved value did not satisfy predicate",
+          rows: [{ label: "value", value: fmtValue(outcome.value), indicator: color.removed("✗") }],
+          note: o.note,
+        }),
+        actual: outcome.value,
+        expected: "match predicate",
+      })
+    }
+  },
+
+  /**
+   * Asserts that an async value resolves to a **non-null, non-undefined** value.
+   * Narrows the return type to `NonNullable<T>` for immediate inline use.
+   *
+   * @param promise - A Promise or zero-arg async thunk.
+   * @param opts    - Optional message / context.
+   * @returns The resolved, narrowed value.
+   *
+   * @example
+   * ```ts
+   * // TypeScript knows `user` is NonNullable — no manual narrowing needed
+   * const user = await assert.resolvesNotNil(findUser(id), "user must exist")
+   * assert.string(user.email, "user must have an email")
+   * ```
+   */
+  async resolvesNotNil<T>(
+    promise: Awaitable<T | null | undefined>,
+    opts?: Opts
+  ): Promise<NonNullable<T>> {
+    const outcome = await settle(promise)
+    if (isDisabled()) return (outcome.ok ? outcome.value : undefined) as NonNullable<T>
+    const o = parseOpts(opts)
+    if (!outcome.ok) {
+      fail({
+        assertion: "resolvesNotNil",
+        message: buildBlock({
+          assertion: "resolvesNotNil",
+          title: o.msg ?? "Promise rejected — expected non-null resolution",
+          rows: [
+            {
+              label: "thrown",
+              value: fmtValue(rejectionMsg(outcome.error)),
+              indicator: color.removed("✗"),
+            },
+          ],
+          note: o.note,
+        }),
+        actual: outcome.error,
+        expected: "non-null resolved value",
+      })
+      return undefined as unknown as NonNullable<T>
+    }
+    if (isNil(outcome.value)) {
+      fail({
+        assertion: "resolvesNotNil",
+        message: buildBlock({
+          assertion: "resolvesNotNil",
+          title: o.msg ?? "Resolved value is null or undefined",
+          rows: [
+            {
+              label: "received",
+              value: fmtValue(outcome.value),
+              indicator: color.removed("✗"),
+            },
+          ],
+          note: o.note,
+        }),
+        actual: outcome.value,
+        expected: "non-null value",
+      })
+      return undefined as unknown as NonNullable<T>
+    }
+    return outcome.value as NonNullable<T>
   },
 }

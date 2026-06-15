@@ -55,7 +55,7 @@ export { assert } from "./assert.ts"
 export { check, Checker, ArrayChecker, ObjectChecker } from "./checker.ts"
 
 // ── Mode ─────────────────────────────────────────────────────────────────────
-export { modeAssertIn, setAssertMode, getAssertMode } from "./mode.ts"
+export { modeAssertIn, setAssertMode, getAssertMode, withMode } from "./mode.ts"
 
 // ── Error ────────────────────────────────────────────────────────────────────
 export { AssertionError } from "./error.ts"
