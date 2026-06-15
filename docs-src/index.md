@@ -21,14 +21,14 @@ features:
     details: Assertions define the invalid states your code must never see — making contracts explicit, executable, and impossible to ignore. The boundary between valid and invalid is the most important line you write.
     link: /guide/negative-space
     linkText: Learn the principle
-  - title: Fail-fast by default
-    details: Violations fire at their origin, not three layers later. Control enforcement per environment with a single call to modeAssertIn() — no code changes between dev, staging, and production.
+  - title: Fail-fast, always
+    details: Violations fire at their origin, not three layers later. Every assertion always throws — no configuration, no silent modes, no surprises.
   - title: Richly formatted errors
     details: ELM-inspired output with diffs, labels, and notes. ANSI colours on TTY, plain text in pipes and CI, collapsible groups in browser DevTools. Respects NO_COLOR.
   - title: Chainable API
     details: check(value).noNils().uniqueBy("id").all(u => u.active) — fluent, readable, type-safe. Declare all invariants on a value in one place.
-  - title: Zero overhead when disabled
-    details: In "disabled" mode every assertion is a no-op. No string formatting, no object allocations. Production builds pay nothing.
+  - title: Zero setup
+    details: Import and use — no configuration files, no entry-point calls, no mode system. Assertions always throw on failure, in every environment.
 ---
 
 <div class="vp-doc" style="max-width:960px;margin:0 auto;padding:3rem 1.5rem 0">
@@ -154,25 +154,6 @@ check(config)
 ```
 
 50+ methods covering existence, types, numerics, equality, arrays, objects, and function purity.
-
----
-
-## Three modes. One entry point.
-
-```ts
-import { modeAssertIn } from "assertcheck"
-
-// In your app entry point — once, before anything runs
-modeAssertIn("prod", "warn")  // log violations in production, never crash
-```
-
-| Mode | What happens on failure | When to use |
-|---|---|---|
-| `"enabled"` | Log + throw `AssertionError` | Development, CI, test suites |
-| `"warn"` | Log only — execution continues | Production observability |
-| `"disabled"` | No-op — zero overhead | High-performance production paths |
-
-Assertions stay in the codebase across all environments. Only the enforcement level changes.
 
 ---
 

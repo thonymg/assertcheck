@@ -15,13 +15,6 @@ const sections = [
     icon: 'ri:link-m',
   },
   {
-    name: 'Modes',
-    desc: 'modeAssertIn(), setAssertMode(), getAssertMode() — control enforcement per environment from one entry point.',
-    link: '/api/functions/modeAssertIn',
-    linkText: 'Read the reference',
-    icon: 'ri:settings-4-line',
-  },
-  {
     name: 'Errors & formatting',
     desc: 'AssertionError, buildBlock(), fmtValue() — access structured metadata and build custom assertion output.',
     link: '/api/classes/AssertionError',
@@ -45,9 +38,6 @@ Complete reference for `AssertCheck`, generated from JSDoc in the source code.
 |---|---|
 | [`assert`](/api/@assertcheck/namespaces/assert/_generated) | The main assertion namespace — all 50+ methods documented individually. |
 | [`check()`](/api/functions/check) | Chainable wrapper — `check(arr).noNils().uniqueBy("id")` |
-| [`modeAssertIn()`](/api/functions/modeAssertIn) | Set mode conditionally based on `NODE_ENV` |
-| [`setAssertMode()`](/api/functions/setAssertMode) | Set mode directly — useful in tests |
-| [`getAssertMode()`](/api/functions/getAssertMode) | Read current mode |
 
 ## Assertion categories
 
@@ -79,7 +69,7 @@ Complete reference for `AssertCheck`, generated from JSDoc in the source code.
 | [`fmtValue()`](/api/functions/fmtValue) | Format any value for display |
 | `color` | ANSI colour helpers: `color.added`, `color.removed`, `color.index` |
 | `parseOpts()` | Normalise `string \| AssertOptions \| undefined` → structured options |
-| `fail()` | Throw or warn depending on current mode |
+| `fail()` | Output the formatted error and throw `AssertionError` |
 | `diffObjects()` | Generate diff rows between two objects |
 
 ## Types
@@ -87,8 +77,6 @@ Complete reference for `AssertCheck`, generated from JSDoc in the source code.
 | Type | Description |
 |---|---|
 | [`AssertOptions`](/api/interfaces/AssertOptions) | Options accepted by every assertion: `msg`, `note`, `actual` |
-| [`AssertMode`](/api/type-aliases/AssertMode) | `"enabled"` \| `"warn"` \| `"disabled"` |
-| [`Env`](/api/type-aliases/Env) | Environment label for `modeAssertIn()` |
 
 ---
 

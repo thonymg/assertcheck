@@ -1,28 +1,21 @@
 /**
  * @file async.test.ts
  *
- * Tests for withMode (scoped mode) and all async assertions.
+ * Tests for all async assertions.
  *
  * Cases covered per method:
  *   rejects              — passes / fails / typed ctor / non-Error / thunk form
  *   rejectsWithMessage   — exact match / mismatch / non-Error rejection / no throw
  *   rejectsMatching      — regex match / mismatch / no throw
  *   rejectsSatisfying    — predicate pass / fail / no throw
- *   resolves             — passes / fails / returns value / thunk form / disabled
+ *   resolves             — passes / fails / returns value / thunk form
  *   resolvesWith         — match / value mismatch / rejected / deep-equal / thunk
  *   resolvesSatisfying   — predicate pass / fail / rejected
  *   resolvesNotNil       — non-null / null / undefined / rejected / TypeScript narrowing
- *   withMode             — sync restore / async restore / throw restore / nesting
  */
 
 import { describe, it, expect } from "bun:test"
-import {
-  assert,
-  AssertionError,
-  withMode,
-  setAssertMode,
-  getAssertMode,
-} from "./index.shim.ts"
+import { assert, AssertionError } from "./index.shim.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // TEST FIXTURES
@@ -49,65 +42,6 @@ class NetworkError extends Error {
     this.name = "NetworkError"
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// withMode
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe("withMode", () => {
-  it("restores mode after sync fn returns normally", () => {
-    const before = getAssertMode()
-    withMode("disabled", () => {
-      expect(getAssertMode()).toBe("disabled")
-    })
-    expect(getAssertMode()).toBe(before)
-  })
-
-  it("restores mode after sync fn throws", () => {
-    const before = getAssertMode()
-    try {
-      withMode("warn", () => { throw new Error("boom") })
-    } catch {}
-    expect(getAssertMode()).toBe(before)
-  })
-
-  it("restores mode after async fn resolves", async () => {
-    const before = getAssertMode()
-    await withMode("disabled", async () => {
-      await delay(1)
-      expect(getAssertMode()).toBe("disabled")
-    })
-    expect(getAssertMode()).toBe(before)
-  })
-
-  it("restores mode after async fn rejects", async () => {
-    const before = getAssertMode()
-    try {
-      await withMode("warn", async () => { await delay(1); throw new Error("async boom") })
-    } catch {}
-    expect(getAssertMode()).toBe(before)
-  })
-
-  it("inner scope does not affect outer scope", () => {
-    withMode("disabled", () => {
-      withMode("warn", () => expect(getAssertMode()).toBe("warn"))
-      expect(getAssertMode()).toBe("disabled")
-    })
-    expect(getAssertMode()).toBe("enabled")
-  })
-
-  it("suppresses assertions without beforeEach/afterEach boilerplate", () => {
-    withMode("disabled", () => {
-      expect(() => assert.equal(1, 2)).not.toThrow()
-    })
-    expect(() => assert.equal(1, 2)).toThrow(AssertionError)
-  })
-
-  it("returns sync value", () => expect(withMode("disabled", () => 42)).toBe(42))
-
-  it("returns async value", async () =>
-    expect(await withMode("disabled", async () => "hi")).toBe("hi"))
-})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // assert.rejects
@@ -165,12 +99,6 @@ describe("assert.rejects", () => {
   it("thunk form — fails when thunk resolves", async () => {
     await expect(assert.rejects(() => ok(1))).rejects.toBeInstanceOf(AssertionError)
   })
-
-  it("is a no-op in disabled mode", async () => {
-    await withMode("disabled", async () => {
-      await expect(assert.rejects(ok("should have rejected"))).resolves.toBeUndefined()
-    })
-  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -205,17 +133,9 @@ describe("assert.rejectsWithMessage", () => {
   })
 
   it("fails when promise resolves instead of rejecting", async () => {
-    await expect(
-      assert.rejectsWithMessage(ok("fine"), "should not matter")
-    ).rejects.toBeInstanceOf(AssertionError)
-  })
-
-  it("is a no-op in disabled mode", async () => {
-    await withMode("disabled", async () => {
-      await expect(
-        assert.rejectsWithMessage(ok("resolved"), "irrelevant")
-      ).resolves.toBeUndefined()
-    })
+    await expect(assert.rejectsWithMessage(ok("fine"), "should not matter")).rejects.toBeInstanceOf(
+      AssertionError
+    )
   })
 })
 
@@ -237,9 +157,7 @@ describe("assert.rejectsMatching", () => {
   })
 
   it("error shows pattern and actual message", async () => {
-    const err = await assert
-      .rejectsMatching(fail(new Error("network")), /card/)
-      .catch((e) => e)
+    const err = await assert.rejectsMatching(fail(new Error("network")), /card/).catch((e) => e)
     expect(err.message).toContain("/card/")
     expect(err.message).toContain("network")
   })
@@ -251,9 +169,9 @@ describe("assert.rejectsMatching", () => {
   })
 
   it("fails when promise resolves", async () => {
-    await expect(
-      assert.rejectsMatching(ok("fine"), /anything/)
-    ).rejects.toBeInstanceOf(AssertionError)
+    await expect(assert.rejectsMatching(ok("fine"), /anything/)).rejects.toBeInstanceOf(
+      AssertionError
+    )
   })
 })
 
@@ -290,17 +208,9 @@ describe("assert.rejectsSatisfying", () => {
   })
 
   it("fails when promise resolves", async () => {
-    await expect(
-      assert.rejectsSatisfying(ok("resolved"), () => true)
-    ).rejects.toBeInstanceOf(AssertionError)
-  })
-
-  it("is a no-op in disabled mode", async () => {
-    await withMode("disabled", async () => {
-      await expect(
-        assert.rejectsSatisfying(ok("resolved"), () => false)
-      ).resolves.toBeUndefined()
-    })
+    await expect(assert.rejectsSatisfying(ok("resolved"), () => true)).rejects.toBeInstanceOf(
+      AssertionError
+    )
   })
 })
 
@@ -339,11 +249,6 @@ describe("assert.resolves", () => {
     }
     await expect(assert.resolves(thunk)).rejects.toBeInstanceOf(AssertionError)
   })
-
-  it("disabled mode still returns the resolved value", async () => {
-    const value = await withMode("disabled", () => assert.resolves(fail(new Error("boom"))))
-    expect(value).toBeUndefined()
-  })
 })
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -366,9 +271,9 @@ describe("assert.resolvesWith", () => {
   })
 
   it("fails when promise rejects instead of resolving", async () => {
-    await expect(
-      assert.resolvesWith(fail(new Error("boom")), "USD")
-    ).rejects.toBeInstanceOf(AssertionError)
+    await expect(assert.resolvesWith(fail(new Error("boom")), "USD")).rejects.toBeInstanceOf(
+      AssertionError
+    )
   })
 
   it("works with deep-equal objects", async () => {
@@ -385,12 +290,6 @@ describe("assert.resolvesWith", () => {
 
   it("thunk form resolves correctly", async () => {
     await expect(assert.resolvesWith(() => ok("paid"), "paid")).resolves.toBeUndefined()
-  })
-
-  it("is a no-op in disabled mode", async () => {
-    await withMode("disabled", async () => {
-      await expect(assert.resolvesWith(ok("EUR"), "USD")).resolves.toBeUndefined()
-    })
   })
 })
 
@@ -415,9 +314,7 @@ describe("assert.resolvesSatisfying", () => {
   })
 
   it("error shows the actual resolved value", async () => {
-    const err = await assert
-      .resolvesSatisfying(ok("wrong"), (v) => v === "right")
-      .catch((e) => e)
+    const err = await assert.resolvesSatisfying(ok("wrong"), (v) => v === "right").catch((e) => e)
     expect(err.message).toContain("wrong")
   })
 
@@ -425,14 +322,6 @@ describe("assert.resolvesSatisfying", () => {
     await expect(
       assert.resolvesSatisfying(fail(new Error("boom")), () => true)
     ).rejects.toBeInstanceOf(AssertionError)
-  })
-
-  it("is a no-op in disabled mode", async () => {
-    await withMode("disabled", async () => {
-      await expect(
-        assert.resolvesSatisfying(ok("anything"), () => false)
-      ).resolves.toBeUndefined()
-    })
   })
 })
 
@@ -460,20 +349,13 @@ describe("assert.resolvesNotNil", () => {
   })
 
   it("fails when promise rejects", async () => {
-    await expect(
-      assert.resolvesNotNil(fail(new Error("not found")))
-    ).rejects.toBeInstanceOf(AssertionError)
+    await expect(assert.resolvesNotNil(fail(new Error("not found")))).rejects.toBeInstanceOf(
+      AssertionError
+    )
   })
 
   it("thunk form works", async () => {
     const value = await assert.resolvesNotNil(() => ok(42))
     expect(value).toBe(42)
-  })
-
-  it("is a no-op in disabled mode (returns undefined for null resolution)", async () => {
-    await withMode("disabled", async () => {
-      const v = await assert.resolvesNotNil(ok(null))
-      expect(v).toBeNull()
-    })
   })
 })

@@ -1,11 +1,11 @@
 ---
 title: Async assertions
-description: Runtime contracts for Promises — assert.rejects, assert.resolves, withMode, and more.
+description: Runtime contracts for Promises — assert.rejects, assert.resolves, and more.
 ---
 
 # Async assertions
 
-assertcheck covers the full async surface of your codebase. Every sync assertion has a parallel async counterpart that speaks the same language — same error format, same modes, same `opts` API.
+assertcheck covers the full async surface of your codebase. Every sync assertion has a parallel async counterpart that speaks the same language — same error format, same `opts` API.
 
 ::: tip Same philosophy, async context
 Async assertions are Jidoka for Promises: violations fire at the boundary where the contract is broken — not in the `.catch()` handler three calls later.
@@ -331,94 +331,10 @@ user!.role  // the ! is a promise TypeScript can't verify
 
 ---
 
-## Scoped mode with `withMode`
-
-`withMode` runs a block under a temporary mode and restores the previous mode automatically — even if the block throws or rejects. It replaces the `beforeEach / afterEach` save-and-restore pattern and makes mode leakage between test suites structurally impossible.
-
-```ts
-import { withMode } from "assertcheck"
-
-// Sync — mode is restored after the block returns or throws
-withMode("disabled", () => {
-  assert.equal(1, 2)  // no-op
-})
-// mode is "enabled" again here
-
-// Async — mode is restored after the promise settles
-await withMode("warn", async () => {
-  const result = await assert.resolves(processPayment(order))
-  assert.equal(result.status, "paid")
-})
-```
-
-### Replacing `beforeEach / afterEach`
-
-::: code-group
-
-```ts [Before — manual save/restore]
-describe("payment service", () => {
-  let saved: AssertMode
-
-  beforeEach(() => { saved = getAssertMode() })
-  afterEach(()  => { setAssertMode(saved) })  // skipped if the test crashes
-
-  it("runs without assertions in hot path mode", () => {
-    setAssertMode("disabled")
-    // ...
-  })
-})
-```
-
-```ts [After — withMode]
-describe("payment service", () => {
-  it("runs without assertions in hot path mode", () => {
-    withMode("disabled", () => {
-      // mode is always restored — no beforeEach/afterEach needed
-    })
-  })
-})
-```
-
-:::
-
-### Nesting `withMode`
-
-Inner scopes are fully isolated. The outer mode is restored when the inner scope exits:
-
-```ts
-withMode("disabled", () => {
-  // mode: "disabled"
-  withMode("warn", () => {
-    // mode: "warn"
-  })
-  // mode: "disabled" again — outer scope unaffected
-})
-// mode: "enabled" — original restored
-```
-
-### Testing what happens *without* assertions
-
-`withMode("disabled", ...)` is the right tool to document the behaviour of code when contracts are switched off — for example, to demonstrate why the assertions matter:
-
-```ts
-it("disabled mode: code runs to completion with no contract enforcement", async () => {
-  await withMode("disabled", async () => {
-    // assert.notEmpty(items) inside placeOrder is a no-op
-    // → the function proceeds with an empty cart, total = 0
-    // → Stripe is called with amountCents = 0
-    // This is exactly why assertions must be on in production
-    const order = await OrderService.placeOrder("usr_alice", [])
-    expect(order.totalCents).toBe(0)
-  })
-})
-```
-
----
-
 ## Combining async assertions in a test
 
 ```ts
-import { assert, withMode } from "assertcheck"
+import { assert } from "assertcheck"
 
 describe("OrderService.placeOrder", () => {
   it("creates a paid order for a valid user", async () => {
@@ -482,10 +398,4 @@ describe("OrderService.placeOrder", () => {
 | `assert.resolvesSatisfying(p, fn, opts?)` | Resolved value satisfies predicate | `Promise<void>` |
 | `assert.resolvesNotNil(p, opts?)` | Resolves to a non-null value | `Promise<NonNullable<T>>` |
 
-All methods accept `Promise<T>` or `() => Promise<T>`. All respect the global assertion mode.
-
-### Mode scoping
-
-| Function | Signature | Use |
-|---|---|---|
-| `withMode(mode, fn)` | sync or async, always restores | Isolate a block under a specific mode |
+All methods accept `Promise<T>` or `() => Promise<T>`.

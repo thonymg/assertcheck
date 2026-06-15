@@ -1,6 +1,6 @@
 # Error format
 
-When an assertion fails in `"enabled"` mode, assertcheck throws an `AssertionError` with a rich formatted message designed to answer three questions immediately: **what failed**, **what was expected**, and **what to do next** — without opening a debugger.
+When an assertion fails, assertcheck throws an `AssertionError` with a rich formatted message designed to answer three questions immediately: **what failed**, **what was expected**, and **what to do next** — without opening a debugger.
 
 ::: tip The three-second rule
 A good assertion error should be fully understood in three seconds. If you have to grep for context, the assertion wasn't written well enough. The `opts` parameter is how you get there.

@@ -6,52 +6,6 @@
  */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// MODE
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Controls how assertion failures are handled at runtime.
- *
- * @remarks
- * `"enabled"` is the **unconditional default** — in every environment,
- * including production. Assertions are a safety net that should always be
- * active. A clean crash with a precise message is always preferable to
- * silent data corruption.
- *
- * Use {@link modeAssertIn} at your application entry point if you want to
- * override this default for a specific environment:
- *
- * ```ts
- * modeAssertIn("prod",    "warn")     // observe in production, don't crash
- * modeAssertIn("dev",     "disabled") // silence during heavy local iteration
- * modeAssertIn("staging", "enabled")  // explicit — same as default
- * ```
- *
- * | Mode         | On failure                 | When to use                      |
- * |--------------|----------------------------|----------------------------------|
- * | `"enabled"`  | Formatted output + throw   | **Always** — default everywhere  |
- * | `"warn"`     | Formatted output, no throw | Soft rollout in production       |
- * | `"disabled"` | No-op — zero overhead      | Explicit opt-out only            |
- */
-export type AssertMode = "disabled" | "warn" | "enabled"
-
-/**
- * The set of environment names recognised by {@link modeAssertIn}.
- *
- * @remarks
- * These map to common `NODE_ENV` values and their aliases:
- *
- * | `Env`         | Matches `NODE_ENV`                     |
- * |---------------|----------------------------------------|
- * | `"prod"`      | `"production"`, `"prod"`               |
- * | `"dev"`       | `"development"`, `"dev"`               |
- * | `"test"`      | `"test"`                               |
- * | `"staging"`   | `"staging"`, `"stage"`                 |
- * | `"ci"`        | `"ci"`                                 |
- */
-export type Env = "prod" | "dev" | "test" | "staging" | "ci"
-
-// ─────────────────────────────────────────────────────────────────────────────
 // OPTIONS
 // ─────────────────────────────────────────────────────────────────────────────
 

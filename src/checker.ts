@@ -249,7 +249,10 @@ export class ArrayChecker<T> extends Checker<T[]> {
   }
 
   /** @see {@link assert.allInstanceOf} */
-  allInstanceOf<U, TArgs extends unknown[]>(ctor: new (...args: TArgs) => U, opts?: Opts): ArrayChecker<U> {
+  allInstanceOf<U, TArgs extends unknown[]>(
+    ctor: new (...args: TArgs) => U,
+    opts?: Opts
+  ): ArrayChecker<U> {
     _call(assert.allInstanceOf, this.value, ctor, opts)
     return this as unknown as ArrayChecker<U>
   }

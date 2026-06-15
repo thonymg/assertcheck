@@ -8,13 +8,6 @@ const nextSteps = [
     icon: 'ri:focus-3-line',
   },
   {
-    name: 'Assertion modes',
-    desc: 'Configure fail-fast in dev, log-only in production, and zero overhead in hot paths — all from one line at startup.',
-    link: '/guide/modes',
-    linkText: 'Configure environments',
-    icon: 'ri:settings-4-line',
-  },
-  {
     name: 'Error format',
     desc: 'Learn to write assertions that produce actionable errors — with labels, diffs, and inline fix hints.',
     link: '/guide/error-format',
@@ -150,15 +143,12 @@ Both `assert.*` and `check()` are equivalent at runtime — `check()` is a reada
 
 ## Production-ready from day one
 
-assertcheck runs in every environment with zero setup. Enforcement level is controlled by a single call at your app entry point:
+assertcheck runs in every environment with zero setup. Assertions always throw on failure — no configuration, no modes, no entry-point calls. Import and use.
 
 ```ts
-import { modeAssertIn } from "assertcheck"
-
-modeAssertIn("prod", "warn")  // log violations in production without crashing users
+import { assert } from "assertcheck"
+// That's it. Every assertion always throws on failure.
 ```
-
-No configuration files. No per-assertion flags. One call, at startup, and every assertion in every module inherits the setting. [Read about modes →](/guide/modes)
 
 ## Next steps
 

@@ -1,13 +1,6 @@
 <script setup>
 const furtherReading = [
   {
-    name: 'Assertion modes',
-    desc: 'Configure enforcement per environment — crash in dev, observe in prod, zero cost when silent.',
-    link: '/guide/modes',
-    linkText: 'Configure modes',
-    icon: 'ri:settings-4-line',
-  },
-  {
     name: 'Chainable API',
     desc: 'check() for dense, readable invariant blocks on arrays and objects.',
     link: '/guide/check',
@@ -179,28 +172,6 @@ Five assertions. One function. Zero silent failures.
 ::: tip Assertion density as a design signal
 If you find yourself unable to write two meaningful assertions for a function, the function may be doing too little (merge it) or too much (split it). Assertion density is a proxy for cognitive complexity.
 :::
-
----
-
-## Mode strategy: enforcement vs. observability
-
-NSP does not require assertions to crash in production. assertcheck's three modes let you choose the right enforcement level per environment:
-
-| Mode | NSP posture |
-|---|---|
-| `"enabled"` | Full enforcement — violations crash immediately |
-| `"warn"` | Observability — violations are logged, execution continues |
-| `"disabled"` | Trust established — assertions are stripped, zero overhead |
-
-A common production pattern — fail hard in development and CI, observe in production:
-
-```ts
-import { modeAssertIn } from "assertcheck"
-
-modeAssertIn("prod", "warn")  // surface violations without crashing users
-```
-
-Your negative space constraints remain active in production: they log instead of throw, giving visibility into cases where invariants are violated without causing downtime. Over time, a clean assertion log is proof that your negative space is holding.
 
 ---
 

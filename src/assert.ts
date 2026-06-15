@@ -57,7 +57,6 @@ import {
   get,
 } from "lodash"
 import type { ValueIteratee } from "lodash"
-import { isDisabled } from "./mode.ts"
 import { fail } from "./fail.ts"
 import { buildBlock, fmtValue, color, parseOpts, diffObjects } from "./format.ts"
 import type { AssertOptions } from "./types.ts"
@@ -98,8 +97,7 @@ const settle = async <T>(v: Awaitable<T>): Promise<AwaitOutcome<T>> => {
 const rejectionMsg = (e: unknown): string => (e instanceof Error ? e.message : String(e))
 
 /** Extracts a readable type name from any thrown value. @internal */
-const rejectionName = (e: unknown): string =>
-  e instanceof Error ? e.constructor.name : typeof e
+const rejectionName = (e: unknown): string => (e instanceof Error ? e.constructor.name : typeof e)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASSERT
@@ -128,7 +126,11 @@ export interface Assert {
     v: unknown,
     opts?: Opts
   ): asserts v is T
-  instanceOf<T, TArgs extends unknown[]>(v: unknown, ctor: new (...args: TArgs) => T, opts?: Opts): asserts v is T
+  instanceOf<T, TArgs extends unknown[]>(
+    v: unknown,
+    ctor: new (...args: TArgs) => T,
+    opts?: Opts
+  ): asserts v is T
   // ── Equality
   equal<T>(actual: T, expected: T, opts?: Opts): void
   deepEqual<T>(actual: T, expected: T, opts?: Opts): void
@@ -223,7 +225,11 @@ export interface Assert {
     opts?: Opts
   ): void
   idempotent<T>(fn: (v: T) => T, arg: T, opts?: Opts): void
-  arity<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, n: number, opts?: Opts): void
+  arity<TArgs extends unknown[], TReturn>(
+    fn: (...args: TArgs) => TReturn,
+    n: number,
+    opts?: Opts
+  ): void
   mapsDistinct<T, U>(fn: (v: T) => U, a: T, b: T, opts?: Opts): void
   homomorphic<T>(fn: (v: T) => T, combine: (a: T, b: T) => T, a: T, b: T, opts?: Opts): void
   // ── Negation
@@ -249,10 +255,7 @@ export interface Assert {
     predicate: (v: T) => boolean,
     opts?: Opts
   ): Promise<void>
-  resolvesNotNil<T>(
-    promise: Awaitable<T | null | undefined>,
-    opts?: Opts
-  ): Promise<NonNullable<T>>
+  resolvesNotNil<T>(promise: Awaitable<T | null | undefined>, opts?: Opts): Promise<NonNullable<T>>
 }
 
 /**
@@ -276,7 +279,6 @@ export const assert: Assert = {
    * ```
    */
   nil(v: unknown, opts?: Opts): asserts v is null | undefined {
-    if (isDisabled()) return
     if (isNil(v)) return
     const o = parseOpts(opts)
     fail({
@@ -313,7 +315,6 @@ export const assert: Assert = {
    * ```
    */
   notNil<T>(v: T | null | undefined, opts?: Opts): asserts v is NonNullable<T> {
-    if (isDisabled()) return
     if (!isNil(v)) return
     const o = parseOpts(opts)
     fail({
@@ -345,7 +346,6 @@ export const assert: Assert = {
    * ```
    */
   empty(v: unknown, opts?: Opts): void {
-    if (isDisabled()) return
     if (isEmpty(v)) return
     const o = parseOpts(opts)
     fail({
@@ -374,7 +374,6 @@ export const assert: Assert = {
    * ```
    */
   notEmpty<T>(v: T, opts?: Opts): asserts v is NonNullable<T> {
-    if (isDisabled()) return
     if (!isEmpty(v as unknown)) return
     const o = parseOpts(opts)
     fail({
@@ -399,7 +398,6 @@ export const assert: Assert = {
    * @example `assert.string(name, "name must be a string")`
    */
   string(v: unknown, opts?: Opts): asserts v is string {
-    if (isDisabled()) return
     if (isString(v)) return
     const o = parseOpts(opts)
     fail({
@@ -426,7 +424,6 @@ export const assert: Assert = {
    * @example `assert.number(price, "price must be a number")`
    */
   number(v: unknown, opts?: Opts): asserts v is number {
-    if (isDisabled()) return
     if (isNumber(v)) return
     const o = parseOpts(opts)
     fail({
@@ -453,7 +450,6 @@ export const assert: Assert = {
    * @example `assert.integer(amountCents, "amount must be integer cents")`
    */
   integer(v: unknown, opts?: Opts): asserts v is number {
-    if (isDisabled()) return
     if (isInteger(v)) return
     const o = parseOpts(opts)
     fail({
@@ -474,7 +470,6 @@ export const assert: Assert = {
    * @example `assert.finite(ratio, "ratio must be finite")`
    */
   finite(v: unknown, opts?: Opts): asserts v is number {
-    if (isDisabled()) return
     if (isFinite(v)) return
     const o = parseOpts(opts)
     fail({
@@ -495,7 +490,6 @@ export const assert: Assert = {
    * @example `assert.boolean(flag, "flag must be boolean")`
    */
   boolean(v: unknown, opts?: Opts): asserts v is boolean {
-    if (isDisabled()) return
     if (isBoolean(v)) return
     const o = parseOpts(opts)
     fail({
@@ -518,7 +512,6 @@ export const assert: Assert = {
    * @example `assert.array<User>(users, "users must be an array")`
    */
   array<T = unknown>(v: unknown, opts?: Opts): asserts v is T[] {
-    if (isDisabled()) return
     if (isArray(v)) return
     const o = parseOpts(opts)
     fail({
@@ -548,7 +541,6 @@ export const assert: Assert = {
    * @example `assert.object<Config>(raw, "raw must be a plain object")`
    */
   object<T extends object = object>(v: unknown, opts?: Opts): asserts v is T {
-    if (isDisabled()) return
     if (isPlainObject(v)) return
     const o = parseOpts(opts)
     fail({
@@ -579,7 +571,6 @@ export const assert: Assert = {
     v: unknown,
     opts?: Opts
   ): asserts v is T {
-    if (isDisabled()) return
     if (isFunction(v)) return
     const o = parseOpts(opts)
     fail({
@@ -615,8 +606,11 @@ export const assert: Assert = {
    * err.field // TypeScript knows err is ValidationError
    * ```
    */
-  instanceOf<T, TArgs extends unknown[]>(v: unknown, ctor: new (...args: TArgs) => T, opts?: Opts): asserts v is T {
-    if (isDisabled()) return
+  instanceOf<T, TArgs extends unknown[]>(
+    v: unknown,
+    ctor: new (...args: TArgs) => T,
+    opts?: Opts
+  ): asserts v is T {
     if (v instanceof ctor) return
     const o = parseOpts(opts)
     fail({
@@ -655,7 +649,6 @@ export const assert: Assert = {
    * ```
    */
   equal<T>(actual: T, expected: T, opts?: Opts): void {
-    if (isDisabled()) return
     if (actual === expected) return
     const o = parseOpts(opts)
     fail({
@@ -688,7 +681,6 @@ export const assert: Assert = {
    * ```
    */
   deepEqual<T>(actual: T, expected: T, opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(actual, expected)) return
     const o = parseOpts(opts)
     fail({
@@ -713,7 +705,6 @@ export const assert: Assert = {
    * @example `assert.positive(amountCents, "amount must be positive")`
    */
   positive(n: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (isFinite(n) && n > 0) return
     const o = parseOpts(opts)
     fail({
@@ -737,7 +728,6 @@ export const assert: Assert = {
    * @example `assert.negative(delta, "delta must be negative")`
    */
   negative(n: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (isFinite(n) && n < 0) return
     const o = parseOpts(opts)
     fail({
@@ -761,7 +751,6 @@ export const assert: Assert = {
    * @example `assert.zero(remainder, "no remainder expected")`
    */
   zero(n: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (n === 0) return
     const o = parseOpts(opts)
     fail({
@@ -785,7 +774,6 @@ export const assert: Assert = {
    * @example `assert.greater(newVersion, currentVersion, "version must increase")`
    */
   greater(a: number, b: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (a > b) return
     const o = parseOpts(opts)
     fail({
@@ -813,7 +801,6 @@ export const assert: Assert = {
    * @example `assert.greaterOrEqual(balance, amount, "insufficient funds")`
    */
   greaterOrEqual(a: number, b: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (a >= b) return
     const o = parseOpts(opts)
     fail({
@@ -842,7 +829,6 @@ export const assert: Assert = {
    * @example `assert.less(latencyMs, 200, "latency too high")`
    */
   less(a: number, b: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (a < b) return
     const o = parseOpts(opts)
     fail({
@@ -870,7 +856,6 @@ export const assert: Assert = {
    * @example `assert.lessOrEqual(pageSize, 100, "page size exceeds limit")`
    */
   lessOrEqual(a: number, b: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (a <= b) return
     const o = parseOpts(opts)
     fail({
@@ -907,7 +892,6 @@ export const assert: Assert = {
    * ```
    */
   withinRange(v: number, min: number, max: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (v >= min && v <= max) return
     const o = parseOpts(opts)
     fail({
@@ -941,7 +925,6 @@ export const assert: Assert = {
    * ```
    */
   inDelta(actual: number, expected: number, delta: number, opts?: Opts): void {
-    if (isDisabled()) return
     if (Math.abs(actual - expected) <= delta) return
     const o = parseOpts(opts)
     const distance = Math.abs(actual - expected)
@@ -973,7 +956,6 @@ export const assert: Assert = {
    * @example `assert.len(users, 10, "expected 10 users")`
    */
   len<T>(arr: T[], n: number, opts?: Opts): void {
-    if (isDisabled()) return
     const size = _size(arr)
     if (size === n) return
     const o = parseOpts(opts)
@@ -998,7 +980,6 @@ export const assert: Assert = {
    * @example `assert.longerThan(results, 0, "must have at least one result")`
    */
   longerThan<T>(arr: T[], n: number, opts?: Opts): void {
-    if (isDisabled()) return
     const size = _size(arr)
     if (size > n) return
     const o = parseOpts(opts)
@@ -1023,7 +1004,6 @@ export const assert: Assert = {
    * @example `assert.shorterThan(queue, 1000, "queue overflow")`
    */
   shorterThan<T>(arr: T[], n: number, opts?: Opts): void {
-    if (isDisabled()) return
     const size = _size(arr)
     if (size < n) return
     const o = parseOpts(opts)
@@ -1048,7 +1028,6 @@ export const assert: Assert = {
    * @example `assert.includes(roles, "admin", "admin role required")`
    */
   includes<T>(arr: T[], item: T, opts?: Opts): void {
-    if (isDisabled()) return
     if (includes(arr, item)) return
     const o = parseOpts(opts)
     fail({
@@ -1088,7 +1067,6 @@ export const assert: Assert = {
     predicate: ((v: T) => v is U) | ((v: T) => boolean),
     opts?: Opts
   ): asserts arr is U[] {
-    if (isDisabled()) return
     const index = arr.findIndex((v) => !predicate(v))
     if (index === -1) return
     const o = parseOpts(opts)
@@ -1114,7 +1092,6 @@ export const assert: Assert = {
    * @example `assert.any(events, e => e.type === "purchase", "need a purchase event")`
    */
   any<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void {
-    if (isDisabled()) return
     if (arr.some(predicate)) return
     const o = parseOpts(opts)
     fail({
@@ -1136,7 +1113,6 @@ export const assert: Assert = {
    * @example `assert.none(users, u => u.banned && u.active, "banned users must be inactive")`
    */
   none<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void {
-    if (isDisabled()) return
     const bad = arr.find((v) => predicate(v))
     if (bad === undefined) return
     const o = parseOpts(opts)
@@ -1159,7 +1135,6 @@ export const assert: Assert = {
    * @example `assert.one(events, e => e.type === "checkout", "exactly one checkout expected")`
    */
   one<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void {
-    if (isDisabled()) return
     const count = arr.filter(predicate).length
     if (count === 1) return
     const o = parseOpts(opts)
@@ -1184,7 +1159,6 @@ export const assert: Assert = {
    * @example `assert.count(transactions, t => t.amount > 1000, 3, "expected 3 large transactions")`
    */
   count<T>(arr: T[], predicate: (v: T) => boolean, n: number, opts?: Opts): void {
-    if (isDisabled()) return
     const count = arr.filter(predicate).length
     if (count === n) return
     const o = parseOpts(opts)
@@ -1209,7 +1183,6 @@ export const assert: Assert = {
    * @example `assert.containsAll(permissions, required, "missing required permissions")`
    */
   containsAll<T>(arr: T[], items: T[], opts?: Opts): void {
-    if (isDisabled()) return
     const missing = difference(items, arr)
     if (!missing.length) return
     const o = parseOpts(opts)
@@ -1235,7 +1208,6 @@ export const assert: Assert = {
    * @example `assert.containsNone(errors, fatalErrors, "fatal error occurred")`
    */
   containsNone<T>(arr: T[], items: T[], opts?: Opts): void {
-    if (isDisabled()) return
     const found = intersection(arr, items)
     if (!found.length) return
     const o = parseOpts(opts)
@@ -1262,7 +1234,6 @@ export const assert: Assert = {
    * @example `assert.elementsMatch(result, expected, "wrong set of ids")`
    */
   elementsMatch<T>(a: T[], b: T[], opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(sortBy(a), sortBy(b))) return
     const o = parseOpts(opts)
     const only_a = differenceWith(a, b, isEqual)
@@ -1296,7 +1267,6 @@ export const assert: Assert = {
    * @example `assert.subset(arr, required, "some required elements are missing")`
    */
   subset<T>(arr: T[], sub: T[], opts?: Opts): void {
-    if (isDisabled()) return
     const missing = difference(sub, arr)
     if (!missing.length) return
     const o = parseOpts(opts)
@@ -1322,7 +1292,6 @@ export const assert: Assert = {
    * @example `assert.unique(ids, "duplicate IDs detected")`
    */
   unique<T>(arr: T[], opts?: Opts): void {
-    if (isDisabled()) return
     const dupes = arr.filter((v, i) => arr.indexOf(v) !== i)
     if (!dupes.length) return
     const o = parseOpts(opts)
@@ -1350,7 +1319,6 @@ export const assert: Assert = {
    * @example `assert.uniqueBy(users, "email", "duplicate emails")`
    */
   uniqueBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void {
-    if (isDisabled()) return
     const fn = _iteratee(iteratee) as (v: T) => unknown
     const vals = arr.map(fn)
     const dupes = vals.filter((v, i) => vals.indexOf(v) !== i)
@@ -1378,7 +1346,6 @@ export const assert: Assert = {
    * @example `assert.increasing(versions, "versions must increase")`
    */
   increasing(arr: number[], opts?: Opts): void {
-    if (isDisabled()) return
     const i = arr.findIndex((v, i) => i > 0 && v <= arr[i - 1]!)
     if (i === -1) return
     const o = parseOpts(opts)
@@ -1403,7 +1370,6 @@ export const assert: Assert = {
    * @example `assert.nonDecreasing(scores, "scores must not decrease")`
    */
   nonDecreasing(arr: number[], opts?: Opts): void {
-    if (isDisabled()) return
     const i = arr.findIndex((v, i) => i > 0 && v < arr[i - 1]!)
     if (i === -1) return
     const o = parseOpts(opts)
@@ -1428,7 +1394,6 @@ export const assert: Assert = {
    * @example `assert.sortedBy(events, "timestamp", "events must be chronological")`
    */
   sortedBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(arr, sortBy(arr, iteratee))) return
     const o = parseOpts(opts)
     fail({
@@ -1449,7 +1414,6 @@ export const assert: Assert = {
    * @example `assert.first(sorted, lowestId, "first element must be the lowest id")`
    */
   first<T>(arr: T[], expected: T, opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(first(arr), expected)) return
     const o = parseOpts(opts)
     fail({
@@ -1473,7 +1437,6 @@ export const assert: Assert = {
    * @example `assert.last(pipeline, finalStep, "pipeline must end with finalStep")`
    */
   last<T>(arr: T[], expected: T, opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(last(arr), expected)) return
     const o = parseOpts(opts)
     fail({
@@ -1502,7 +1465,6 @@ export const assert: Assert = {
     expected: number,
     opts?: Opts
   ): void {
-    if (isDisabled()) return
     const actual = sumBy(arr, iteratee)
     if (actual === expected) return
     const o = parseOpts(opts)
@@ -1529,7 +1491,6 @@ export const assert: Assert = {
    * @example `assert.noNils(records, "records must not contain null entries")`
    */
   noNils<T>(arr: (T | null | undefined)[], opts?: Opts): asserts arr is T[] {
-    if (isDisabled()) return
     const i = arr.findIndex(isNil)
     if (i === -1) return
     const o = parseOpts(opts)
@@ -1551,7 +1512,6 @@ export const assert: Assert = {
    * @example `assert.flat(tags, "tags array must be flat")`
    */
   flat(arr: unknown[], opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(arr, arr.flat(Infinity))) return
     const o = parseOpts(opts)
     fail({
@@ -1577,7 +1537,6 @@ export const assert: Assert = {
     ctor: new (...args: TArgs) => T,
     opts?: Opts
   ): asserts arr is T[] {
-    if (isDisabled()) return
     const bad = arr.find((v) => !(v instanceof ctor))
     if (bad === undefined) return
     const o = parseOpts(opts)
@@ -1601,7 +1560,6 @@ export const assert: Assert = {
    * @example `assert.zippedWith(inputs, outputs, (i, o) => o.id === i.id, "ids must match")`
    */
   zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void {
-    if (isDisabled()) return
     const bad = zip(a, b).find(([x, y]) => !predicate(x as A, y as B))
     if (!bad) return
     const o = parseOpts(opts)
@@ -1623,7 +1581,6 @@ export const assert: Assert = {
    * @example `assert.groupedBy(events, "type", ["click","view","purchase"])`
    */
   groupedBy<T>(arr: T[], iteratee: ValueIteratee<T>, expectedGroups: string[], opts?: Opts): void {
-    if (isDisabled()) return
     const groups = groupBy(arr, iteratee)
     const missing = difference(expectedGroups, Object.keys(groups))
     const extra = difference(Object.keys(groups), expectedGroups)
@@ -1664,7 +1621,6 @@ export const assert: Assert = {
     expectedRest: number,
     opts?: Opts
   ): void {
-    if (isDisabled()) return
     const [matched, rest] = partition(arr, predicate)
     if (matched.length === expectedMatch && rest.length === expectedRest) return
     const o = parseOpts(opts)
@@ -1700,7 +1656,6 @@ export const assert: Assert = {
     key: K,
     opts?: Opts
   ): asserts obj is T & Record<K, unknown> {
-    if (isDisabled()) return
     if (has(obj, key)) return
     const o = parseOpts(opts)
     fail({
@@ -1729,7 +1684,6 @@ export const assert: Assert = {
     keys: K[],
     opts?: Opts
   ): asserts obj is T & Record<K, unknown> {
-    if (isDisabled()) return
     const missing = keys.filter((k) => !has(obj, k))
     if (!missing.length) return
     const o = parseOpts(opts)
@@ -1760,7 +1714,6 @@ export const assert: Assert = {
     keys: K[],
     opts?: Opts
   ): asserts obj is Record<K, unknown> {
-    if (isDisabled()) return
     const actual = _keys(obj)
     const missing = difference(keys, actual)
     const extra = difference(actual, keys)
@@ -1796,7 +1749,6 @@ export const assert: Assert = {
    * @example `assert.hasOnlyKeys(patch, ["name","email"], "patch contains immutable fields")`
    */
   hasOnlyKeys(obj: object, allowed: string[], opts?: Opts): void {
-    if (isDisabled()) return
     const extra = difference(_keys(obj), allowed)
     if (!extra.length) return
     const o = parseOpts(opts)
@@ -1823,7 +1775,6 @@ export const assert: Assert = {
    * @example `assert.hasValue(config, "port", 5432, "wrong database port")`
    */
   hasValue<T extends object, K extends keyof T>(obj: T, key: K, expected: T[K], opts?: Opts): void {
-    if (isDisabled()) return
     if (isEqual(obj[key], expected)) return
     const o = parseOpts(opts)
     fail({
@@ -1847,7 +1798,6 @@ export const assert: Assert = {
    * @example `assert.containsSubset(user, { role: "admin" }, "user must be admin")`
    */
   containsSubset<T extends object>(obj: T, subset: Partial<T>, opts?: Opts): void {
-    if (isDisabled()) return
     const bad = (_keys(subset) as (keyof T)[]).find((k) => !isEqual(obj[k], subset[k]))
     if (bad === undefined) return
     const o = parseOpts(opts)
@@ -1877,7 +1827,6 @@ export const assert: Assert = {
     predicate: (v: T[keyof T], k: keyof T) => boolean,
     opts?: Opts
   ): void {
-    if (isDisabled()) return
     const bad = (_keys(obj) as (keyof T)[]).find((k) => !predicate(obj[k], k))
     if (bad === undefined) return
     const o = parseOpts(opts)
@@ -1899,7 +1848,6 @@ export const assert: Assert = {
    * @example `assert.noNilValues(config, "config must have no null values")`
    */
   noNilValues<T extends object>(obj: T, opts?: Opts): void {
-    if (isDisabled()) return
     const bad = (_keys(obj) as (keyof T)[]).find((k) => isNil(obj[k]))
     if (bad === undefined) return
     const o = parseOpts(opts)
@@ -1921,7 +1869,6 @@ export const assert: Assert = {
    * @example `assert.dig(config, "database.pool.max", 10)`
    */
   dig<T>(obj: T, path: string | string[], expected: unknown, opts?: Opts): void {
-    if (isDisabled()) return
     const actual = get(obj as object, path)
     if (isEqual(actual, expected)) return
     const o = parseOpts(opts)
@@ -1955,7 +1902,6 @@ export const assert: Assert = {
     expected: TReturn,
     opts?: Opts
   ): void {
-    if (isDisabled()) return
     const actual = fn(...args)
     if (isEqual(actual, expected)) return
     const o = parseOpts(opts)
@@ -1985,7 +1931,6 @@ export const assert: Assert = {
     args: TArgs,
     opts?: Opts
   ): void {
-    if (isDisabled()) return
     const r1 = fn(...args)
     const r2 = fn(...args)
     if (isEqual(r1, r2)) return
@@ -2011,7 +1956,6 @@ export const assert: Assert = {
    * @example `assert.idempotent(normalizeEmail, "Alice@Example.COM")`
    */
   idempotent<T>(fn: (v: T) => T, arg: T, opts?: Opts): void {
-    if (isDisabled()) return
     const r1 = fn(arg)
     const r2 = fn(r1)
     if (isEqual(r1, r2)) return
@@ -2036,8 +1980,11 @@ export const assert: Assert = {
    * Asserts that `fn.length` equals `n` (declared parameter count).
    * @example `assert.arity(transform, 1, "pipeline steps must be unary")`
    */
-  arity<TArgs extends unknown[], TReturn>(fn: (...args: TArgs) => TReturn, n: number, opts?: Opts): void {
-    if (isDisabled()) return
+  arity<TArgs extends unknown[], TReturn>(
+    fn: (...args: TArgs) => TReturn,
+    n: number,
+    opts?: Opts
+  ): void {
     if (fn.length === n) return
     const o = parseOpts(opts)
     fail({
@@ -2062,7 +2009,6 @@ export const assert: Assert = {
    * @example `assert.mapsDistinct(hashFn, "user:1", "user:2", "hash collision")`
    */
   mapsDistinct<T, U>(fn: (v: T) => U, a: T, b: T, opts?: Opts): void {
-    if (isDisabled()) return
     const ra = fn(a)
     const rb = fn(b)
     if (!isEqual(ra, rb)) return
@@ -2100,7 +2046,6 @@ export const assert: Assert = {
    * ```
    */
   homomorphic<T>(fn: (v: T) => T, combine: (a: T, b: T) => T, a: T, b: T, opts?: Opts): void {
-    if (isDisabled()) return
     const combined = fn(combine(a, b))
     const distributed = combine(fn(a), fn(b))
     if (isEqual(combined, distributed)) return
@@ -2149,7 +2094,6 @@ export const assert: Assert = {
    * ```
    */
   not<TArgs extends unknown[]>(fn: (...args: TArgs) => void, ...args: TArgs): void {
-    if (isDisabled()) return
     let threw = false
     try {
       fn(...args)
@@ -2212,7 +2156,6 @@ export const assert: Assert = {
     ctorOrOpts?: (new (...args: TArgs) => E) | Opts,
     opts?: Opts
   ): Promise<void> {
-    if (isDisabled()) return
     const isCtor = typeof ctorOrOpts === "function"
     const ctor = isCtor ? (ctorOrOpts as new (...args: TArgs) => E) : undefined
     const o = parseOpts(isCtor ? opts : (ctorOrOpts as Opts))
@@ -2277,7 +2220,6 @@ export const assert: Assert = {
     message: string,
     opts?: Opts
   ): Promise<void> {
-    if (isDisabled()) return
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (outcome.ok) {
@@ -2330,12 +2272,7 @@ export const assert: Assert = {
    * )
    * ```
    */
-  async rejectsMatching(
-    promise: Awaitable<unknown>,
-    pattern: RegExp,
-    opts?: Opts
-  ): Promise<void> {
-    if (isDisabled()) return
+  async rejectsMatching(promise: Awaitable<unknown>, pattern: RegExp, opts?: Opts): Promise<void> {
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (outcome.ok) {
@@ -2395,7 +2332,6 @@ export const assert: Assert = {
     predicate: (err: unknown) => boolean,
     opts?: Opts
   ): Promise<void> {
-    if (isDisabled()) return
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (outcome.ok) {
@@ -2464,7 +2400,6 @@ export const assert: Assert = {
   async resolves<T>(promise: Awaitable<T>, opts?: Opts): Promise<T> {
     const outcome = await settle(promise)
     if (outcome.ok) return outcome.value
-    if (isDisabled()) return undefined as T
     const o = parseOpts(opts)
     fail({
       assertion: "resolves",
@@ -2506,7 +2441,6 @@ export const assert: Assert = {
    * ```
    */
   async resolvesWith<T>(promise: Awaitable<T>, expected: T, opts?: Opts): Promise<void> {
-    if (isDisabled()) return
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (!outcome.ok) {
@@ -2567,7 +2501,6 @@ export const assert: Assert = {
     predicate: (v: T) => boolean,
     opts?: Opts
   ): Promise<void> {
-    if (isDisabled()) return
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (!outcome.ok) {
@@ -2625,7 +2558,6 @@ export const assert: Assert = {
     opts?: Opts
   ): Promise<NonNullable<T>> {
     const outcome = await settle(promise)
-    if (isDisabled()) return (outcome.ok ? outcome.value : undefined) as NonNullable<T>
     const o = parseOpts(opts)
     if (!outcome.ok) {
       fail({

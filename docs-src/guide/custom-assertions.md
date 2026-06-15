@@ -112,7 +112,7 @@ assertValidOrderId(orderId, {
 | `fmtValue(v)` | Format any value for display — handles nesting, truncation, type labels |
 | `color` | ANSI colour helpers: `color.added`, `color.removed`, `color.index`, etc. |
 | `parseOpts(opts)` | Normalise `string \| AssertOptions \| undefined` → `{ msg, note, actual }` |
-| `fail(opts)` | Throw or warn depending on current mode — respects `setAssertMode` |
+| `fail(opts)` | Output the formatted error and throw `AssertionError` |
 | `diffObjects(a, b)` | Generate diff rows between two objects (for deep equality assertions) |
 
 ---

@@ -4,7 +4,7 @@
 //   assert.rejects / rejectsWithMessage / rejectsSatisfying / rejectsMatching
 
 import { describe, it, expect } from "bun:test"
-import { assert, withMode, AssertionError } from "../../src/index.ts"
+import { assert, AssertionError } from "../../src/index.ts"
 import { OrderService } from "./order.service.ts"
 import { UserService } from "./user.service.ts"
 import { PaymentError, OrderError } from "./types.ts"
@@ -234,39 +234,6 @@ describe("OrderService.placeOrder — payment failures", () => {
       OrderService.placeOrder("usr_alice", hugeItems),
       (err) => err instanceof PaymentError && err.code === "amount_too_large",
       "PaymentError.code must be 'amount_too_large' for Stripe limit exceeded"
-    )
-  })
-})
-
-// ─────────────────────────────────────────────────────────────────────────────
-// withMode — tester la résilience sans crasher le process
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe("withMode — isolation dans les tests", () => {
-  it("disabled mode: toutes les assertions sont des no-ops — le code s'exécute jusqu'au bout", async () => {
-    // En mode disabled, assert.notEmpty / assert.positive / assert.greaterOrEqual
-    // sont tous des no-ops.
-    // Résultat : placeOrder avec items vides ne throw pas sur les validations —
-    // il va jusqu'à stripe.charges.create avec amountCents=0, qui accepte.
-    // C'est exactement ça le mode "disabled" : zéro protection, exécution totale.
-    await withMode("disabled", async () => {
-      const order = await OrderService.placeOrder("usr_alice", [])
-      // L'ordre est créé malgré des items vides — les contrats sont éteints
-      expect(order).toBeDefined()
-      expect(order.totalCents).toBe(0)  // total calculé sur [] = 0
-    })
-  })
-
-  it("mode is correctly restored after withMode block", async () => {
-    const modeBefore = "enabled"
-    await withMode("disabled", async () => {
-      // mode disabled ici
-    })
-    // mode restauré automatiquement — pas besoin de afterEach
-    await assert.rejects(
-      UserService.getActiveUser(""),
-      AssertionError,
-      "assertions must be active again after withMode block"
     )
   })
 })

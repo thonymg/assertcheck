@@ -5,8 +5,8 @@
  * Runs with `bun test`.
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test"
-import { assert, AssertionError, modeAssertIn, setAssertMode, getAssertMode } from "./index.shim.ts"
+import { describe, it, expect } from "bun:test"
+import { assert, AssertionError } from "./index.shim.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -26,127 +26,6 @@ const shouldThrow = (fn: () => void): AssertionError => {
 const shouldPass = (fn: () => void): void => {
   expect(fn).not.toThrow()
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MODE
-// ─────────────────────────────────────────────────────────────────────────────
-
-describe("mode", () => {
-  let saved: ReturnType<typeof getAssertMode>
-
-  // Always restore after each test so failures don't bleed between suites
-  beforeEach(() => {
-    saved = getAssertMode()
-  })
-  afterEach(() => {
-    setAssertMode(saved)
-  })
-
-  it("default is 'enabled' — no configuration needed", () => {
-    setAssertMode("enabled") // reset to default
-    expect(getAssertMode()).toBe("enabled")
-    shouldThrow(() => assert.equal(1, 2))
-  })
-
-  it("disabled — no throw on failure", () => {
-    setAssertMode("disabled")
-    shouldPass(() => assert.equal(1, 2))
-  })
-
-  it("warn — no throw, failure is observed", () => {
-    setAssertMode("warn")
-    shouldPass(() => assert.equal(1, 2))
-  })
-
-  it("enabled — throws AssertionError on failure", () => {
-    setAssertMode("enabled")
-    shouldThrow(() => assert.equal(1, 2))
-  })
-
-  describe("modeAssertIn", () => {
-    const originalNodeEnv = process.env["NODE_ENV"]
-
-    afterEach(() => {
-      // Restore NODE_ENV after each sub-test
-      if (originalNodeEnv === undefined) {
-        delete process.env["NODE_ENV"]
-      } else {
-        process.env["NODE_ENV"] = originalNodeEnv
-      }
-      setAssertMode("enabled") // back to default
-    })
-
-    it("applies mode when NODE_ENV matches 'prod' alias", () => {
-      process.env["NODE_ENV"] = "production"
-      modeAssertIn("prod", "warn")
-      expect(getAssertMode()).toBe("warn")
-    })
-
-    it("applies mode when NODE_ENV matches 'prod' short alias", () => {
-      process.env["NODE_ENV"] = "prod"
-      modeAssertIn("prod", "disabled")
-      expect(getAssertMode()).toBe("disabled")
-    })
-
-    it("does NOT apply mode when NODE_ENV does not match", () => {
-      process.env["NODE_ENV"] = "development"
-      modeAssertIn("prod", "disabled")
-      // mode must stay unchanged — still "enabled"
-      expect(getAssertMode()).toBe("enabled")
-    })
-
-    it("applies mode for 'dev' when NODE_ENV=development", () => {
-      process.env["NODE_ENV"] = "development"
-      modeAssertIn("dev", "disabled")
-      expect(getAssertMode()).toBe("disabled")
-    })
-
-    it("applies mode for 'dev' short alias", () => {
-      process.env["NODE_ENV"] = "dev"
-      modeAssertIn("dev", "warn")
-      expect(getAssertMode()).toBe("warn")
-    })
-
-    it("applies mode for 'test'", () => {
-      process.env["NODE_ENV"] = "test"
-      modeAssertIn("test", "disabled")
-      expect(getAssertMode()).toBe("disabled")
-    })
-
-    it("applies mode for 'staging'", () => {
-      process.env["NODE_ENV"] = "staging"
-      modeAssertIn("staging", "warn")
-      expect(getAssertMode()).toBe("warn")
-    })
-
-    it("applies mode for 'stage' alias", () => {
-      process.env["NODE_ENV"] = "stage"
-      modeAssertIn("staging", "warn")
-      expect(getAssertMode()).toBe("warn")
-    })
-
-    it("applies mode for 'ci'", () => {
-      process.env["NODE_ENV"] = "ci"
-      modeAssertIn("ci", "disabled")
-      expect(getAssertMode()).toBe("disabled")
-    })
-
-    it("multiple calls — only matching env takes effect", () => {
-      process.env["NODE_ENV"] = "production"
-      modeAssertIn("prod", "warn") // ← matches
-      modeAssertIn("staging", "disabled") // ← does not match
-      modeAssertIn("dev", "disabled") // ← does not match
-      expect(getAssertMode()).toBe("warn")
-    })
-
-    it("multiple calls — last matching env wins", () => {
-      process.env["NODE_ENV"] = "production"
-      modeAssertIn("prod", "warn")
-      modeAssertIn("prod", "disabled") // same env, last call wins
-      expect(getAssertMode()).toBe("disabled")
-    })
-  })
-})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // EXISTENCE

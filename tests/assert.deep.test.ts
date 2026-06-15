@@ -12,8 +12,8 @@
  *   L6 – complex / real-world scenarios
  */
 
-import { describe, it, expect, beforeEach, afterEach } from "bun:test"
-import { assert, AssertionError, setAssertMode, getAssertMode } from "./index.shim.ts"
+import { describe, it, expect } from "bun:test"
+import { assert, AssertionError } from "./index.shim.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS
@@ -31,15 +31,6 @@ const throws = (fn: () => void): AssertionError => {
 }
 
 const passes = (fn: () => void) => expect(fn).not.toThrow()
-
-// Restore mode around every test
-let _savedMode: ReturnType<typeof getAssertMode>
-beforeEach(() => {
-  _savedMode = getAssertMode()
-})
-afterEach(() => {
-  setAssertMode(_savedMode)
-})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NIL / NOT-NIL
@@ -94,14 +85,6 @@ describe("nil — deep", () => {
   })
 
   // L6 complex
-  it("disabled mode — does not throw even for non-nil", () => {
-    setAssertMode("disabled")
-    passes(() => assert.nil(42))
-  })
-  it("warn mode — does not throw", () => {
-    setAssertMode("warn")
-    passes(() => assert.nil({ nested: true }))
-  })
   it("real-world: cleaned-up resource must be nil", () => {
     let conn: null | { close(): void } = null
     passes(() => assert.nil(conn, "connection must be closed"))
@@ -152,10 +135,6 @@ describe("notNil — deep", () => {
   })
 
   // L6 complex
-  it("disabled mode — does not throw for null", () => {
-    setAssertMode("disabled")
-    passes(() => assert.notNil(null))
-  })
   it("real-world: user loaded from DB must not be nil", () => {
     const user = { id: 1, name: "Alice" }
     passes(() => assert.notNil(user))
@@ -204,10 +183,6 @@ describe("empty — deep", () => {
   })
 
   // L6 complex
-  it("disabled mode — does not throw", () => {
-    setAssertMode("disabled")
-    passes(() => assert.empty([1, 2, 3]))
-  })
   it("real-world: validation errors list must be empty on success", () => {
     const errors: string[] = []
     passes(() => assert.empty(errors, "no validation errors expected"))
@@ -251,10 +226,6 @@ describe("notEmpty — deep", () => {
   })
 
   // L6 complex
-  it("disabled mode — does not throw", () => {
-    setAssertMode("disabled")
-    passes(() => assert.notEmpty([]))
-  })
   it("real-world: search results must not be empty", () => {
     const results = [
       { id: 1, title: "Post A" },
@@ -308,10 +279,6 @@ describe("string — deep", () => {
   })
 
   // L6 complex
-  it("disabled mode — no throw for number", () => {
-    setAssertMode("disabled")
-    passes(() => assert.string(42))
-  })
   it("real-world: API response field must be string", () => {
     const apiResponse = { status: "active", code: "USR-001" }
     passes(() => assert.string(apiResponse.status))
@@ -341,10 +308,6 @@ describe("number — deep", () => {
   it("message contains 'number'", () => {
     const err = throws(() => assert.number("x"))
     expect(err.message.toLowerCase()).toContain("number")
-  })
-  it("disabled mode — no throw for string", () => {
-    setAssertMode("disabled")
-    passes(() => assert.number("not a number" as unknown as number))
   })
   it("real-world: price field from form must be number", () => {
     const parsed = 29.99
@@ -376,10 +339,6 @@ describe("integer — deep", () => {
   it("message mentions integer", () => {
     const err = throws(() => assert.integer(0.001))
     expect(err.message.toLowerCase()).toContain("integer")
-  })
-  it("disabled — float does not throw", () => {
-    setAssertMode("disabled")
-    passes(() => assert.integer(1.5))
   })
   it("real-world: page size must be integer", () => {
     passes(() => assert.integer(25, "page size"))
@@ -639,10 +598,6 @@ describe("equal — deep", () => {
   })
 
   // L6 complex
-  it("disabled mode — 1 !== 2 does not throw", () => {
-    setAssertMode("disabled")
-    passes(() => assert.equal(1, 2))
-  })
   it("real-world: HTTP status code check", () => {
     const statusCode = 200
     passes(() => assert.equal(statusCode, 200))
@@ -702,10 +657,6 @@ describe("deepEqual — deep", () => {
   })
 
   // L6 complex
-  it("disabled — deep mismatch does not throw", () => {
-    setAssertMode("disabled")
-    passes(() => assert.deepEqual({ a: 1 }, { a: 999 }))
-  })
   it("real-world: serialized/deserialized round-trip", () => {
     const original = { id: 1, tags: ["a", "b"], meta: { active: true } }
     const deserialized = JSON.parse(JSON.stringify(original))
@@ -756,10 +707,6 @@ describe("positive — deep", () => {
   it("message mentions '> 0'", () => {
     const err = throws(() => assert.positive(-1))
     expect(err.message).toContain("> 0")
-  })
-  it("disabled — 0 does not throw", () => {
-    setAssertMode("disabled")
-    passes(() => assert.positive(0))
   })
   it("real-world: order amount must be positive", () => {
     passes(() => assert.positive(9999, "amount must be positive"))
@@ -2223,11 +2170,6 @@ describe("not — deep", () => {
     expect(err.message.toLowerCase()).toContain("failed")
   })
 
-  it("disabled mode — inner passing assertion does not throw via not", () => {
-    setAssertMode("disabled")
-    passes(() => assert.not(assert.equal, 1, 1))
-  })
-
   it("real-world: user must NOT have admin role", () => {
     const user = { id: 1, role: "member" }
     passes(() => assert.not(assert.equal, user.role, "admin"))
@@ -2296,18 +2238,5 @@ describe("AssertionError — deep metadata", () => {
     const err = throws(() => assert.deepEqual(a, b))
     expect((err.actual as typeof a).y).toBe(2)
     expect((err.expected as typeof b).y).toBe(3)
-  })
-  it("warn mode — no throw, returns normally", () => {
-    setAssertMode("warn")
-    passes(() => assert.equal(1, 2))
-    passes(() => assert.withinRange(-999, 0, 100))
-    passes(() => assert.noNils([null, undefined]))
-  })
-  it("disabled mode — no throw for any assertion", () => {
-    setAssertMode("disabled")
-    passes(() => assert.nil(42))
-    passes(() => assert.string(999 as unknown as string))
-    passes(() => assert.all([], (v) => !v))
-    passes(() => assert.equal(1, 999))
   })
 })
