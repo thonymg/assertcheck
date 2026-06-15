@@ -100,6 +100,7 @@ export default defineConfig({
             { text: "Assertion modes",            link: "/guide/modes" },
             { text: "Error format",               link: "/guide/error-format" },
             { text: "Chainable API (check)",      link: "/guide/check" },
+            { text: "Async assertions",           link: "/guide/async" },
           ],
         },
         {
