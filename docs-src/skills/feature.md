@@ -1,9 +1,9 @@
 # assertcheck-feature
 
-Build a new TypeScript feature with Negative Space Programming from the first line.
+Build a new TypeScript feature with the guard block first — every invalid state declared
+before a single line of logic is written.
 
-> "An elegant program is not one that checks off all the bullet points from some arbitrary
-> feature list; it's one that solves the problem it's meant to solve and does so concisely."
+> "An elegant program's quality is not that it does what it's supposed to; it's that it does almost nothing else."
 > — Fabian Giesen, *Negative space in programming*
 
 ---
@@ -17,23 +17,13 @@ Build a new TypeScript feature with Negative Space Programming from the first li
 
 ---
 
-## What the skill does
+## How it works
 
-The skill runs a **3-phase protocol** that forces the negative space into view before
-any logic is written.
+The skill enforces a 3-phase sequence. It will not produce any code until the interview is complete.
 
-### Phase 1 — Map the negative space
+### Phase 1 — Contract table (negative space map)
 
-The skill interviews you first. It asks:
-
-1. What is the entry point?
-2. What are the inputs and where do they come from?
-3. What makes each input invalid?
-4. Does the feature depend on a prior state?
-5. Does it call an external service or DB? What must be true about the response?
-6. What must the output guarantee?
-
-From your answers, it produces a **contract table**:
+After a short interview, the skill fills a contract table — one row per boundary:
 
 ```
 | Boundary          | Invalid state                  | Assert with                     |
@@ -44,44 +34,45 @@ From your answers, it produces a **contract table**:
 | output total      | zero or negative               | assert.greater(total, 0)        |
 ```
 
-### Phase 2 — Write the guard block first
+Every row must have a non-empty "Assert with" column before any code is written.
 
-Every new function is scaffolded in two sections — guards before logic:
+### Phase 2 — Guard block first
+
+Every function is scaffolded with guards before logic — no exceptions:
 
 ```ts
 import { assert, check } from "assertcheck"
 
 function featureName(param1: Type, param2: Type): ReturnType {
   // ── guards — declare what must never enter ───────────────────
-  // (all assertions here, before any logic)
+  // one assertion per contract table row
 
   // ── logic — runs with proven invariants ──────────────────────
-  // (no defensive checks needed here — the boundary is already clean)
+  // no ?., no ??, no if (!x) return
 }
 ```
 
-### Phase 3 — Fill the logic
+### Phase 3 — Logic block
 
-The logic block runs with **proven invariants**. No `?.`, no `??`, no `if (!x) return`.
-The negative space was declared above.
+The logic block runs with proven invariants. No defensive checks needed — the boundary is already clean.
 
 ---
 
-## Example output
+## Before and after
 
-**Before NSP — typical TypeScript:**
+**❌ Before — TypeScript types + optional chaining + silent return:**
 
 ```ts
-// Silent failure: returns undefined when products is null
 function filterProductsByCategory(
   products?: Product[] | null,
   category?: ProductCategories
 ) {
   return products?.filter(product => product?.category === category)
+  // products is null → returns undefined silently. Caller has no idea.
 }
 ```
 
-**After NSP with assertcheck:**
+**✅ After — guard block declares the negative space:**
 
 ```ts
 import { assert, check } from "assertcheck"
@@ -100,18 +91,38 @@ function filterProductsByCategory(
 
   assert.string(category, "category must be a string")
 
-  // ── logic — runs with proven invariants ──────────────────────
+  // ── logic ─────────────────────────────────────────────────────
   return products.filter(p => p.category === category)
 }
+// null products → immediate, traceable failure at the right place.
+// Before: null propagated silently, surfaced as a confusing downstream error.
 ```
 
-If `products` is `null` → immediate, traceable failure at the right place.  
-Before: `null` propagated silently, surfaced as a confusing downstream error.
+**✅ Service method with state guard:**
+
+```ts
+function createOrder(customerId: string, items: CartItem[]): Order {
+  // ── guards ────────────────────────────────────────────────────
+  assert.string(customerId,   "customerId must be a non-empty string")
+  assert.notEmpty(customerId, "customerId must not be empty")
+
+  check(items)
+    .notEmpty("cart must have at least one item before creating an order")
+    .all(i => i.quantity > 0, {
+      msg:  "all items must have a positive quantity",
+      note: "remove items with quantity ≤ 0 before calling createOrder()",
+    })
+
+  // ── logic ─────────────────────────────────────────────────────
+  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0)
+  return { id: crypto.randomUUID(), customerId, items, total, status: "pending" }
+}
+```
 
 ---
 
 ## What the skill delivers
 
-1. **Contract table** — negative space map (boundary → invalid state → assertion)
-2. **Guarded implementation** — guard block + logic block, fully typed
-3. **Rejected states summary** — one sentence per assertion explaining what it refuses
+1. **Contract table** — boundary → invalid state → assertion (one row per invariant)
+2. **Guarded implementation** — guard block before logic, fully typed
+3. **Rejected states summary** — one sentence per assertion explaining what invalid state it refuses

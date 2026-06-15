@@ -1,7 +1,7 @@
 # assertcheck-refactor
 
-Modify existing code without breaking contracts — and surface the hidden assumptions
-every change puts at risk.
+Modify existing code without breaking contracts. Every change is mapped to its guard impact.
+Every removed safety check is replaced by an assertion — never silently deleted.
 
 > "Figuring out what code doesn't do (and why) can be positively enlightening."
 > — Fabian Giesen, *Negative space in programming*
@@ -18,26 +18,21 @@ every change puts at risk.
 
 ---
 
-## The TypeScript trap
+## How it works
 
-Static types gave the impression the code was safe. At runtime, they are gone.
-Every `??`, `?.`, and `if (!x) return` is a hidden contract that silently breaks
-the moment a caller changes.
-
----
-
-## What the skill does
-
-The skill runs a **4-step protocol** on your change.
+The skill enforces a 4-step protocol. It will not produce any diff until the interview is complete.
 
 ### Interview first
 
-Before producing anything, the skill asks:
+```
 1. What are you changing? (adding a param / changing logic / extracting / replacing a call)
-2. Are you removing or replacing any safety check?
+2. Are you removing or replacing any safety check? (if (!x) return / ?? / try-catch)
 3. Does the change add a new external dependency?
 4. Does the change affect valid entity states?
 5. Is this function called from multiple places?
+```
+
+Question 2 is critical: if a safety check is being removed without a replacement assertion, the skill flags it as a regression before anything else.
 
 ### Step 1 — Hidden assumption scanner
 
@@ -51,11 +46,11 @@ A 5-pass scan of the existing code before any change is made:
 | **D — State** | entity field read without asserting current state |
 | **E — Silent exits** | `if (!x) return` / `x ?? fallback` / `x?.field` / swallowed `catch` |
 
-### Step 2 — Change impact assessment
+### Step 2 — Change impact table
 
 | Change type | Guard impact |
 |:------------|:-------------|
-| New parameter added | Add preconditions for the new param at the top |
+| New parameter added | Add preconditions for the new param at function top |
 | Type widened (`string` → `string \| null`) | Add nil guard on every usage site |
 | New external call added | Add integration guard on the response |
 | New state dependency | Add state guard before accessing it |
@@ -64,28 +59,27 @@ A 5-pass scan of the existing code before any change is made:
 
 ### Step 3 — Guard diff
 
-A precise before/after diff with inline comments identifying each assertion as
-`[EXISTING — promoted]` or `[NEW — added for this change]`.
+Every assertion is annotated as `[EXISTING — promoted]` or `[NEW — added for this change]`.
+`[EXISTING]` annotations explain why the original code was insufficient — not just where it was.
 
 ### Step 4 — Removed safety check flags
 
-Every `if (!x) return` or `?? fallback` removal is explicitly documented:
+Every `if (!x) return` or `?? fallback` removal is documented:
 
 ```
-Removed: line 5 — `if (!orderId) return`
-Replaced with: assert.notNil(orderId, { msg: "orderId is required", … })
-Why this matters: a silent return is invisible to the caller and hides the failure
-at its origin. An assertion surfaces it immediately with context and a stack trace.
+⚠ Line 3: `if (!orderId) return` removed.
+→ Replaced with: assert.string(orderId) + assert.notEmpty(orderId)
+→ Why: silent return gives caller undefined with no stack trace.
+  Assertion surfaces the failure immediately at its origin with full context.
 ```
 
 ---
 
-## Example — adding a currency parameter
+## Example — adding a `currency` parameter
 
-**Before:**
+**Before (hidden assumptions throughout):**
 
 ```ts
-// Hidden assumptions: orderId silent exit, order nil, amount unvalidated
 async function processPayment(orderId: string, amount: number) {
   if (!orderId) return               // silent failure: caller gets undefined
   const order = await repo.findById(orderId)
@@ -95,7 +89,7 @@ async function processPayment(orderId: string, amount: number) {
 }
 ```
 
-**After — guard diff for adding `currency: string`:**
+**After — guard diff:**
 
 ```ts
 import { assert } from "assertcheck"
@@ -103,10 +97,6 @@ import { assert } from "assertcheck"
 async function processPayment(orderId: string, amount: number, currency: string) {
   // ── guards ──────────────────────────────────────────────────────
   // [EXISTING — promoted from silent `if (!orderId) return`]
-  assert.notNil(orderId, {
-    msg:  "orderId is required to process a payment",
-    note: "check that the caller passes a valid order id",
-  })
   assert.string(orderId,   "orderId must be a string")
   assert.notEmpty(orderId, "orderId must not be empty")
 
@@ -131,13 +121,21 @@ async function processPayment(orderId: string, amount: number, currency: string)
     note:   "verify the orderId comes from a valid creation flow",
   })
 
-  const receipt = await gateway.charge(amount, currency)
-  return receipt
+  return await gateway.charge(amount, currency)
 }
 ```
 
+**Removed safety flag:**
+
+```
+⚠ Line 3: `if (!orderId) return` removed.
+→ Replaced with: assert.string(orderId) + assert.notEmpty(orderId)
+→ Why: silent return gives caller undefined with no stack trace.
+  Assertion surfaces the failure immediately at its origin with full context.
+```
+
 ::: info Why replace `if (!orderId) return` with an assertion?
-Before: caller receives `undefined` silently → confusion propagates downstream.  
+Before: caller receives `undefined` silently → confusion propagates downstream.
 After: caller receives an `AssertionError` immediately → failure is at its origin with a stack trace and a message.
 :::
 
@@ -145,7 +143,7 @@ After: caller receives an `AssertionError` immediately → failure is at its ori
 
 ## What the skill delivers
 
-1. **Impact table** — what changes and what guard each change requires
-2. **Guard diff** — assertions to add, with line anchors in the original code
-3. **Removed safety flags** — explicit warning for every silent check removed
-4. **Caller note** — if the function is called from multiple places, flags that callers must now pass valid inputs
+1. **Impact table** — change type → guard required (one row per change)
+2. **Guard diff** — `[EXISTING]` and `[NEW]` annotations, with `WHY` on every `[EXISTING]`
+3. **Removed safety flags** — `⚠` block for every `if (!x) return` or `?? fallback` removed
+4. **Caller note** — flags that callers must now pass valid inputs if the function has multiple call sites

@@ -1,6 +1,7 @@
 # assertcheck-audit
 
-Analyze existing TypeScript code to find every unguarded boundary — and propose the assertions that close each gap.
+Scan existing TypeScript code for every unguarded boundary — nil dereferences, silent exits,
+absorbed errors, unchecked external responses. Risk-ranked, with ready-to-paste assertions.
 
 > "Figuring out what code doesn't do (and why) can be positively enlightening."
 > — Fabian Giesen, *Negative space in programming*
@@ -20,21 +21,29 @@ Analyze existing TypeScript code to find every unguarded boundary — and propos
 ## The TypeScript illusion
 
 Squiggly-free code is not safe code. TypeScript types vanish at runtime.
-Every `??`, `?.`, `if (!x) return`, and absorbed `catch` is a silent failure
-hiding in plain sight.
+Every `??`, `?.`, `if (!x) return`, and absorbed `catch` is a silent failure hiding in plain sight.
 
-The goal of an audit is not to add assertions everywhere — it is to find the
-**highest-risk gaps** where a silent failure would cause the hardest bugs to trace.
+The goal is not to add assertions everywhere — it is to find the **highest-risk gaps**
+where a silent failure causes the hardest bugs to trace.
 
 ---
 
-## What the skill does
+## How it works
 
-The skill runs a **3-pass audit protocol**.
+The skill enforces a 3-pass protocol. It asks 4 interview questions before scanning any code.
 
-### Pass 1 — Boundary scan (systematic, line by line)
+### Interview first
 
-Six boundary categories, worked through in order:
+```
+1. Is this a recent bug, a pre-emptive review, or a PR code review?
+2. Has this code caused production issues? If so, what failed?
+3. What is the most critical invariant this code must maintain?
+4. Are there known callers that sometimes pass unexpected values?
+```
+
+Question 3 is the **North Star** — it determines which findings get flagged as Critical.
+
+### Pass 1 — Boundary scan (6 categories, in order)
 
 | Category | Signal to look for |
 |:---------|:------------------|
@@ -45,20 +54,35 @@ Six boundary categories, worked through in order:
 | **E — Silent exits** | `if (!x) return` / `x ?? fallback` / `x?.field` / absorbed `catch` |
 | **F — Config/env** | `process.env.X` or `config.x.y` accessed directly |
 
-Each finding is annotated: `// [Category] unguarded: <what the code assumes>`
+Each finding is annotated inline: `// ⚠ [Category] unguarded: <what the code assumes>`
 
 ### Pass 2 — Risk scoring
 
 | Risk | Condition |
 |:-----|:----------|
-| **Critical** | Unguarded nil dereferenced — will throw `Cannot read properties of null` |
-| **High** | Silent exit — caller receives `undefined` with no trace |
-| **Medium** | Wrong type assumed — may corrupt silently |
-| **Low** | Missing postcondition — type system mostly covers it |
+| 🔴 **Critical** | Nil dereferenced — will throw `Cannot read properties of null` |
+| 🟠 **High** | Silent exit — caller gets `undefined` or `[]` with no trace |
+| 🟡 **Medium** | Wrong type assumed — may corrupt silently |
+| 🟢 **Low** | Missing postcondition — type system mostly covers it |
 
-### Pass 3 — Prioritized report
+### Pass 3 — Prioritized report (4 blocks)
 
-Findings sorted by risk — Critical first. For each finding: location, category, risk, assumption broken, assertion to add.
+**Block 1 — Guard coverage score**
+```
+Guard coverage: 0 / 3 boundaries protected — 3 gaps (2 high, 1 low)
+```
+
+**Block 2 — Findings table** (sorted 🔴 first)
+```
+| # | Line | Category | Risk    | Implicit assumption        | Fix                            |
+|:--|:-----|:---------|:--------|:---------------------------|:-------------------------------|
+| 1 | 3    | E        | 🟠 High  | user present, caller unaware | assert.notNil(user, {msg:…})  |
+| 2 | 7    | E        | 🟠 High  | error absorbed silently    | remove try/catch — let it throw |
+```
+
+**Block 3 — Proposed assertions** (exact, ready to paste)
+
+**Block 4 — Mindset note** (one paragraph, highest-risk finding in plain language)
 
 ---
 
@@ -70,12 +94,12 @@ Findings sorted by risk — Critical first. For each finding: location, category
 async function getUserTasks(user: User): Promise<Task[]> {
   let tasks: Task[] = []
   if (!user) {
-    return tasks                        // [E] silent exit: caller gets [] with no trace
+    return tasks                        // ⚠ E — silent exit: caller gets [] with no trace
   }
   try {
     tasks = await getTasksFor(user)
   } catch (e) {
-    console.log(e)                      // [E] error absorbed: failure invisible to caller
+    console.log(e)                      // ⚠ E — error absorbed: failure invisible to caller
     return tasks
   }
   return tasks
@@ -85,16 +109,15 @@ async function getUserTasks(user: User): Promise<Task[]> {
 **Audit report:**
 
 ```
-Guard coverage: 0 / 3 boundaries protected — 3 gaps (1 high, 1 high, 1 low)
+Guard coverage: 0 / 2 boundaries protected — 2 gaps (2 high)
 
-| # | Line | Category | Risk     | Assumption              | Fix                            |
-|:--|:-----|:---------|:---------|:------------------------|:-------------------------------|
-| 1 | 3    | E        | High     | user present, no trace  | assert.notNil(user, {msg:…})   |
-| 2 | 7    | E        | High     | error absorbed silently | let it throw — remove try/catch |
-| 3 | 10   | output   | Low      | tasks non-empty         | assert.notEmpty(tasks) if needed |
+| # | Line | Category | Risk    | Implicit assumption          | Fix                             |
+|:--|:-----|:---------|:--------|:-----------------------------|:--------------------------------|
+| 1 | 3    | E        | 🟠 High  | user present, caller unaware | assert.notNil(user, {msg:…})    |
+| 2 | 7    | E        | 🟠 High  | error absorbed silently      | remove try/catch — let it throw |
 ```
 
-**Proposed fix:**
+**Proposed assertions:**
 
 ```ts
 import { assert } from "assertcheck"
@@ -106,33 +129,32 @@ async function getUserTasks(user: User): Promise<Task[]> {
     note: "check that the caller passes an authenticated user object",
   })
 
-  // ── logic ───────────────────────────────────────────────────────
+  // ── logic ────────────────────────────────────────────────────────
   // try/catch removed — let getTasksFor() throw with its own context
-  const tasks = await getTasksFor(user)
-  return tasks
+  return await getTasksFor(user)
 }
 ```
 
 ::: warning The most dangerous pattern
-`catch (e) { console.log(e); return tasks }` absorbs any failure — network error, DB error,
-a thrown assertion — and returns an empty array silently. The caller has no idea whether
-the empty array means "no tasks" or "the service crashed". Removing the try/catch lets the
-error propagate with its full context intact.
+`catch (e) { console.log(e); return tasks }` absorbs any failure silently.
+The caller cannot distinguish "no tasks" from "the service crashed".
+Removing the try/catch lets errors propagate with full context.
 :::
 
 ---
 
 ## What NOT to flag
 
-- TypeScript annotations that already enforce the invariant at compile time
+- TypeScript annotations that enforce the invariant at compile time
 - Assertions that already exist and are correct
-- Optional parameters that are intentionally optional and never dereferenced without a check
-- `try/catch` blocks that handle *recoverable* errors with domain-specific fallback logic
+- Intentionally optional params never dereferenced without a check
+- `try/catch` that genuinely handles recoverable errors with domain-specific fallback
 
 ---
 
 ## What the skill delivers
 
-1. **Boundary scan** — annotated code with every gap identified
-2. **Risk-sorted report** — findings table with category, risk, assumption, and proposed assertion
-3. **Proposed guards** — ready-to-paste guard block for each finding
+1. **Guard coverage score** — `X / N boundaries protected`
+2. **Findings table** — risk-sorted, one row per gap, with exact assertion to add
+3. **Proposed assertions** — ready-to-paste guard block for each finding
+4. **Mindset note** — plain-language explanation of the highest-risk finding

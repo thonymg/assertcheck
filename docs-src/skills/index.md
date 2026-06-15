@@ -2,35 +2,35 @@
 const skills = [
   {
     name: 'assertcheck-spec',
-    desc: 'Define what a feature must NEVER accept before writing a single line of implementation. Produces a precondition/postcondition table traceable to assertions.',
+    desc: 'Define what a feature must NEVER accept before a single line of implementation. Produces a precondition/postcondition table and an implementation checklist — every invariant traceable to one assertion.',
     link: '/skills/spec',
     linkText: 'View skill',
     icon: 'ri:file-list-3-line',
   },
   {
     name: 'assertcheck-feature',
-    desc: 'Build a new function, class, or service with the guard block first. Maps every input, prior state, and external response to an assertion before the logic is written.',
+    desc: 'Build a new function, class, or service with the guard block first. Maps every input, prior state, and external response to an assertion — contract table before any code.',
     link: '/skills/feature',
     linkText: 'View skill',
     icon: 'ri:code-s-slash-line',
   },
   {
     name: 'assertcheck-audit',
-    desc: 'Audit existing code for every unguarded boundary — nil dereferences, silent exits, absorbed errors, unchecked external responses. Risk-ranked, ready to fix.',
+    desc: 'Scan existing code for every unguarded boundary — nil dereferences, silent exits, absorbed errors. 6-category pass, risk-ranked report, ready-to-paste assertions.',
     link: '/skills/audit',
     linkText: 'View skill',
     icon: 'ri:search-eye-line',
   },
   {
     name: 'assertcheck-refactor',
-    desc: 'Modify existing code without breaking contracts. Maps every change to a guard impact, promotes silent ifs to assertions, and flags every safety check removed.',
+    desc: 'Modify existing code without breaking contracts. Every change maps to a guard impact. Every removed safety check is replaced by an assertion — never silently deleted.',
     link: '/skills/refactor',
     linkText: 'View skill',
     icon: 'ri:git-merge-line',
   },
   {
     name: 'assertcheck-selector',
-    desc: 'Instant lookup: which assert.* call for which invariant? Covers existence, type, value, object shape, and collection checks. Used internally by all other skills.',
+    desc: 'Instant lookup: which assert.* call for which invariant? Always picks the most specific assertion. Used internally by all other skills.',
     link: '/skills/selector',
     linkText: 'View skill',
     icon: 'ri:cursor-line',
@@ -42,7 +42,7 @@ const skills = [
 
 assertcheck ships five **Claude Code skills** — structured workflows that guide your AI assistant through Negative Space Programming tasks from spec to audit.
 
-Each skill knows when to trigger, what to ask, and what to produce. They are designed to work together as a complete development workflow.
+Each skill enforces a strict protocol: it interviews before producing output, runs a defined set of passes or phases in order, and validates its own output before delivering. They are designed to work together as a complete development workflow.
 
 ---
 
@@ -84,7 +84,7 @@ Each skill listens for natural-language triggers in your AI assistant:
 | "I'm adding a parameter to this method" | `assertcheck-refactor` |
 | "Which assert function should I use for…" | `assertcheck-selector` |
 
-Each skill begins with an **interview step** — it asks clarifying questions before producing any output. This is intentional: the quality of the contract map depends on understanding the feature's boundaries, not just its implementation.
+Each skill begins with a mandatory **interview step** before producing any output — and runs a **self-check** on its own output before delivering. The quality of the contract map depends on understanding the feature's boundaries, not just its implementation.
 
 ---
 
@@ -92,11 +92,11 @@ Each skill begins with an **interview step** — it asks clarifying questions be
 
 | Skill | Output |
 |---|---|
-| `assertcheck-spec` | Preconditions table, postconditions table, hard-NOs list, implementation checklist |
-| `assertcheck-feature` | Contract map, guard block + logic block scaffold, rejected-states summary |
-| `assertcheck-audit` | Annotated code, risk-ranked findings table, proposed guard blocks |
-| `assertcheck-refactor` | Impact table, guard diff with `[EXISTING]` / `[NEW]` annotations, removed-safety flags |
-| `assertcheck-selector` | Decision tree, assertion selection, `msg` and `note` phrasing guidance |
+| `assertcheck-spec` | Feature identity, preconditions table, postconditions table, state machine (if applicable), implementation checklist |
+| `assertcheck-feature` | Contract table, guarded implementation (guard block + logic block), rejected-states summary |
+| `assertcheck-audit` | Guard coverage score, risk-ranked findings table, proposed assertions, mindset note |
+| `assertcheck-refactor` | Impact table, guard diff with `[EXISTING]` / `[NEW]` annotations, removed-safety `⚠` flags, caller note |
+| `assertcheck-selector` | Most-specific assertion, `msg` / `note` phrasing, `assert.*` vs `check()` recommendation |
 
 ---
 
