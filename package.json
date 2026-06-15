@@ -1,6 +1,6 @@
 {
   "name": "assertcheck",
-  "version": "0.5.05",
+  "version": "0.5.15",
   "description": "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
   "license": "Apache-2.0",
   "author": "Anthony Michel (@thonymg) - Vagabond Studio (https://vagabond.work)",
