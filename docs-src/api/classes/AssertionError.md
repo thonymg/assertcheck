@@ -8,7 +8,7 @@
 
 Defined in: [src/error.ts:56](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/error.ts#L56)
 
-Error thrown when an assertion fails in `"enabled"` mode.
+Error thrown when an assertion fails.
 
 ## Remarks
 

@@ -1,6 +1,6 @@
 {
   "name": "@thonymg/assertcheck",
-  "version": "0.3.33",
+  "version": "0.5.05",
   "publish": {
     "exclude": [
       "docs-src/images"

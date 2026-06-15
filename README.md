@@ -48,7 +48,7 @@ Not a validator. Not a schema library. A contract system — at every boundary, 
 | | `if/return` | `node:assert` | `zod` / `yup` | **Assertcheck** |
 |---|---|---|---|---|
 | Fails loudly in dev | No | Yes | Yes | Yes |
-| Zero overhead in prod | No | No | No | Yes (`disabled` mode) |
+| Zero overhead in prod | No | No | No | No |
 | Type narrowing | No | No | Yes | Yes |
 | Structured, readable errors | No | Partial | Partial | Yes |
 | Chainable fluent API | No | No | No | Yes |
@@ -141,24 +141,6 @@ Output adapts automatically:
 - **Node / Bun / Deno** — ANSI colours on TTY, plain text in pipes. Respects `NO_COLOR`.
 - **Browser** — collapsible `console.groupCollapsed` in DevTools.
 - **CI** — clean plain text, no escape codes.
-
----
-
-## Modes — no code changes between environments
-
-```ts
-import { setAssertMode } from "assertcheck"
-
-setAssertMode("disabled") // production: zero overhead, no-op
-setAssertMode("warn")     // staging: log without crashing
-setAssertMode("enabled")  // dev: full enforcement (default)
-```
-
-| Mode | Behaviour | Default when |
-|---|---|---|
-| `"disabled"` | No-op — zero overhead | `NODE_ENV=production` |
-| `"warn"` | Log only, no throw | Manual |
-| `"enabled"` | Log + throw | All other environments |
 
 ---
 
@@ -295,7 +277,6 @@ src/
   index.ts    — barrel export
   types.ts    — shared types and interfaces
   env.ts      — runtime detection (Node / Bun / Deno / browser)
-  mode.ts     — AssertMode state management
   error.ts    — AssertionError class
   format.ts   — ANSI/browser formatter, diff engine, block builder
   fail.ts     — internal fail() dispatcher

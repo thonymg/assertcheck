@@ -5,12 +5,8 @@
  * for primitives, arrays, objects, and functions.
  *
  * @remarks
- * All assertions respect the global {@link AssertMode}:
- * - `"disabled"` → no-op (production default)
- * - `"warn"`     → output only
- * - `"enabled"`  → output + throw
- *
- * Every assertion accepts an optional `opts` parameter that can be either:
+ * All assertions always throw on failure. Every assertion accepts an optional
+ * `opts` parameter that can be either:
  * - A plain `string` — used as the error title.
  * - An {@link AssertOptions} object for richer context.
  *
@@ -2383,8 +2379,8 @@ export const assert: Assert = {
    * Returns the resolved value for immediate inline use.
    *
    * @remarks
-   * In `"disabled"` mode, still awaits and returns the value — a complete
-   * no-op would break inline usage like `const user = await assert.resolves(fetchUser(id))`.
+   * Still awaits and returns the resolved value for immediate inline use —
+   * e.g. `const user = await assert.resolves(fetchUser(id))`.
    *
    * @param promise - A Promise or zero-arg async thunk.
    * @param opts    - Optional message / context.

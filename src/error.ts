@@ -1,8 +1,7 @@
 /**
  * @module error
  *
- * The {@link AssertionError} class thrown by all failing assertions
- * when mode is `"enabled"`.
+ * The {@link AssertionError} class thrown by all failing assertions.
  *
  * @example
  * ```ts
@@ -27,7 +26,7 @@ import type { AssertionErrorOptions } from "./types.ts"
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Error thrown when an assertion fails in `"enabled"` mode.
+ * Error thrown when an assertion fails.
  *
  * @remarks
  * Unlike a generic `Error`, `AssertionError` carries structured metadata

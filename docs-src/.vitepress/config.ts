@@ -97,7 +97,6 @@ export default defineConfig({
           text: "Core concepts",
           items: [
             { text: "Negative Space Programming", link: "/guide/negative-space" },
-            { text: "Assertion modes",            link: "/guide/modes" },
             { text: "Error format",               link: "/guide/error-format" },
             { text: "Chainable API (check)",      link: "/guide/check" },
             { text: "Async assertions",           link: "/guide/async" },
@@ -154,14 +153,6 @@ export default defineConfig({
           ],
         },
         {
-          text: "Mode",
-          items: [
-            { text: "modeAssertIn()",  link: "/api/functions/modeAssertIn" },
-            { text: "setAssertMode()", link: "/api/functions/setAssertMode" },
-            { text: "getAssertMode()", link: "/api/functions/getAssertMode" },
-          ],
-        },
-        {
           text: "Errors & formatting",
           items: [
             { text: "AssertionError",  link: "/api/classes/AssertionError" },
@@ -173,8 +164,6 @@ export default defineConfig({
           text: "Types",
           items: [
             { text: "AssertOptions",   link: "/api/interfaces/AssertOptions" },
-            { text: "AssertMode",      link: "/api/type-aliases/AssertMode" },
-            { text: "Env",             link: "/api/type-aliases/Env" },
           ],
         },
       ],
