@@ -99,3 +99,15 @@ One paragraph. Focus on the most impactful finding. Use plain language, no jargo
 | 3–5 / N | Partially guarded — critical paths covered, edges exposed |
 | 6–8 / N | Well-guarded — most boundaries covered, minor gaps |
 | N / N | Fully guarded — all boundaries declared |
+
+---
+
+## Anti-patterns — do NOT do this in the report
+
+| ❌ Wrong | ✅ Correct | Why |
+|:---------|:----------|:----|
+| Rename columns in the findings table | Use exact headers: `# \| Line \| Boundary type \| Risk \| Implicit assumption \| Fix` | Consistent format makes reports scannable across audits |
+| Combine multiple findings into one row | One gap per row | Each finding must map to one assertion |
+| Write proposed assertions inline in the findings table | Proposed assertions always go in Block 3, code blocks only | Table cells aren't readable for code |
+| Omit Block 1 (guard coverage score) | Always compute and show: `X / N boundaries protected` | The score is the at-a-glance health indicator |
+| Write "add error handling" as a fix | Write the exact `assert.*` call: `assert.notNil(order, {msg: "…"})` | Vague fixes aren't actionable |

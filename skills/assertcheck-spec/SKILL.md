@@ -5,25 +5,39 @@ description: Write or review a technical spec for a feature using Negative Space
 
 # assertcheck-spec
 
-> "Positive, or additive programming is about adding features, what the program can do.
-> Negative, or subtractive programming is about what a program cannot do, what is impossible.
-> We are terrible at negative programming: it's easier to keep adding features
-> than to prevent bugs and hacks."
-> — Andrei Marinica, *Negative programming*
+## References — load before starting
 
-A technical spec written with Negative Space Programming defines a feature by
-what it **must never accept**, what states it **must never enter**, and what
-outputs it **must never produce** — before a single line of implementation.
-
-Like Michelangelo chiseling away everything that isn't David: you declare the
-impossible first, and the implementation is what remains in the space that's left.
-
-This skill produces a spec that is **directly traceable to assertcheck assertions**.
-Every invariant in the spec maps to one `assert.*` call in the implementation.
+- [references/invariant-vocabulary.md](references/invariant-vocabulary.md)
+- [references/state-machine-spec.md](references/state-machine-spec.md)
 
 ---
 
-## When this skill activates
+## LAWS
+
+**LAW 1 — Interview first, always.**
+Never produce any spec section before all 6 interview questions are answered.
+If Q1, Q2, or Q6 is missing: ask, wait, produce nothing.
+
+**LAW 2 — Every invariant maps to one assertion.**
+No invariant row without a filled "Assert with" column.
+Use exact phrases from `references/invariant-vocabulary.md`.
+If unsure: load `assertcheck-selector`.
+
+**LAW 3 — One invariant per row. No merging.**
+P1 and P2 are two rows. Always.
+
+**LAW 4 — Hard NOs are domain-level, not technical.**
+"NEVER charge a cancelled order" ✅ — "NEVER pass null" ❌ (that's a precondition, not a Hard NO).
+
+**LAW 5 — Postconditions are assertions-to-be, not prose.**
+Every Q-row must have an `Assert with` entry.
+
+**LAW 6 — The implementation checklist is mandatory.**
+One checkbox per assertion, labeled with its P/Q number. No exceptions.
+
+---
+
+## Triggers
 
 - "Write a spec for this feature"
 - "Document the contract for this function"
@@ -33,9 +47,7 @@ Every invariant in the spec maps to one `assert.*` call in the implementation.
 
 ---
 
-## Step 0 — Interview the developer first
-
-Before writing any spec, ask:
+## Interview — ask all 6, wait for answers
 
 ```
 1. What is the name and purpose of the feature? (one sentence)
@@ -50,68 +62,63 @@ Before writing any spec, ask:
    (e.g. "never charge a cancelled order", "never return an empty list silently")
 ```
 
-Question 6 is the most important. If the developer hasn't thought about it,
-ask: "What would a catastrophic misuse of this feature look like?"
+> Q6 unanswered → ask: "What would a catastrophic misuse of this feature look like?"
 
 ---
 
-## Spec protocol — 4 sections
+## Output template — produce in this exact order
 
 ### Section 1 — Feature identity
 
 ```
 ## Feature: <name>
 
-**Purpose:** one sentence — what this feature does for the domain.
-**Entry points:** list of functions / methods / routes that implement it.
-**Dependencies:** external services, repos, or state it reads.
-**Hard NOs:** what this feature must NEVER do (domain-level prohibitions).
+**Purpose:** <one sentence>
+**Entry points:** <function signatures>
+**Dependencies:** <external services / state / repos>
+**Hard NOs:**
+  - NEVER <domain-level prohibition>
+  - NEVER <domain-level prohibition>
 ```
 
----
-
-### Section 2 — Preconditions (the negative space)
-
-For each entry point, declare every invariant that must hold **before** the feature runs.
-Write them as **assertions-to-be** — not validation rules, but facts that must be true.
-
-Load [references/invariant-vocabulary.md](references/invariant-vocabulary.md) for standard phrases.
+### Section 2 — Preconditions
 
 ```
-### Preconditions — `processPayment(orderId, amount)`
+### Preconditions — `<entryPoint(params)>`
 
 | # | Invariant | Violated by | Assert with |
 |:--|:----------|:-----------|:------------|
-| P1 | `orderId` must be a non-empty string | null, empty string, number | `assert.string + assert.notEmpty` |
-| P2 | `amount` must be a positive number | zero, negative, NaN, string | `assert.number + assert.greater(amount, 0)` |
-| P3 | Order identified by `orderId` must exist | deleted order, wrong id | `assert.notNil(order, { actual: "orderId" })` |
-| P4 | Order must be in `pending` state | cancelled, shipped, already paid | `assert.equal(order.status, "pending")` |
+| P1 | `<param>` must be <phrase from vocabulary> | <concrete violations> | `<assert call>` |
+| P2 | ... | ... | ... |
 ```
-
----
 
 ### Section 3 — Postconditions
 
-What must be true about the output when the feature completes successfully.
-
 ```
-### Postconditions — `processPayment`
+### Postconditions — `<entryPoint>`
 
 | # | Invariant | Assert with |
 |:--|:----------|:------------|
-| Q1 | Returned `receipt` must have a `transactionId` | `assert.notNil(receipt.transactionId)` |
-| Q2 | `receipt.amount` must equal the requested `amount` | `assert.equal(receipt.amount, amount)` |
+| Q1 | <output guarantee> | `<assert call>` |
+```
+
+### Section 4 — State machine (if applicable)
+
+→ See `references/state-machine-spec.md` for format.
+
+### Section 5 — Implementation checklist
+
+```
+### Implementation checklist
+
+- [ ] P1 — `<assert call>` at function top
+- [ ] P2 — `<assert call>` at function top
+- [ ] Q1 — `<assert call>` before return
 ```
 
 ---
 
-### Section 4 — State machine (if applicable)
-
-Load [references/state-machine-spec.md](references/state-machine-spec.md) for complex multi-entity state machines.
-
----
-
-## Few-shot example — full spec for `createOrder`
+## Canonical example
 
 ```
 ## Feature: createOrder
@@ -152,7 +159,7 @@ Load [references/state-machine-spec.md](references/state-machine-spec.md) for co
 - [ ] Q3 — `assert.equal(order.status, "pending")` before return
 ```
 
-**Resulting implementation:**
+Resulting implementation:
 
 ```ts
 import { assert, check } from "assertcheck"
@@ -171,14 +178,14 @@ function createOrder(customerId: string, items: CartItem[]): Order {
     })                                                                   // P3
     .all(i => i.price > 0, "all items must have a positive price")       // P4
 
-  // ── logic ───────────────────────────────────────────────
+  // ── logic ────────────────────────────────────────────────────
   const total = items.reduce((s, i) => s + i.price * i.quantity, 0)
   const order = { id: crypto.randomUUID(), customerId, items, total, status: "pending" }
 
-  // ── postconditions ──────────────────────────────────────────
-  assert.notEmpty(order.id,            "order must have a generated id")   // Q1
-  assert.greater(order.total, 0,       "order total must be positive")      // Q2
-  assert.equal(order.status, "pending","order must start in pending state") // Q3
+  // ── postconditions ───────────────────────────────────────────
+  assert.notEmpty(order.id,             "order must have a generated id")    // Q1
+  assert.greater(order.total, 0,        "order total must be positive")       // Q2
+  assert.equal(order.status, "pending", "order must start in pending state")  // Q3
 
   return order
 }
@@ -186,20 +193,17 @@ function createOrder(customerId: string, items: CartItem[]): Order {
 
 ---
 
-## Theoretical foundation
+## SELF-CHECK — run before delivering
 
-| Principle | Source |
-|:----------|:-------|
-| Define what is IMPOSSIBLE, not just what is possible | *Negative programming* (Marinica) |
-| Every precondition is a door that must stay closed | *Negative Space in AI Development* (handshakefyi) |
-| Specs define negative space; implementation fills what remains | *Negative space in programming* (fgiesen) |
-| Runtime assertions enforce what TypeScript cannot | *Defensive Programming and TypeScript* |
-| Explicit boundaries improve bug detection and maintainability | *Negative Space* (alissonsteffens.com) |
+Before sending the spec, verify each item:
 
----
+- [ ] Interview: all 6 questions answered (at minimum Q1, Q2, Q6)
+- [ ] Section 1: Hard NOs are domain-level (not technical params)
+- [ ] Section 2: every P-row has a filled "Assert with" column
+- [ ] Section 2: one invariant per row — none merged
+- [ ] Section 2: phrases match `references/invariant-vocabulary.md`
+- [ ] Section 3: every Q-row has a filled "Assert with" column
+- [ ] Section 5: one checkbox per P and Q, labeled with its number
+- [ ] No row has "Assert with" = empty or "TBD"
 
-## Reference files
-
-- [references/invariant-vocabulary.md](references/invariant-vocabulary.md) — standard phrases → direct translation to assert.*
-- [references/state-machine-spec.md](references/state-machine-spec.md) — how to spec state machines with NSP
-- assertcheck docs: https://thonymg.github.io/assertcheck/
+If any item fails → fix before delivering.

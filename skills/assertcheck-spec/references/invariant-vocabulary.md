@@ -77,3 +77,16 @@ Use these exact formulations — they translate directly to assertion method nam
 | "X must contain all of Y" | `assert.containsAll(x, y)` |
 | "X must contain none of Y" | `assert.containsNone(x, y)` |
 | "X must have exactly N elements" | `assert.len(x, n)` |
+
+---
+
+## Anti-patterns — do NOT do this
+
+| ❌ Wrong | ✅ Correct | Why |
+|:---------|:----------|:----|
+| `assert.notNil(x)` when x must be a string | `assert.string(x)` | More specific = better error at runtime |
+| `assert.notNil(x)` when x must be non-empty | `assert.notEmpty(x)` | `notEmpty` covers nil AND empty in one call |
+| "X should be valid" in the Invariant column | "X must be a non-empty string" | Phrases must map directly to an assertion method |
+| Leaving "Assert with" column empty | Always fill it, even if uncertain — use `assertcheck-selector` | Empty columns are not specs, they're notes |
+| Merging two invariants into one row | One invariant per row, always | Merged rows are untraceable to single assertions |
+| `if (!x)` pattern copied into spec | `assert.notNil(x, {…})` — never copy silent exits | Silent exits are the problem, not the spec |

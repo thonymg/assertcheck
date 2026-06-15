@@ -5,20 +5,42 @@ description: Guide a developer building a new TypeScript feature to design it wi
 
 # assertcheck-feature
 
-> "An elegant program is not one that checks off all the bullet points from some arbitrary
-> feature list; it's one that solves the problem it's meant to solve and does so concisely.
-> Its quality is not that it does what it's supposed to; it's that it does almost nothing else."
-> — Fabian Giesen, *Negative space in programming*
+## References — load before starting
 
-Negative Space Programming (NSP) starts **before** the first line of logic.
-You define the **impossible** before you define the possible.
-TypeScript static types are not enough: they vanish at runtime.
-Every `??`, `?.`, or `if (!x) return` is a silent failure waiting to happen.
-assertcheck makes your negative space **executable and observable**.
+- [references/contract-questions.md](references/contract-questions.md)
+- [references/guard-templates.md](references/guard-templates.md)
 
 ---
 
-## When this skill activates
+## LAWS
+
+**LAW 1 — Interview before any code.**
+Never produce a contract table, guard block, or implementation until Q1, Q2, and Q3 are answered.
+Skip questions the user already answered — ask only what's missing.
+
+**LAW 2 — Contract table before guard block.**
+Phase 1 (contract table) must be complete before Phase 2 (guard block) is written.
+Every row in the contract table must have a non-empty "Assert with" column.
+Unsure? Load `assertcheck-selector`.
+
+**LAW 3 — Guard block before logic. Always.**
+The `// ── guards ──` block is the first thing in every function body.
+No logic before the last assertion. No exceptions.
+
+**LAW 4 — No `?.`, `??`, or `if (!x) return` in the logic block.**
+The negative space is declared in the guard block. The logic block runs with proven invariants.
+If you're tempted to add a nil check in the logic block, it belongs in the guard block.
+
+**LAW 5 — Every guard must have `msg`. Add `note` when the fix is non-obvious.**
+`msg` describes the invariant ("orderId must be a non-empty string").
+`note` gives the actionable fix ("check that the caller passes a valid order id").
+
+**LAW 6 — Deliver in order: contract table → implementation → rejected states summary.**
+Never skip the rejected states summary. One sentence per assertion.
+
+---
+
+## Triggers
 
 - "I'm creating a new function that…"
 - "New service / class / module for…"
@@ -27,9 +49,7 @@ assertcheck makes your negative space **executable and observable**.
 
 ---
 
-## Step 0 — Interview the developer first
-
-Ask these questions **before producing any code**. Adapt the list to what the user already told you — skip questions already answered.
+## Interview — ask before any output
 
 ```
 1. What is the entry point? (function / HTTP handler / class method / constructor)
@@ -41,33 +61,26 @@ Ask these questions **before producing any code**. Adapt the list to what the us
 6. What must the output guarantee? (non-null id, positive total, specific status…)
 ```
 
-Do **not** generate code until you have answers to at least questions 1–3.
+See `references/contract-questions.md` for the extended checklist by feature type.
 
 ---
 
 ## Protocol — 3 phases
 
-### Phase 1 — Map the negative space
+### Phase 1 — Contract table
 
-From the answers above, fill this contract table:
+Fill from interview answers. Every row must have "Assert with".
 
 ```
-| Boundary              | Invalid state                        | Assert with                  |
-|:----------------------|:-------------------------------------|:-----------------------------|
-| param `X`             | null, empty string, wrong type       | assert.string + assert.notEmpty |
-| prior state           | entity not in expected status        | assert.equal(entity.status, …) |
-| external response     | missing required field               | assert.notNil(res.field, {…})  |
-| output                | computed value out of valid range    | assert.greater(total, 0)       |
+| Boundary          | Invalid state                     | Assert with                     |
+|:------------------|:----------------------------------|:--------------------------------|
+| param `X`         | null, empty string, wrong type    | assert.string + assert.notEmpty |
+| prior state       | entity not in expected status     | assert.equal(entity.status, …)  |
+| external response | missing required field            | assert.notNil(res.field, {…})   |
+| output            | computed value out of valid range | assert.greater(total, 0)        |
 ```
 
-Load [references/contract-questions.md](references/contract-questions.md) for the full question checklist by feature type.
-
----
-
-### Phase 2 — Write the guard block first
-
-Structure every new function with a guard block **before** the logic.
-This is the NSP pattern: chisel away the impossible, then write only what remains.
+### Phase 2 — Guard block first
 
 ```ts
 import { assert, check } from "assertcheck"
@@ -75,41 +88,39 @@ import { assert, check } from "assertcheck"
 
 function featureName(param1: Type, param2: Type): ReturnType {
   // ── guards — declare what must never enter ───────────────────
-  // (all assertions here, before any logic)
+  // one assertion per contract table row, in order
 
   // ── logic — runs with proven invariants ──────────────────────
-  // (no defensive checks needed here — the boundary is already clean)
+  // no ?., no ??, no if (!x) return
 }
 ```
 
-Load skill `assertcheck-selector` to pick the right assertion for each guard.
+Use `references/guard-templates.md` for common patterns.
+Load `assertcheck-selector` to pick the right assertion.
+
+### Phase 3 — Logic block
+
+No defensive checks. The negative space is already declared above.
 
 ---
 
-### Phase 3 — Fill the logic
+## Canonical examples
 
-The logic block runs with **proven invariants**. No `?.`, no `??`, no `if (!x) return`.
-The negative space is already declared above.
-
-**Few-shot example — before NSP (typical TypeScript codebase):**
+**❌ BEFORE — TypeScript + optional chaining + silent returns:**
 
 ```ts
-// ❌ BEFORE — TypeScript types + optional chaining + silent returns
-// This is what the defensive programming article calls "abusing optional chaining"
 function filterProductsByCategory(
   products?: Product[] | null,
   category?: ProductCategories
 ) {
   return products?.filter(product => product?.category === category)
-  // What happens when products is null? Returns undefined silently.
-  // The caller has NO idea the filter did nothing.
+  // null products → returns undefined silently. Caller has no idea.
 }
 ```
 
-**After NSP with assertcheck:**
+**✅ AFTER — guard block declares the negative space:**
 
 ```ts
-// ✅ AFTER — guard block declares the negative space
 import { assert, check } from "assertcheck"
 
 function filterProductsByCategory(
@@ -126,17 +137,14 @@ function filterProductsByCategory(
 
   assert.string(category, "category must be a string")
 
-  // ── logic — runs with proven invariants ──────────────────────
+  // ── logic ─────────────────────────────────────────────────────
   return products.filter(p => p.category === category)
 }
-// Now: if products is null → immediate, traceable failure at the right place.
-// Before: null propagates silently, surfaces as a confusing downstream error.
 ```
 
-**Another example — service method with state guard:**
+**✅ Service method with state guard:**
 
 ```ts
-// ✅ createOrder — full guard block + logic separation
 function createOrder(customerId: string, items: CartItem[]): Order {
   // ── guards ────────────────────────────────────────────────────
   assert.string(customerId,   "customerId must be a non-empty string")
@@ -157,30 +165,14 @@ function createOrder(customerId: string, items: CartItem[]): Order {
 
 ---
 
-## Output format
+## SELF-CHECK — run before delivering
 
-Deliver the new feature in this order:
-1. **Contract table** — negative space map (boundary → invalid state → assertion)
-2. **Guarded implementation** — guard block + logic block, fully typed
-3. **Rejected states summary** — one sentence per assertion explaining what invalid state it refuses
+- [ ] Interview: Q1, Q2, Q3 answered before any code was produced
+- [ ] Contract table: every row has a non-empty "Assert with" column
+- [ ] Guard block: appears before the first line of logic in every function
+- [ ] Logic block: contains no `?.`, `??`, or `if (!x) return`
+- [ ] Every assertion has `msg` with domain context (not "value is null")
+- [ ] Output delivered in order: contract table → implementation → rejected states summary
+- [ ] Rejected states summary: one sentence per assertion
 
----
-
-## Theoretical foundation
-
-This skill applies four principles from NSP literature:
-
-| Principle | Source | assertcheck translation |
-|:----------|:-------|:------------------------|
-| TypeScript is not enough at runtime | *Defensive Programming and TypeScript* | `assert.*` fills the runtime gap |
-| Declare what is impossible, not just what is possible | *Negative programming* (Marinica) | guard block as explicit negative space |
-| Crash early, crash often | *crash-early* pattern | `assert` over `if (!x) return` |
-| The guard block is documentation that executes | *Negative space in programming* (fgiesen) | `msg` + `note` = machine-readable comments |
-
----
-
-## Reference files
-
-- [references/contract-questions.md](references/contract-questions.md) — question checklist per feature type
-- [references/guard-templates.md](references/guard-templates.md) — ready-to-use guard blocks for common patterns
-- assertcheck docs: https://thonymg.github.io/assertcheck/
+If any item fails → fix before delivering.

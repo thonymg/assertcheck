@@ -5,20 +5,40 @@ description: Help a developer add Negative Space Programming assertions to exist
 
 # assertcheck-refactor
 
-> "When reading code, looking at what a program does (and how it does it) is instructive.
-> But figuring out what it doesn't do (and why) can be positively enlightening."
-> — Fabian Giesen, *Negative space in programming*
+## References — load before starting
 
-You are modifying existing code. Every change potentially invalidates assumptions the
-original author had in mind but never wrote down.
-
-**The TypeScript trap:** Static types gave the impression the code was safe. At runtime, they are gone.
-Every `??`, `?.`, and `if (!x) return` is a hidden contract that silently breaks.
-assertcheck makes those hidden contracts visible and enforceable.
+- [references/hidden-assumption-scanner.md](references/hidden-assumption-scanner.md)
+- [references/refactor-diff-format.md](references/refactor-diff-format.md)
 
 ---
 
-## When this skill activates
+## LAWS
+
+**LAW 1 — Interview before touching the code.**
+Q1 and Q2 must be answered before producing any diff.
+Q2 is critical: if a safety check is being removed without a replacement assertion → that is a regression. Flag it before anything else.
+
+**LAW 2 — Hidden assumption scanner runs before any diff.**
+Use `references/hidden-assumption-scanner.md`, all 5 passes, in order.
+Every pattern found = one potential `assert.*` to add.
+
+**LAW 3 — Every removed safety check must be explicitly documented.**
+`if (!x) return` removed → must be replaced by `assert.notNil`. Never silently deleted.
+`?? fallback` removed → must be replaced by `assert.notNil`. Fallbacks hide invalid inputs.
+Document each removal with the `⚠` format from `references/refactor-diff-format.md`.
+
+**LAW 4 — `[EXISTING]` annotations must explain WHY the original was insufficient.**
+Not "moved from line 5". But: "replaces silent `if (!orderId) return` — caller now gets an AssertionError instead of undefined".
+
+**LAW 5 — `[NEW]` annotations mark assertions added for the change, not pre-existing gaps.**
+Distinguish: `[EXISTING — promoted]` vs `[NEW — added for new param]`.
+
+**LAW 6 — Deliver in order: impact table → guard diff → removed safety flags → caller note.**
+Never skip the caller note if the function has multiple call sites.
+
+---
+
+## Triggers
 
 - "I'm adding a new parameter to this function"
 - "I'm changing the behavior of this method"
@@ -28,9 +48,7 @@ assertcheck makes those hidden contracts visible and enforceable.
 
 ---
 
-## Step 0 — Interview the developer first
-
-Ask these questions before scanning the code:
+## Interview — ask before any output
 
 ```
 1. What are you changing? (adding a param / changing logic / extracting / replacing a call)
@@ -41,18 +59,11 @@ Ask these questions before scanning the code:
    (if yes: will all callers satisfy the new preconditions?)
 ```
 
-Do **not** produce a diff until questions 1–2 are answered.
-
 ---
 
 ## Protocol — 4 steps
 
-### Step 1 — Read for hidden contracts
-
-Before touching anything, run the **hidden assumption scanner** on the existing code.
-Load [references/hidden-assumption-scanner.md](references/hidden-assumption-scanner.md) for the full scan.
-
-The 5 scan passes:
+### Step 1 — Hidden assumption scanner (all 5 passes)
 
 | Pass | What to look for |
 |:-----|:----------------|
@@ -62,55 +73,69 @@ The 5 scan passes:
 | **D — State** | entity field read without asserting current state |
 | **E — Silent exits** | `if (!x) return` / `x ?? fallback` / `x?.field` / swallowed `catch` |
 
-Each pattern found = one potential `assert.*` to add.
-
----
-
-### Step 2 — Assess the change impact
-
-Map what you are changing to what guard it requires:
+### Step 2 — Change impact table
 
 | Change type | Guard impact |
 |:------------|:-------------|
-| **New parameter added** | Add preconditions for the new param at the top |
+| **New parameter added** | Add preconditions for the new param at function top |
 | **Type widened** (`string` → `string \| null`) | Add nil guard on every usage site |
 | **New external call added** | Add integration guard on the response |
 | **New state dependency** | Add state guard before accessing it |
-| **`if (!x) return` removed** | **Must** be replaced by `assert.notNil` — never silently deleted |
-| **`?? fallback` removed** | **Must** be replaced by `assert.notNil` — fallbacks hide invalid inputs |
+| **`if (!x) return` removed** | Replace with `assert.notNil` — never silently delete |
+| **`?? fallback` removed** | Replace with `assert.notNil` — never silently delete |
+
+### Step 3 — Guard diff
+
+Annotate every assertion with `[EXISTING]` or `[NEW]`:
+
+```ts
+// ── guards ──────────────────────────────────────────────────────
+// [EXISTING — promoted from silent `if (!orderId) return`]
+assert.notNil(orderId, {
+  msg:  "orderId is required to process a payment",
+  note: "check that the caller passes a valid order id",
+})
+
+// [NEW — added for new currency param]
+assert.string(currency,   "currency must be a string")
+assert.notEmpty(currency, "currency code must not be empty (e.g. 'EUR', 'USD')")
+```
+
+Use exact format from `references/refactor-diff-format.md`.
+Load `assertcheck-selector` for assertion selection.
+
+### Step 4 — Removed safety flags
+
+```
+⚠ Line <N>: `<original pattern>` removed.
+→ Replaced with: <assert call>
+→ Why: <one sentence — what the original hid and why the assertion is more precise>
+```
 
 ---
 
-### Step 3 — Build the guard diff
+## Canonical example
 
-**Few-shot example — adding a `currency` parameter to an existing service method:**
+**Before (hidden assumptions: orderId silent exit, order nil, amount untyped):**
 
 ```ts
-// ❌ BEFORE — existing code with hidden assumptions
 async function processPayment(orderId: string, amount: number) {
-  if (!orderId) return               // ← silent failure: caller gets undefined
+  if (!orderId) return
   const order = await repo.findById(orderId)
-  // order used directly below — could be null if deleted between calls
   const receipt = await gateway.charge(amount)
   return receipt
 }
 ```
 
-```ts
-// After interview: user is adding `currency: string` param
-// Hidden assumptions found: orderId silent exit, order nil, amount untyped
+**After (adding `currency: string` param + promoting hidden contracts):**
 
-// ✅ AFTER — guard diff to apply
+```ts
 import { assert } from "assertcheck"
 // docs: https://thonymg.github.io/assertcheck/
 
 async function processPayment(orderId: string, amount: number, currency: string) {
   // ── guards ──────────────────────────────────────────────────────
   // [EXISTING — promoted from silent `if (!orderId) return`]
-  assert.notNil(orderId, {
-    msg:  "orderId is required to process a payment",
-    note: "check that the caller passes a valid order id",
-  })
   assert.string(orderId,   "orderId must be a string")
   assert.notEmpty(orderId, "orderId must not be empty")
 
@@ -135,58 +160,30 @@ async function processPayment(orderId: string, amount: number, currency: string)
     note:   "verify the orderId comes from a valid creation flow",
   })
 
-  const receipt = await gateway.charge(amount, currency)
-  return receipt
+  return await gateway.charge(amount, currency)
 }
 ```
 
-**Why the change from `if (!orderId) return` to `assert.notNil`:**
-```
-Before: caller receives `undefined` silently → confusion propagates downstream
-After:  caller receives an AssertionError immediately → failure is at its origin
-```
-
-Load [references/refactor-diff-format.md](references/refactor-diff-format.md) for the full output format.
-Load skill `assertcheck-selector` to pick the right assertion for each gap.
-
----
-
-### Step 4 — Flag removed safety checks
-
-Every `if (!x) return` or `?? fallback` removal must be explicitly documented:
+**Removed safety flag:**
 
 ```
-⚠ Line 5: `if (!orderId) return` removed.
-→ Replaced with: assert.notNil(orderId, { msg: "orderId is required", … })
-→ Why this matters: a silent return is invisible to the caller and hides the failure
-  at its origin. An assertion surfaces it immediately with context and a stack trace.
-  This is the difference between "crash early with signal" and "corrupt silently".
+⚠ Line 3: `if (!orderId) return` removed.
+→ Replaced with: assert.string(orderId) + assert.notEmpty(orderId)
+→ Why: silent return gives caller undefined with no stack trace.
+  Assertion surfaces the failure immediately at its origin with full context.
 ```
 
 ---
 
-## Output format
+## SELF-CHECK — run before delivering
 
-1. **Impact table** — what changes and what guard each change requires
-2. **Guard diff** — the assertions to add, with line anchors in the original code
-3. **Removed safety flags** — explicit warning for every silent check removed
-4. **Caller note** — if the function is called from multiple places, flag that callers must now pass valid inputs
+- [ ] Interview: Q1 and Q2 answered before any diff was produced
+- [ ] Hidden assumption scanner: all 5 passes run, none skipped
+- [ ] Impact table: one row per change type, guard impact filled
+- [ ] Guard diff: every assertion has `[EXISTING]` or `[NEW]` annotation
+- [ ] `[EXISTING]` annotations: explain WHY the original was insufficient (not just where)
+- [ ] Every removed `if (!x) return` or `?? fallback` has a `⚠` removal flag
+- [ ] Every assertion has `msg` with domain context
+- [ ] Caller note: included if the function has multiple call sites
 
----
-
-## Theoretical foundation
-
-| Principle | Source |
-|:----------|:-------|
-| Silent returns hide failures | *Defensive Programming and TypeScript* — "crash early, crash often" |
-| `??` and `?.` abuse hides invalid state | *Defensive Programming and TypeScript* — optional chaining section |
-| Unknown assumptions are the hardest bugs | *Negative space in programming* (fgiesen) — "the unspoken assumptions surrounding it" |
-| Make invalid states impossible | *Negative programming* (Marinica) |
-
----
-
-## Reference files
-
-- [references/hidden-assumption-scanner.md](references/hidden-assumption-scanner.md) — 5-pass scan for implicit assumptions
-- [references/refactor-diff-format.md](references/refactor-diff-format.md) — output format for guard diffs
-- assertcheck docs: https://thonymg.github.io/assertcheck/
+If any item fails → fix before delivering.

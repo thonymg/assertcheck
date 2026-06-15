@@ -80,3 +80,15 @@ Find every place where an invalid state is swallowed.
 | `.find(fn)` result used directly | Collection | element was found (not undefined) |
 | `.reduce(fn)` on unchecked array | Collection | array is not empty |
 | `arr[0]` accessed without length check | Collection | array has at least one element |
+
+---
+
+## Anti-patterns — do NOT do this in audit output
+
+| ❌ Wrong | ✅ Correct | Why |
+|:---------|:----------|:----|
+| Flag every `?.` as a finding | Only flag `?.` where nil propagates downstream with no recovery | Over-reporting hides the real findings |
+| Skip the `catch` blocks | Always check what absorbed `catch` returns to the caller | Swallowed errors are the hardest bugs |
+| Risk 🔴 on everything | Reserve 🔴 for nil dereferences that will throw — `?.` that returns `undefined` is 🟡 at most | Inflation makes the report useless |
+| Propose assertions on TypeScript-enforced params | Only flag runtime boundaries — TS types that can't be null don't need `assert.notNil` | Noise obscures signal |
+| Omit Block 4 (mindset note) | Always write the mindset note — it explains the highest-risk finding in plain language | Without it, developers don't know where to start |

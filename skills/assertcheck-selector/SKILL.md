@@ -5,31 +5,47 @@ description: Internal utility skill — maps an invariant or code pattern to the
 
 # assertcheck-selector
 
-> "The main weapons for negative programming are: strong typing, linear types,
-> formal verification, tests \u2014 and runtime assertions."
-> \u2014 Andrei Marinica, *Negative programming*
-
-Given an invariant to express, this skill returns the **most precise assertcheck call**.
-
-Precision matters: `assert.string` is better than `assert.notNil` when a value must be
-a string. The more specific the assertion, the more useful the error message at runtime,
-and the more clearly the negative space is declared.
-
 **Full API reference:** https://thonymg.github.io/assertcheck/
 
 ---
 
-## Decision tree — pick the most specific match
+## LAWS
+
+**LAW 1 — Always pick the most specific assertion.**
+`assert.string` beats `assert.notNil` when a value must be a string.
+`assert.notEmpty` beats `assert.notNil` when a value must be non-empty.
+The more specific the assertion, the more useful the error at runtime.
+
+**LAW 2 — Use `check()` chains when 3+ assertions target the same value.**
+Never write 3+ `assert.*` calls on the same variable when a chain is available.
+
+**LAW 3 — Every assertion must have `msg`. Add `note` when the fix is non-obvious.**
+`msg` describes the invariant ("orderId must be a non-empty string").
+`note` gives the actionable fix ("check that the caller passes a valid order id").
+`msg: "value is null"` is a violation of this law.
+
+**LAW 4 — Return exactly one assertion recommendation per invariant.**
+Do not return a list of options. Pick the most specific. Explain if alternatives exist.
+
+---
+
+## Triggers
+
+- "Which assert function should I use for…"
+- "What is the assertcheck equivalent of…"
+- Called by `assertcheck-spec`, `assertcheck-feature`, `assertcheck-audit`, `assertcheck-refactor`
+
+---
+
+## Decision tree
 
 ### 1. Existence
 
 ```
-must not be null/undefined          → assert.notNil(v, opts)
-must not be empty (string or array) → assert.notEmpty(v, opts)
-must be null/undefined (rare)       → assert.nil(v, opts)
+value must not be null/undefined          → assert.notNil(v, opts)
+value must not be empty (string or array) → assert.notEmpty(v, opts)   ← covers nil too
+value must be null/undefined (rare)       → assert.nil(v, opts)
 ```
-
----
 
 ### 2. Type
 
@@ -44,8 +60,6 @@ must be a function     → assert.func(v, opts)
 must be instance of T  → assert.instanceOf(v, T, opts)
 ```
 
----
-
 ### 3. Value / equality
 
 ```
@@ -59,8 +73,6 @@ must be <= b                   → assert.lessOrEqual(a, b, opts)
 must be within ± delta of b    → assert.inDelta(a, b, delta, opts)
 ```
 
----
-
 ### 4. Object shape
 
 ```
@@ -70,8 +82,6 @@ must have EXACTLY these keys    → assert.hasExactKeys(obj, keys, opts)
 nested path must equal value    → assert.dig(obj, "a.b.c", expected, opts)
 must match shape of reference   → assert.homomorphic(obj, ref, opts)
 ```
-
----
 
 ### 5. Collection
 
@@ -87,66 +97,79 @@ all elements are instance of T  → assert.allInstanceOf(arr, T, opts)
 elements match expected array   → assert.elementsMatch(arr, expected, opts)
 ```
 
----
+### 6. `assert.*` vs `check()` — the rule
 
-### 6. assert.\* vs check() — when to use which
-
-**Use `check()` chains** when 3 or more assertions target the **same value**:
+```
+2 or fewer assertions on the same value → assert.*  (one per line)
+3 or more assertions on the same value  → check()   (chain)
+```
 
 ```ts
-// ❌ Repetitive
+// ❌ 3 assert.* on the same value — use check() instead
 assert.array(users)
 assert.notEmpty(users)
 assert.all(users, u => u.active)
 
-// ✅ Chain
+// ✅ chain
 check(users)
   .notEmpty("users must not be empty")
   .all(u => u.active, "all users must be active")
 ```
 
-**Use `assert.*` directly** for independent single checks on different values (one assertion per line).
+### 7. AssertOptions — exact rules
 
----
+**`msg` — describes the invariant, not the violation:**
 
-### 7. AssertOptions — always provide `msg`, add `note` when the fix is non-obvious
-
-Every assertion should include `msg` with domain context.
-`msg` describes the **invariant** (what must be true), not the violation.
-`note` gives the developer a concrete fix to apply.
-
-```ts
-// ❌ No context — useless at 3am during an incident
-assert.notNil(order)
-
-// ✅ Domain context — points directly to the invariant and the fix
-assert.notNil(order, {
-  msg:    "order must exist before processing payment",
-  actual: "orderId",                                        // labels the source in the error output
-  note:   "verify the orderId comes from a valid creation flow",
-})
-```
-
-**`msg` rule — describe the invariant, not the violation:**
-
-| ❌ Describes the violation | ✅ Describes the invariant |
-|:--------------------------|:--------------------------|
+| ❌ Violation | ✅ Invariant |
+|:------------|:------------|
 | `"Not a string"` | `"userId must be a string"` |
 | `"Invalid order status"` | `"order must be in pending state before payment"` |
 | `"Failed"` | `"payment gateway must return a transactionId"` |
+| `"value is null"` | `"orderId must be a non-empty string"` |
 
-**`note` rule — give the actionable fix:**
+**`note` — gives the actionable fix:**
 
 | ❌ Restates the problem | ✅ Points to the fix |
 |:------------------------|:--------------------|
 | `"value was null"` | `"call authenticate() before accessing protected routes"` |
 | `"wrong status"` | `"call resetOrder() to return to pending state"` |
 
+**Full example:**
+
+```ts
+// ❌ No context
+assert.notNil(order)
+
+// ✅ Domain context
+assert.notNil(order, {
+  msg:    "order must exist before processing payment",
+  actual: "orderId",
+  note:   "verify the orderId comes from a valid creation flow",
+})
+```
+
 ---
 
-## Full API reference
+## Anti-patterns
 
-- https://thonymg.github.io/assertcheck/
-- Namespace: https://thonymg.github.io/assertcheck/functions/check.html
-- assert.* functions: https://thonymg.github.io/assertcheck/variables/assert.html
+| ❌ Wrong | ✅ Correct | Why |
+|:---------|:----------|:----|
+| `assert.notNil(x)` when x must be a string | `assert.string(x)` | `notNil` is too permissive — allows numbers, booleans, arrays |
+| `assert.notNil(x)` when x must be non-empty | `assert.notEmpty(x)` | `notEmpty` covers nil AND empty — one call |
+| `assert.equal(x, true)` | `assert.boolean(x)` then use `x` | `equal(x, true)` doesn't enforce type |
+| `assert.array(x)` when x must have elements | `check(x).notEmpty()` | `array` allows `[]` |
+| 3+ `assert.*` on the same value | `check(x).method1().method2().method3()` | Chains are cleaner and less repetitive |
+| `msg: "value is null"` | `msg: "orderId must be a non-empty string"` | `msg` describes invariant, not violation |
+| No `note` when the fix is non-obvious | `note: "call authenticate() before accessing this"` | `note` is the developer's recovery path |
 
+---
+
+## SELF-CHECK — run before delivering
+
+- [ ] Recommendation is a single, most-specific assertion (not a list of options)
+- [ ] `check()` used when 3+ assertions on the same value
+- [ ] `msg` describes the invariant, not the violation
+- [ ] `note` included when the fix is non-obvious
+- [ ] No `assert.notNil` where `assert.string` or `assert.notEmpty` is more precise
+
+If any item fails → fix before delivering.
