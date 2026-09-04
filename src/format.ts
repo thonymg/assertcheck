@@ -29,7 +29,7 @@
 
 import { isPlainObject, union, isEqual } from "lodash"
 import { ENV } from "./env.ts"
-import type { BlockDef, RowDef } from "./types.ts"
+import type { AssertOptions, BlockDef } from "./types.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ANSI CODES
@@ -48,7 +48,6 @@ const A = {
   blue: "\x1b[34m",
   magenta: "\x1b[35m",
   cyan: "\x1b[36m",
-  white: "\x1b[37m",
 } as const
 
 /**
@@ -130,12 +129,6 @@ const WIDTH = 62
 const spacer = (): string => ""
 
 /**
- * A thin horizontal separator line (─).
- * @internal
- */
-const line = (): string => color.sep("─".repeat(WIDTH))
-
-/**
  * A thick horizontal separator line (═).
  * @internal
  */
@@ -150,11 +143,10 @@ const dline = (): string => color.sep("═".repeat(WIDTH))
  * ```
  *
  * @param title - The title text to centre.
- * @param icon  - The icon prefix. Defaults to `"●"`.
  * @internal
  */
-const header = (title: string, icon = "●"): string => {
-  const text = ` ${icon} ${title} `
+const header = (title: string): string => {
+  const text = ` ● ${title} `
   const pad = Math.max(0, WIDTH - text.length)
   const left = Math.floor(pad / 2)
   const right = pad - left
@@ -193,10 +185,14 @@ const section = (label: string): string => {
  * @param indicator - Single-char prefix. Defaults to `" "`.
  * @internal
  */
-const row = (label: string, value: string, indicator = " "): string => {
-  const padded = label.padEnd(14)
-  return `  ${indicator} ${color.label(padded)}  ${value}`
-}
+const row = (label: string, value: string, indicator = " "): string =>
+  `  ${indicator} ${color.label(label.padEnd(14))}  ${value}`
+
+/**
+ * A titled section: sub-header, body lines, trailing spacer.
+ * @internal
+ */
+const block = (label: string, body: string[]): string[] => [section(label), ...body, spacer()]
 
 // ─────────────────────────────────────────────────────────────────────────────
 // VALUE FORMATTER
@@ -245,12 +241,10 @@ export const fmtValue = (v: unknown, depth = 0): string => {
     if (depth > 1) return color.object("{…}")
     try {
       const keys = Object.keys(v as object)
-      const shown = keys.slice(0, 3)
-      const moreLen = keys.length - shown.length
-      const pairs = shown.map(
-        (k) => `${color.label(k)}: ${fmtValue((v as Record<string, unknown>)[k], depth + 1)}`
-      )
-      const more = moreLen > 0 ? `, ${color.label(`…+${moreLen}`)}` : ""
+      const pairs = keys
+        .slice(0, 3)
+        .map((k) => `${color.label(k)}: ${fmtValue((v as Record<string, unknown>)[k], depth + 1)}`)
+      const more = keys.length > 3 ? `, ${color.label(`…+${keys.length - 3}`)}` : ""
       return color.object("{ ") + pairs.join(", ") + more + color.object(" }")
     } catch {
       return color.object("{…}")
@@ -361,38 +355,18 @@ export const diffObjects = (actual: unknown, expected: unknown): string[] => {
  * ```
  */
 export const buildBlock = (def: BlockDef): string => {
-  const lines: string[] = [spacer(), header(def.title ?? def.assertion), spacer()]
-
-  if (def.rows && def.rows.length > 0) {
-    lines.push(section("values"))
-    for (const r of def.rows) {
-      lines.push(row(r.label, r.value, r.indicator))
-    }
-    lines.push(spacer())
-  }
-
-  if (def.diff) {
-    lines.push(section("diff"))
-    lines.push(...diffObjects(def.diff.actual, def.diff.expected))
-    lines.push(spacer())
-  }
-
-  if (def.extras && Object.keys(def.extras).length > 0) {
-    lines.push(section("context"))
-    for (const [k, v] of Object.entries(def.extras)) {
-      lines.push(row(k, fmtValue(v)))
-    }
-    lines.push(spacer())
-  }
-
-  if (def.note) {
-    lines.push(section("note"))
-    lines.push(`  ${color.note(def.note)}`)
-    lines.push(spacer())
-  }
-
-  lines.push(dline())
-  return lines.join("\n")
+  const values = (def.rows ?? []).map((r) => row(r.label, r.value, r.indicator))
+  const context = Object.entries(def.extras ?? {}).map(([k, v]) => row(k, fmtValue(v)))
+  return [
+    spacer(),
+    header(def.title ?? def.assertion),
+    spacer(),
+    ...(values.length ? block("values", values) : []),
+    ...(def.diff ? block("diff", diffObjects(def.diff.actual, def.diff.expected)) : []),
+    ...(context.length ? block("context", context) : []),
+    ...(def.note ? block("note", [`  ${color.note(def.note)}`]) : []),
+    dline(),
+  ].join("\n")
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -425,7 +399,7 @@ export const output = (msg: string): void => {
     return
   }
 
-  if ((ENV.isNode || ENV.isBun || ENV.isDeno) && typeof process !== "undefined") {
+  if (ENV.isNode) {
     process.stderr.write(msg + "\n")
     return
   }
@@ -443,7 +417,5 @@ export const output = (msg: string): void => {
  * {@link AssertOptions} object.
  * @internal
  */
-export const parseOpts = (
-  raw: string | { msg?: string; actual?: string; note?: string } | undefined
-): { msg?: string; actual?: string; note?: string } =>
+export const parseOpts = (raw: string | AssertOptions | undefined): AssertOptions =>
   typeof raw === "string" ? { msg: raw } : (raw ?? {})

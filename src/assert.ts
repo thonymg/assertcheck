@@ -90,6 +90,16 @@ const expectedRow = (shown: string): RowDef => ({
   indicator: color.added("+"),
 })
 
+/** `received` row — `shown` is already formatted. @internal */
+const receivedRow = (shown: string): RowDef => ({
+  label: "received",
+  value: shown,
+  indicator: color.removed("✗"),
+})
+
+/** Value followed by its runtime type, e.g. `"42" (string)`. @internal */
+const typedValue = (v: unknown): string => `${fmtValue(v)} ${color.label(`(${typeof v})`)}`
+
 /** `actual` row — label overridable through `opts.actual`. @internal */
 const actualRow = (opts: Opts, v: unknown): RowDef => ({
   label: parseOpts(opts).actual ?? "actual",
@@ -377,10 +387,7 @@ export const assert: Assert = {
       opts,
       "Unexpected null or undefined",
       {
-        rows: [
-          { label: "received", value: fmtValue(v), indicator: color.removed("✗") },
-          expectedRow(color.added("non-null value")),
-        ],
+        rows: [receivedRow(fmtValue(v)), expectedRow(color.added("non-null value"))],
       },
       { actual: v, expected: "non-null" }
     )
@@ -404,7 +411,7 @@ export const assert: Assert = {
       "empty",
       opts,
       "Expected empty value",
-      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { rows: [receivedRow(fmtValue(v))] },
       { actual: v, expected: "empty" }
     )
   },
@@ -427,7 +434,7 @@ export const assert: Assert = {
       "notEmpty",
       opts,
       "Unexpected empty value",
-      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { rows: [receivedRow(fmtValue(v))] },
       { actual: v, expected: "non-empty" }
     )
   },
@@ -447,13 +454,7 @@ export const assert: Assert = {
       opts,
       "Expected string",
       {
-        rows: [
-          {
-            label: "received",
-            value: `${fmtValue(v)} ${color.label(`(${typeof v})`)}`,
-            indicator: color.removed("✗"),
-          },
-        ],
+        rows: [receivedRow(typedValue(v))],
       },
       { actual: v, expected: "string" }
     )
@@ -470,13 +471,7 @@ export const assert: Assert = {
       opts,
       "Expected number",
       {
-        rows: [
-          {
-            label: "received",
-            value: `${fmtValue(v)} ${color.label(`(${typeof v})`)}`,
-            indicator: color.removed("✗"),
-          },
-        ],
+        rows: [receivedRow(typedValue(v))],
       },
       { actual: v, expected: "number" }
     )
@@ -492,7 +487,7 @@ export const assert: Assert = {
       "integer",
       opts,
       "Expected integer",
-      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { rows: [receivedRow(fmtValue(v))] },
       { actual: v, expected: "integer" }
     )
   },
@@ -507,7 +502,7 @@ export const assert: Assert = {
       "finite",
       opts,
       "Expected finite number",
-      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { rows: [receivedRow(fmtValue(v))] },
       { actual: v, expected: "finite number" }
     )
   },
@@ -522,7 +517,7 @@ export const assert: Assert = {
       "boolean",
       opts,
       "Expected boolean",
-      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { rows: [receivedRow(fmtValue(v))] },
       { actual: v, expected: "boolean" }
     )
   },
@@ -540,13 +535,7 @@ export const assert: Assert = {
       opts,
       "Expected array",
       {
-        rows: [
-          {
-            label: "received",
-            value: `${fmtValue(v)} ${color.label(`(${typeof v})`)}`,
-            indicator: color.removed("✗"),
-          },
-        ],
+        rows: [receivedRow(typedValue(v))],
       },
       { actual: v, expected: "array" }
     )
@@ -566,13 +555,7 @@ export const assert: Assert = {
       opts,
       "Expected plain object",
       {
-        rows: [
-          {
-            label: "received",
-            value: `${fmtValue(v)} ${color.label(`(${typeof v})`)}`,
-            indicator: color.removed("✗"),
-          },
-        ],
+        rows: [receivedRow(typedValue(v))],
       },
       { actual: v, expected: "object" }
     )
@@ -593,13 +576,7 @@ export const assert: Assert = {
       opts,
       "Expected function",
       {
-        rows: [
-          {
-            label: "received",
-            value: `${fmtValue(v)} ${color.label(`(${typeof v})`)}`,
-            indicator: color.removed("✗"),
-          },
-        ],
+        rows: [receivedRow(typedValue(v))],
       },
       { actual: v, expected: "function" }
     )
@@ -630,10 +607,7 @@ export const assert: Assert = {
       opts,
       `Expected instance of ${ctor.name}`,
       {
-        rows: [
-          expectedRow(color.added(ctor.name)),
-          { label: "received", value: color.removed(typeof v), indicator: color.removed("✗") },
-        ],
+        rows: [expectedRow(color.added(ctor.name)), receivedRow(color.removed(typeof v))],
       },
       { actual: v, expected: ctor.name }
     )
@@ -1960,11 +1934,7 @@ export const assert: Assert = {
         {
           rows: [
             expectedRow(color.added(ctor.name)),
-            {
-              label: "received",
-              value: color.removed(rejectionName(outcome.error)),
-              indicator: color.removed("✗"),
-            },
+            receivedRow(color.removed(rejectionName(outcome.error))),
             { label: "message", value: fmtValue(rejectionMsg(outcome.error)) },
           ],
         },
@@ -2242,9 +2212,7 @@ export const assert: Assert = {
         opts,
         "Resolved value is null or undefined",
         {
-          rows: [
-            { label: "received", value: fmtValue(outcome.value), indicator: color.removed("✗") },
-          ],
+          rows: [receivedRow(fmtValue(outcome.value))],
         },
         { actual: outcome.value, expected: "non-null value" }
       )
