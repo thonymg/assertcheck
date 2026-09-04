@@ -55,13 +55,33 @@ import {
 import type { ValueIteratee } from "lodash"
 import { fail } from "./fail.ts"
 import { buildBlock, fmtValue, color, parseOpts, diffObjects } from "./format.ts"
-import type { AssertOptions, RowDef } from "./types.ts"
+import type { AssertOptions, BlockDef, RowDef } from "./types.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INTERNAL SHORTHAND
 // ─────────────────────────────────────────────────────────────────────────────
 
 type Opts = string | AssertOptions | undefined
+
+/**
+ * Single failure path shared by every assertion: parses `opts`, builds the
+ * block (user `msg` overrides `title`, `note` appended) and throws.
+ * @internal
+ */
+const failWith = (
+  assertion: string,
+  opts: Opts,
+  title: string,
+  block: Omit<BlockDef, "assertion" | "title" | "note"> = {},
+  outcome: { actual?: unknown; expected?: unknown } = {}
+): never => {
+  const o = parseOpts(opts)
+  return fail({
+    assertion,
+    message: buildBlock({ assertion, title: o.msg ?? title, ...block, note: o.note }),
+    ...outcome,
+  })
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASYNC HELPERS
@@ -1139,19 +1159,13 @@ export const assert: Assert = {
    */
   any<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void {
     if (arr.some(predicate)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "any",
-      message: buildBlock({
-        assertion: "any",
-        title: o.msg ?? "No element matched predicate",
-        rows: [{ label: "array", value: fmtValue(arr) }],
-        extras: { size: arr.length },
-        note: o.note,
-      }),
-      actual: arr,
-      expected: "at least one match",
-    })
+    failWith(
+      "any",
+      opts,
+      "No element matched predicate",
+      { rows: [{ label: "array", value: fmtValue(arr) }], extras: { size: arr.length } },
+      { actual: arr, expected: "at least one match" }
+    )
   },
 
   /**
@@ -1161,19 +1175,16 @@ export const assert: Assert = {
   none<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void {
     const bad = arr.find((v) => predicate(v))
     if (bad === undefined) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "none",
-      message: buildBlock({
-        assertion: "none",
-        title: o.msg ?? "Element matched forbidden predicate",
+    failWith(
+      "none",
+      opts,
+      "Element matched forbidden predicate",
+      {
         rows: [{ label: "value", value: fmtValue(bad), indicator: color.removed("✗") }],
         extras: { index: arr.indexOf(bad) },
-        note: o.note,
-      }),
-      actual: bad,
-      expected: "no match",
-    })
+      },
+      { actual: bad, expected: "no match" }
+    )
   },
 
   /**

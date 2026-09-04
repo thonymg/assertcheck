@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../_generated.md)
+[**assertcheck v0.5.15**](../_generated.md)
 
 ***
 
@@ -10,7 +10,7 @@
 function buildBlock(def): string;
 ```
 
-Defined in: [src/format.ts:363](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/format.ts#L363)
+Defined in: [src/format.ts:363](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/format.ts#L363)
 
 Builds the complete formatted error block string from a BlockDef.
 

@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../_generated.md)
+[**assertcheck v0.5.15**](../_generated.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ArrayChecker\<T\>
 
-Defined in: [src/checker.ts:99](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L99)
+Defined in: [src/checker.ts:93](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L93)
 
 Chainable assertion wrapper for arrays.
 Returned by [check](../functions/check.md) when the value is an array.
@@ -39,7 +39,7 @@ check(users)
 new ArrayChecker<T>(value): ArrayChecker<T>;
 ```
 
-Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L58)
+Defined in: [src/checker.ts:52](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L52)
 
 #### Parameters
 
@@ -59,7 +59,7 @@ Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb51
 
 | Property | Modifier | Type | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="value"></a> `value` | `readonly` | `T`[] | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L58) |
+| <a id="value"></a> `value` | `readonly` | `T`[] | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:52](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L52) |
 
 ## Methods
 
@@ -69,7 +69,7 @@ Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb51
 all(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L131)
+Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L125)
 
 #### Parameters
 
@@ -88,13 +88,45 @@ Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/fb5
 
 ***
 
+### allInstanceOf()
+
+```ts
+allInstanceOf<U, TArgs>(ctor, opts?): ArrayChecker<U>;
+```
+
+Defined in: [src/checker.ts:245](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L245)
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `U` |
+| `TArgs` *extends* `unknown`[] |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `ctor` | (...`args`) => `U` |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`ArrayChecker`\<`U`\>
+
+#### See
+
+[assert.allInstanceOf](../assertcheck/namespaces/assert/functions/allInstanceOf.md)
+
+***
+
 ### any()
 
 ```ts
 any(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L137)
+Defined in: [src/checker.ts:131](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L131)
 
 #### Parameters
 
@@ -119,7 +151,7 @@ Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/fb5
 containsAll(items, opts?): this;
 ```
 
-Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L203)
+Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L197)
 
 #### Parameters
 
@@ -144,7 +176,7 @@ Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/fb5
 containsNone(items, opts?): this;
 ```
 
-Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L209)
+Defined in: [src/checker.ts:203](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L203)
 
 #### Parameters
 
@@ -163,13 +195,42 @@ Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/fb5
 
 ***
 
+### count()
+
+```ts
+count(
+   predicate, 
+   n, 
+   opts?): this;
+```
+
+Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L221)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `predicate` | (`v`) => `boolean` |
+| `n` | `number` |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`this`
+
+#### See
+
+[assert.count](../assertcheck/namespaces/assert/functions/count.md)
+
+***
+
 ### elementsMatch()
 
 ```ts
 elementsMatch(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L197)
+Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L191)
 
 #### Parameters
 
@@ -194,7 +255,7 @@ Defined in: [src/checker.ts:197](https://github.com/thonymg/assertcheck/blob/fb5
 first(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L179)
+Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L173)
 
 #### Parameters
 
@@ -219,7 +280,7 @@ Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/fb5
 flat(opts?): this;
 ```
 
-Defined in: [src/checker.ts:215](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L215)
+Defined in: [src/checker.ts:209](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L209)
 
 #### Parameters
 
@@ -246,7 +307,7 @@ groupedBy(
    opts?): this;
 ```
 
-Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L221)
+Defined in: [src/checker.ts:215](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L215)
 
 #### Parameters
 
@@ -272,7 +333,7 @@ Defined in: [src/checker.ts:221](https://github.com/thonymg/assertcheck/blob/fb5
 includes(item, opts?): this;
 ```
 
-Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L125)
+Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L119)
 
 #### Parameters
 
@@ -291,13 +352,38 @@ Defined in: [src/checker.ts:125](https://github.com/thonymg/assertcheck/blob/fb5
 
 ***
 
+### increasing()
+
+```ts
+increasing(this, opts?): ArrayChecker<number>;
+```
+
+Defined in: [src/checker.ts:227](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L227)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `this` | `ArrayChecker`\<`number`\> |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`ArrayChecker`\<`number`\>
+
+#### See
+
+[assert.increasing](../assertcheck/namespaces/assert/functions/increasing.md)
+
+***
+
 ### last()
 
 ```ts
 last(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L185)
+Defined in: [src/checker.ts:179](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L179)
 
 #### Parameters
 
@@ -322,7 +408,7 @@ Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/fb5
 len(n, opts?): this;
 ```
 
-Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L107)
+Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L101)
 
 #### Parameters
 
@@ -347,7 +433,7 @@ Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/fb5
 longerThan(n, opts?): this;
 ```
 
-Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L113)
+Defined in: [src/checker.ts:107](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L107)
 
 #### Parameters
 
@@ -366,13 +452,38 @@ Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/fb5
 
 ***
 
+### nonDecreasing()
+
+```ts
+nonDecreasing(this, opts?): ArrayChecker<number>;
+```
+
+Defined in: [src/checker.ts:233](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L233)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `this` | `ArrayChecker`\<`number`\> |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`ArrayChecker`\<`number`\>
+
+#### See
+
+[assert.nonDecreasing](../assertcheck/namespaces/assert/functions/nonDecreasing.md)
+
+***
+
 ### none()
 
 ```ts
 none(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L143)
+Defined in: [src/checker.ts:137](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L137)
 
 #### Parameters
 
@@ -394,10 +505,10 @@ Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/fb5
 ### noNils()
 
 ```ts
-noNils(opts?): this;
+noNils(opts?): ArrayChecker<NonNullable<T>>;
 ```
 
-Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L167)
+Defined in: [src/checker.ts:161](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L161)
 
 #### Parameters
 
@@ -407,7 +518,7 @@ Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/fb5
 
 #### Returns
 
-`this`
+`ArrayChecker`\<`NonNullable`\<`T`\>\>
 
 #### See
 
@@ -421,7 +532,7 @@ Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/fb5
 notEmpty(opts?): this;
 ```
 
-Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L101)
+Defined in: [src/checker.ts:95](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L95)
 
 #### Parameters
 
@@ -445,7 +556,7 @@ Defined in: [src/checker.ts:101](https://github.com/thonymg/assertcheck/blob/fb5
 one(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L149)
+Defined in: [src/checker.ts:143](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L143)
 
 #### Parameters
 
@@ -464,13 +575,44 @@ Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/fb5
 
 ***
 
+### partition()
+
+```ts
+partition(
+   predicate, 
+   expectedMatch, 
+   expectedRest, 
+   opts?): this;
+```
+
+Defined in: [src/checker.ts:260](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L260)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `predicate` | (`v`) => `boolean` |
+| `expectedMatch` | `number` |
+| `expectedRest` | `number` |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`this`
+
+#### See
+
+[assert.partition](../assertcheck/namespaces/assert/functions/partition.md)
+
+***
+
 ### shorterThan()
 
 ```ts
 shorterThan(n, opts?): this;
 ```
 
-Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L119)
+Defined in: [src/checker.ts:113](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L113)
 
 #### Parameters
 
@@ -495,7 +637,7 @@ Defined in: [src/checker.ts:119](https://github.com/thonymg/assertcheck/blob/fb5
 sortedBy(iteratee, opts?): this;
 ```
 
-Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L173)
+Defined in: [src/checker.ts:167](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L167)
 
 #### Parameters
 
@@ -520,7 +662,7 @@ Defined in: [src/checker.ts:173](https://github.com/thonymg/assertcheck/blob/fb5
 subset(sub, opts?): this;
 ```
 
-Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L191)
+Defined in: [src/checker.ts:185](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L185)
 
 #### Parameters
 
@@ -539,13 +681,42 @@ Defined in: [src/checker.ts:191](https://github.com/thonymg/assertcheck/blob/fb5
 
 ***
 
+### sumBy()
+
+```ts
+sumBy(
+   iteratee, 
+   expected, 
+   opts?): this;
+```
+
+Defined in: [src/checker.ts:239](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L239)
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `iteratee` | `string` \| ((`value`) => `number`) |
+| `expected` | `number` |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`this`
+
+#### See
+
+[assert.sumBy](../assertcheck/namespaces/assert/functions/sumBy.md)
+
+***
+
 ### tap()
 
 ```ts
 tap(fn): this;
 ```
 
-Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L74)
+Defined in: [src/checker.ts:68](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L68)
 
 Runs a side-effect function with the wrapped value and returns `this`
 to allow chaining. Useful for logging or debugging mid-chain.
@@ -582,7 +753,7 @@ check(orders)
 unique(opts?): this;
 ```
 
-Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L155)
+Defined in: [src/checker.ts:149](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L149)
 
 #### Parameters
 
@@ -606,7 +777,7 @@ Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/fb5
 uniqueBy(iteratee, opts?): this;
 ```
 
-Defined in: [src/checker.ts:161](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L161)
+Defined in: [src/checker.ts:155](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L155)
 
 #### Parameters
 
@@ -622,3 +793,38 @@ Defined in: [src/checker.ts:161](https://github.com/thonymg/assertcheck/blob/fb5
 #### See
 
 [assert.uniqueBy](../assertcheck/namespaces/assert/functions/uniqueBy.md)
+
+***
+
+### zippedWith()
+
+```ts
+zippedWith<B>(
+   other, 
+   predicate, 
+   opts?): this;
+```
+
+Defined in: [src/checker.ts:254](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L254)
+
+#### Type Parameters
+
+| Type Parameter |
+| ------ |
+| `B` |
+
+#### Parameters
+
+| Parameter | Type |
+| ------ | ------ |
+| `other` | `B`[] |
+| `predicate` | (`a`, `b`) => `boolean` |
+| `opts?` | `Opts` |
+
+#### Returns
+
+`this`
+
+#### See
+
+[assert.zippedWith](../assertcheck/namespaces/assert/functions/zippedWith.md)

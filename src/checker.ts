@@ -123,7 +123,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
 
   /** @see {@link assert.all} */
   all(predicate: (v: T) => boolean, opts?: Opts): this {
-    assert.all(this.value, predicate as (v: unknown) => boolean, opts)
+    assert.all(this.value, predicate, opts)
     return this
   }
 
@@ -159,7 +159,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
 
   /** @see {@link assert.noNils} */
   noNils(opts?: Opts): ArrayChecker<NonNullable<T>> {
-    assert.noNils(this.value as (T | null | undefined)[], opts)
+    assert.noNils(this.value, opts)
     return this as unknown as ArrayChecker<NonNullable<T>>
   }
 
@@ -207,7 +207,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
 
   /** @see {@link assert.flat} */
   flat(opts?: Opts): this {
-    assert.flat(this.value as unknown[], opts)
+    assert.flat(this.value, opts)
     return this
   }
 

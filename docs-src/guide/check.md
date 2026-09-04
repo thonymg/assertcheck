@@ -1,10 +1,32 @@
 # Chainable API — check()
 
-`check()` wraps a value and lets you chain multiple assertions in a fluent, readable style. Every method calls the corresponding `assert.*` function internally and throws on the first failure.
+`check()` wraps a value and lets you chain assertions in a fluent style. Every method calls the matching `assert.*` function, then returns the checker so the next step can run. The chain stops at the first failure.
 
 ::: info When to use `check()` vs `assert.*`
-Use `check()` when you're validating **three or more invariants on the same value**. Use `assert.*` directly for independent checks on different values. Both are equivalent at runtime — `check()` is purely a readability choice.
+Use `check()` when you validate **several invariants on the same value**. Use `assert.*` for independent checks on different values, or when you need the narrowed type outside the chain. Both throw the same `AssertionError` and print the same block.
 :::
+
+---
+
+## Which checker do you get?
+
+`check()` picks the checker from the runtime value, and TypeScript overloads give you the matching type:
+
+| Value | Checker | Methods |
+|---|---|---|
+| Array | `ArrayChecker<T>` | `tap` + array methods |
+| Plain object | `ObjectChecker<T>` | `tap` + object methods |
+| Anything else | `Checker<T>` | `tap` only |
+
+```ts
+import { check } from "assertcheck"
+
+check(users)   // ArrayChecker<User>
+check(config)  // ObjectChecker<Config>
+check(42)      // Checker<number>
+```
+
+Class instances, `Map` and `Set` are not plain objects — they get the bare `Checker`. Use `assert.*` on those.
 
 ---
 
@@ -20,7 +42,7 @@ check(users)
   .sortedBy("createdAt")
 ```
 
-If any assertion fails, it throws immediately with a formatted error — the chain stops at the first violated invariant.
+Every method takes the same trailing `opts` as its `assert.*` counterpart: a string or `{ msg, actual, note }`.
 
 ---
 
@@ -38,37 +60,45 @@ function processBatch(orders: Order[]) {
       note: "filter zero-amount orders before building the batch",
     })
     .uniqueBy("id", "duplicate order IDs in batch")
-    .len(orders.length, "batch size must match the declared count")
 }
 ```
 
 ### Validating a config object at startup
 
 ```ts
-function initDb(config: unknown) {
+function initDb(config: DbConfig) {
   check(config)
     .notEmpty("database config must not be empty")
     .hasKeys(["host", "port", "database"], "missing required database config keys")
-    .dig("pool.max", v => v > 0, {
-      msg:  "pool.max must be a positive number",
-      note: "set DATABASE_POOL_MAX in your environment",
+    .noNilValues("no database config value may be null")
+    .dig("pool.max", 10, {
+      msg:  "pool.max must be 10 in production",
+      note: "set DATABASE_POOL_MAX=10 in the environment",
     })
 }
+```
+
+`dig` compares the value at the path with an expected **value** (deep equality). For a predicate on a nested value, read it and use `assert.*`:
+
+```ts
+assert.positive(config.pool.max, "pool.max must be positive")
 ```
 
 ### Validating a response from an external service
 
 ```ts
 async function fetchUserProfile(id: string) {
-  const user = await api.getUser(id)
+  const user = await assert.resolvesNotNil(api.getUser(id), "user profile must exist")
 
   check(user)
-    .notEmpty("user profile must not be empty")
     .hasKeys(["id", "email", "role"], "user profile is missing required fields")
-    .dig("role", r => ["admin", "user", "viewer"].includes(r), {
-      msg:  "user role must be a known value",
-      note: "the API may have returned a new role type — update the allowlist",
-    })
+    .noNilValues("user profile must not contain null fields")
+
+  assert.includes(["admin", "user", "viewer"], user.role, {
+    msg:    "user role must be a known value",
+    actual: "user.role",
+    note:   "the API may have returned a new role type — update the allowlist",
+  })
 
   return user
 }
@@ -78,68 +108,83 @@ async function fetchUserProfile(id: string) {
 
 ## Type narrowing through the chain
 
-`check()` methods that call narrowing assertions propagate the narrowed type through subsequent steps in the chain:
+Methods that wrap a narrowing assertion return a narrower checker, so later steps see the refined type:
 
 ```ts
 declare const users: (User | null)[]
 
 check(users)
-  .noNils()           // narrows to User[] — subsequent steps know this
-  .uniqueBy("id")     // TypeScript sees User[], u.id is safe
-  .all(u => u.active) // u is typed as User, not User | null
+  .noNils()           // ArrayChecker<User> from here
+  .uniqueBy("id")     // u.id is safe
+  .all(u => u.active) // u is User, not User | null
 ```
 
 ::: info Narrowing scope
-Type narrowing applies **within the chain only**. After the chain, TypeScript still sees the original type at the outer scope. If you need the narrowed type outside the chain, use `assert.*` directly — those narrow the variable in the enclosing scope.
+Narrowing applies **inside the chain only**. After it, TypeScript still sees the original type of `users`. When you need the narrowed variable afterwards, call `assert.noNils(users)` directly — `asserts` signatures narrow the variable in the enclosing scope.
 :::
+
+---
+
+## `tap` — side effects mid-chain
+
+Available on every checker. Runs a function with the wrapped value and returns the checker unchanged.
+
+```ts
+check(orders)
+  .tap(v => console.log("orders:", v.length))
+  .all(o => o.status === "paid")
+
+check(amountCents).tap(v => assert.integer(v, "amount must be whole cents"))
+```
 
 ---
 
 ## Array methods
 
-| Method | Assertion |
+| Method | Wraps |
 |---|---|
-| `.notEmpty(opts?)` | Array must not be empty |
-| `.len(n, opts?)` | Exact length must equal `n` |
-| `.noNils(opts?)` | No null or undefined elements |
-| `.all(predicate, opts?)` | Every element satisfies predicate |
-| `.any(predicate, opts?)` | At least one element satisfies predicate |
-| `.none(predicate, opts?)` | No elements satisfy predicate |
-| `.unique(opts?)` | All elements are strictly unique |
-| `.uniqueBy(key, opts?)` | Unique by property key |
-| `.sortedBy(key, opts?)` | Sorted ascending by property key |
-| `.containsAll(values, opts?)` | Must include all given values |
-| `.first(predicate?, opts?)` | First element must satisfy predicate |
-| `.last(predicate?, opts?)` | Last element must satisfy predicate |
-| `.flat(opts?)` | Must not contain nested arrays |
-| `.allInstanceOf(Ctor, opts?)` | All elements are instances of constructor |
+| `.notEmpty(opts?)` | `assert.notEmpty` |
+| `.len(n, opts?)` · `.longerThan(n, opts?)` · `.shorterThan(n, opts?)` | Length |
+| `.includes(item, opts?)` · `.containsAll(items, opts?)` · `.containsNone(items, opts?)` · `.subset(sub, opts?)` | Membership |
+| `.all(pred, opts?)` · `.any(pred, opts?)` · `.none(pred, opts?)` · `.one(pred, opts?)` · `.count(pred, n, opts?)` | Predicates |
+| `.elementsMatch(other, opts?)` | Same elements, any order |
+| `.unique(opts?)` · `.uniqueBy(key, opts?)` | Uniqueness |
+| `.increasing(opts?)` · `.nonDecreasing(opts?)` · `.sortedBy(key, opts?)` | Ordering |
+| `.first(expected, opts?)` · `.last(expected, opts?)` | First / last element equals `expected` |
+| `.sumBy(key, expected, opts?)` | Sum of a field equals `expected` |
+| `.noNils(opts?)` | No `null` / `undefined` — narrows to `NonNullable<T>` |
+| `.flat(opts?)` | No nested arrays |
+| `.allInstanceOf(Ctor, opts?)` | Every element is an instance — narrows |
+| `.zippedWith(other, pred, opts?)` | Pairwise predicate with another array |
+| `.groupedBy(key, groups, opts?)` | Grouping by key yields exactly these groups |
+| `.partition(pred, nMatch, nRest, opts?)` | Predicate splits the array into the given counts |
 
 ## Object methods
 
-| Method | Assertion |
+| Method | Wraps |
 |---|---|
-| `.notEmpty(opts?)` | Object must not be empty (no own keys) |
-| `.hasKey(key, opts?)` | Must have the given property |
-| `.hasKeys(keys, opts?)` | Must have all given properties |
-| `.hasExactKeys(keys, opts?)` | Exactly these properties — no extras, no missing |
-| `.hasOnlyKeys(keys, opts?)` | Only these properties allowed (subset allowed) |
-| `.dig(path, expected, opts?)` | Nested path must equal expected value |
-| `.allValuesMatch(predicate, opts?)` | All values must satisfy predicate |
-| `.noNilValues(opts?)` | No null or undefined values |
+| `.notEmpty(opts?)` | At least one own key |
+| `.hasKey(key, opts?)` · `.hasKeys(keys, opts?)` | Required keys — narrow to `T & Record<K, unknown>` |
+| `.hasExactKeys(keys, opts?)` | Exactly these keys |
+| `.hasOnlyKeys(allowed, opts?)` | No key outside `allowed` |
+| `.deepEqual(expected, opts?)` | Deep equality with structural diff |
+| `.containsSubset(subset, opts?)` | Partial deep match |
+| `.allValuesMatch(pred, opts?)` | Every value satisfies the predicate |
+| `.noNilValues(opts?)` | No `null` / `undefined` value |
+| `.dig(path, expected, opts?)` | Value at `"a.b.c"` (or `["a","b","c"]`) deep-equals `expected` |
+
+Every method returns `this` except `noNils` and `allInstanceOf`, which return a narrower `ArrayChecker`.
 
 ---
 
-## Chaining after `assert.*`
+## Mixing `check()` and `assert.*`
 
-`check()` and `assert.*` can be combined freely. Use `assert.*` for conditions that belong at the top of a function boundary and `check()` for validating a specific complex value:
+Use `assert.*` for scalar guards at the function boundary and `check()` for the collection or object that needs several invariants:
 
 ```ts
 function createOrder(customerId: string, items: CartItem[]): Order {
-  // Single-value guards at the boundary
-  assert.string(customerId, "customerId must be a non-empty string")
   assert.notEmpty(customerId, "customerId must not be empty")
 
-  // Complex collection validation with check()
   check(items)
     .notEmpty("cart must contain at least one item")
     .noNils("no null items allowed in cart")

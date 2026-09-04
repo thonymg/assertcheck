@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../_generated.md)
+[**assertcheck v0.5.15**](../_generated.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Class: ObjectChecker\<T\>
 
-Defined in: [src/checker.ts:249](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L249)
+Defined in: [src/checker.ts:293](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L293)
 
 Chainable assertion wrapper for plain objects.
 Returned by [check](../functions/check.md) when the value is a plain object.
@@ -43,7 +43,7 @@ check(config)
 new ObjectChecker<T>(value): ObjectChecker<T>;
 ```
 
-Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L58)
+Defined in: [src/checker.ts:52](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L52)
 
 #### Parameters
 
@@ -63,7 +63,7 @@ Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb51
 
 | Property | Modifier | Type | Inherited from | Defined in |
 | ------ | ------ | ------ | ------ | ------ |
-| <a id="value"></a> `value` | `readonly` | `T` | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L58) |
+| <a id="value"></a> `value` | `readonly` | `T` | [`Checker`](Checker.md).[`value`](Checker.md#value) | [src/checker.ts:52](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L52) |
 
 ## Methods
 
@@ -73,7 +73,7 @@ Defined in: [src/checker.ts:58](https://github.com/thonymg/assertcheck/blob/fb51
 allValuesMatch(predicate, opts?): this;
 ```
 
-Defined in: [src/checker.ts:299](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L299)
+Defined in: [src/checker.ts:343](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L343)
 
 #### Parameters
 
@@ -98,7 +98,7 @@ Defined in: [src/checker.ts:299](https://github.com/thonymg/assertcheck/blob/fb5
 containsSubset(subset, opts?): this;
 ```
 
-Defined in: [src/checker.ts:287](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L287)
+Defined in: [src/checker.ts:331](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L331)
 
 #### Parameters
 
@@ -123,7 +123,7 @@ Defined in: [src/checker.ts:287](https://github.com/thonymg/assertcheck/blob/fb5
 deepEqual(expected, opts?): this;
 ```
 
-Defined in: [src/checker.ts:281](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L281)
+Defined in: [src/checker.ts:325](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L325)
 
 #### Parameters
 
@@ -151,7 +151,7 @@ dig(
    opts?): this;
 ```
 
-Defined in: [src/checker.ts:305](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L305)
+Defined in: [src/checker.ts:349](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L349)
 
 #### Parameters
 
@@ -177,7 +177,7 @@ Defined in: [src/checker.ts:305](https://github.com/thonymg/assertcheck/blob/fb5
 hasExactKeys<K>(keys, opts?): ObjectChecker<Record<K, unknown>>;
 ```
 
-Defined in: [src/checker.ts:269](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L269)
+Defined in: [src/checker.ts:313](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L313)
 
 #### Type Parameters
 
@@ -208,7 +208,7 @@ Defined in: [src/checker.ts:269](https://github.com/thonymg/assertcheck/blob/fb5
 hasKey<K>(key, opts?): ObjectChecker<T & Record<K, unknown>>;
 ```
 
-Defined in: [src/checker.ts:257](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L257)
+Defined in: [src/checker.ts:301](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L301)
 
 #### Type Parameters
 
@@ -239,7 +239,7 @@ Defined in: [src/checker.ts:257](https://github.com/thonymg/assertcheck/blob/fb5
 hasKeys<K>(keys, opts?): ObjectChecker<T & Record<K, unknown>>;
 ```
 
-Defined in: [src/checker.ts:263](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L263)
+Defined in: [src/checker.ts:307](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L307)
 
 #### Type Parameters
 
@@ -270,7 +270,7 @@ Defined in: [src/checker.ts:263](https://github.com/thonymg/assertcheck/blob/fb5
 hasOnlyKeys(allowed, opts?): this;
 ```
 
-Defined in: [src/checker.ts:275](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L275)
+Defined in: [src/checker.ts:319](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L319)
 
 #### Parameters
 
@@ -295,7 +295,7 @@ Defined in: [src/checker.ts:275](https://github.com/thonymg/assertcheck/blob/fb5
 noNilValues(opts?): this;
 ```
 
-Defined in: [src/checker.ts:293](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L293)
+Defined in: [src/checker.ts:337](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L337)
 
 #### Parameters
 
@@ -319,7 +319,7 @@ Defined in: [src/checker.ts:293](https://github.com/thonymg/assertcheck/blob/fb5
 notEmpty(opts?): this;
 ```
 
-Defined in: [src/checker.ts:251](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L251)
+Defined in: [src/checker.ts:295](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L295)
 
 #### Parameters
 
@@ -343,7 +343,7 @@ Defined in: [src/checker.ts:251](https://github.com/thonymg/assertcheck/blob/fb5
 tap(fn): this;
 ```
 
-Defined in: [src/checker.ts:74](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L74)
+Defined in: [src/checker.ts:68](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L68)
 
 Runs a side-effect function with the wrapped value and returns `this`
 to allow chaining. Useful for logging or debugging mid-chain.

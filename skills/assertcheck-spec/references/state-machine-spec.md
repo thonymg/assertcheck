@@ -45,28 +45,19 @@ List every valid transition. Every row that is NOT in this table is **forbidden*
 
 ## Forbidden transition assertions
 
-For high-risk invalid transitions, add explicit `notEqual` guards:
+For high-risk invalid transitions, add explicit negation guards. `assert.not` takes no `opts` — name the forbidden state in a comment or fold it into the positive guard's `msg`:
 
 ```
 ## Forbidden transition guards
 
-// Cannot ship a cancelled order
-assert.notEqual(order.status, "cancelled", {
-  msg:  "cannot ship a cancelled order",
-  note: "create a new order instead",
-})
+// cannot ship a cancelled order — create a new order instead
+assert.not(assert.equal, order.status, "cancelled")
 
-// Cannot pay a cancelled order
-assert.notEqual(order.status, "cancelled", {
-  msg:  "cannot process payment for a cancelled order",
-  note: "create a new order instead",
-})
+// cannot process payment for a cancelled order — create a new order instead
+assert.not(assert.equal, order.status, "cancelled")
 
-// Cannot cancel a shipped order
-assert.notEqual(order.status, "shipped", {
-  msg:  "cannot cancel an order that has already shipped",
-  note: "use refundOrder() after delivery instead",
-})
+// cannot cancel an order that has already shipped — use refundOrder() after delivery instead
+assert.not(assert.equal, order.status, "shipped")
 ```
 
 ---
@@ -82,10 +73,8 @@ function shipOrder(order: Order): ShipmentResult {
     note: "call processPayment() first",
   })
   // Optionally add the most critical forbidden transition:
-  assert.notEqual(order.status, "cancelled", {
-    msg:  "cannot ship a cancelled order",
-    note: "create a new order instead",
-  })
+  // cannot ship a cancelled order — create a new order instead
+  assert.not(assert.equal, order.status, "cancelled")
 
   // ── logic ─────────────────────────────────────────────────────
   // … runs here with guaranteed preconditions

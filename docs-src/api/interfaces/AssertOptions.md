@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../_generated.md)
+[**assertcheck v0.5.15**](../_generated.md)
 
 ***
 
@@ -6,7 +6,7 @@
 
 # Interface: AssertOptions
 
-Defined in: [src/types.ts:78](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/types.ts#L78)
+Defined in: [src/types.ts:32](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/types.ts#L32)
 
 Options accepted by every assertion function.
 
@@ -33,6 +33,6 @@ assert.equal(a, b, {
 
 | Property | Type | Description | Defined in |
 | ------ | ------ | ------ | ------ |
-| <a id="actual"></a> `actual?` | `string` | Label for the actual value in the error output. Useful to identify which variable or field failed. **Example** ``"order.status"`, `"response.body.user.age"`` | [src/types.ts:90](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/types.ts#L90) |
-| <a id="msg"></a> `msg?` | `string` | Human-readable description of what the assertion checks. Appears as the title in the formatted error block. | [src/types.ts:83](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/types.ts#L83) |
-| <a id="note"></a> `note?` | `string` | Additional context about why this assertion exists or how to fix it. Displayed in the `note` section of the error block. **Example** ``"Call resetOrder() before retrying"`` | [src/types.ts:97](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/types.ts#L97) |
+| <a id="actual"></a> `actual?` | `string` | Label for the actual value in the error output. Useful to identify which variable or field failed. **Example** ``"order.status"`, `"response.body.user.age"`` | [src/types.ts:44](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/types.ts#L44) |
+| <a id="msg"></a> `msg?` | `string` | Human-readable description of what the assertion checks. Appears as the title in the formatted error block. | [src/types.ts:37](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/types.ts#L37) |
+| <a id="note"></a> `note?` | `string` | Additional context about why this assertion exists or how to fix it. Displayed in the `note` section of the error block. **Example** ``"Call resetOrder() before retrying"`` | [src/types.ts:51](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/types.ts#L51) |

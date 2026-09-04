@@ -83,8 +83,8 @@ bun add assertcheck
 ```
 
 ```sh [jsr / Deno]
-deno add jsr:assertcheck
-bunx jsr add assertcheck
+deno add jsr:@thonymg/assertcheck
+bunx jsr add @thonymg/assertcheck
 ```
 
 :::

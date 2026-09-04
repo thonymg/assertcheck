@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../../../_generated.md)
+[**assertcheck v0.5.15**](../../../_generated.md)
 
 ***
 
@@ -66,6 +66,14 @@ The main assertion namespace.
 - [partition](functions/partition.md)
 - [positive](functions/positive.md)
 - [pure](functions/pure.md)
+- [rejects](functions/rejects.md)
+- [rejectsMatching](functions/rejectsMatching.md)
+- [rejectsSatisfying](functions/rejectsSatisfying.md)
+- [rejectsWithMessage](functions/rejectsWithMessage.md)
+- [resolves](functions/resolves.md)
+- [resolvesNotNil](functions/resolvesNotNil.md)
+- [resolvesSatisfying](functions/resolvesSatisfying.md)
+- [resolvesWith](functions/resolvesWith.md)
 - [returns](functions/returns.md)
 - [shorterThan](functions/shorterThan.md)
 - [sortedBy](functions/sortedBy.md)

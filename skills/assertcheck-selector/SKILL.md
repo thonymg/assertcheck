@@ -64,7 +64,7 @@ must be instance of T  → assert.instanceOf(v, T, opts)
 
 ```
 must strictly equal expected   → assert.equal(a, b, opts)
-must NOT equal                 → assert.notEqual(a, b, opts)
+must NOT equal                 → assert.not(assert.equal, a, b)   (not() takes no opts)
 must deep equal                → assert.deepEqual(a, b, opts)
 must be > b                    → assert.greater(a, b, opts)
 must be >= b                   → assert.greaterOrEqual(a, b, opts)

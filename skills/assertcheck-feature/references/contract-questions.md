@@ -47,7 +47,7 @@ Before writing assertions, answer these questions. Each answer maps to a guard.
 |:---------|:-----------------|
 | Are injected dependencies required (not optional)? | `assert.notNil(dep, "ClassName requires a depName")` |
 | Are config options required to have specific keys? | `assert.hasKeys(config, [...])` |
-| Are numeric config values bounded? | `assert.inRange / assert.greater` |
+| Are numeric config values bounded? | `assert.withinRange / assert.greater` |
 
 ---
 

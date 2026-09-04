@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../../../../_generated.md)
+[**assertcheck v0.5.15**](../../../../_generated.md)
 
 ***
 
@@ -13,7 +13,7 @@ function equal<T>(
    opts?): void;
 ```
 
-Defined in: [src/assert.ts:66](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/assert.ts#L66)
+Defined in: [src/assert.ts:201](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/assert.ts#L201)
 
 ## Type Parameters
 

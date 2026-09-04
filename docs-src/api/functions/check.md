@@ -1,4 +1,4 @@
-[**assertcheck v0.2.152**](../_generated.md)
+[**assertcheck v0.5.15**](../_generated.md)
 
 ***
 
@@ -12,7 +12,7 @@
 function check<T>(value): ArrayChecker<T>;
 ```
 
-Defined in: [src/checker.ts:346](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L346)
+Defined in: [src/checker.ts:390](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L390)
 
 Creates a typed chainable checker for the given value.
 
@@ -67,7 +67,7 @@ check(amountCents).tap(v => assert.integer(v))
 function check<T>(value): ObjectChecker<T>;
 ```
 
-Defined in: [src/checker.ts:347](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L347)
+Defined in: [src/checker.ts:391](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L391)
 
 Creates a typed chainable checker for the given value.
 
@@ -122,7 +122,7 @@ check(amountCents).tap(v => assert.integer(v))
 function check<T>(value): Checker<T>;
 ```
 
-Defined in: [src/checker.ts:348](https://github.com/thonymg/assertcheck/blob/fb514a0b33c45a051bb86cba2282fd5e4dfae3f9/src/checker.ts#L348)
+Defined in: [src/checker.ts:392](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/checker.ts#L392)
 
 Creates a typed chainable checker for the given value.
 

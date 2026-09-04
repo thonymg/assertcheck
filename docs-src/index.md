@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "AssertCheck"
   text: "Define what your code must never accept."
-  tagline: Production-grade assertion library for TypeScript. Explicit contracts, fail-fast execution, richly formatted errors — zero overhead when silent.
+  tagline: Production-grade assertion library for TypeScript. Explicit contracts, fail-fast execution, richly formatted errors — always on, zero configuration.
   actions:
     - theme: brand
       text: Get started
@@ -114,7 +114,7 @@ Output adapts automatically: ANSI on TTY, plain text in CI, `console.groupCollap
 | | `if/return` | `node:assert` | `zod` / `yup` | **assertcheck** |
 |---|:---:|:---:|:---:|:---:|
 | Fails loudly in dev | — | Yes | Yes | Yes |
-| Zero overhead in prod | — | — | — | Yes (`disabled` mode) |
+| Async assertions (`rejects` / `resolves`) | — | Yes | — | Yes |
 | Type narrowing | — | — | Yes | Yes |
 | Structured, readable errors | — | Partial | Partial | Yes |
 | Chainable fluent API | — | — | — | Yes |
@@ -163,7 +163,7 @@ No configuration. No polyfills. No runtime dependencies beyond `lodash`.
 
 - **Node.js 18+** — full ANSI output on TTY
 - **Bun 1+** — native, tested first
-- **Deno / JSR** — `deno add jsr:assertcheck`
+- **Deno / JSR** — `deno add jsr:@thonymg/assertcheck`
 - **Browser** — DevTools-friendly `console.groupCollapsed` output
 - **Edge runtimes** — no Node.js APIs required
 

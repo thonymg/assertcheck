@@ -37,7 +37,7 @@ Use these exact formulations — they translate directly to assertion method nam
 | Phrase | Maps to |
 |:-------|:--------|
 | "X must equal Y" | `assert.equal(x, y)` |
-| "X must not equal Y" | `assert.notEqual(x, y)` |
+| "X must not equal Y" | `assert.not(assert.equal, x, y)` |
 | "X must deeply equal Y" | `assert.deepEqual(x, y)` |
 | "X must be greater than Y" | `assert.greater(x, y)` |
 | "X must be greater than or equal to Y" | `assert.greaterOrEqual(x, y)` |
@@ -62,7 +62,7 @@ Use these exact formulations — they translate directly to assertion method nam
 | Phrase | Maps to |
 |:-------|:--------|
 | "X must be in state S" | `assert.equal(x.status, "S")` |
-| "X must not be in state S" | `assert.notEqual(x.status, "S")` |
+| "X must not be in state S" | `assert.not(assert.equal, x.status, "S")` |
 | "X must have completed step S before Y" | `assert.equal(x.status, "S")` before Y |
 
 ---

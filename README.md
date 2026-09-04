@@ -20,7 +20,7 @@ Silent failures. No trace. No context. Hours lost in production.
 ```ts
 // Before — bad data propagates in silence
 function chargeOrder(order: Order) {
-  if (!order || !order.amount) return  // swallowed, never caught, never debugged
+  if (!order || !order.amount) return // swallowed, never caught, never debugged
 }
 ```
 
@@ -38,40 +38,48 @@ function chargeOrder(order: Order) {
 }
 ```
 
-**Assertcheck makes invalid states impossible to ignore.**
+**AssertCheck makes invalid states impossible to ignore.**
 Not a validator. Not a schema library. A contract system — at every boundary, for every assumption.
+
+Assertions are **always enabled**. There is no mode system, no `NODE_ENV` switch, no configuration. Every failure prints a formatted diagnostic and throws an `AssertionError`.
 
 ---
 
-## Why Assertcheck?
+## Why AssertCheck?
 
-| | `if/return` | `node:assert` | `zod` / `yup` | **Assertcheck** |
-|---|---|---|---|---|
-| Fails loudly in dev | No | Yes | Yes | Yes |
-| Zero overhead in prod | No | No | No | No |
-| Type narrowing | No | No | Yes | Yes |
+| | `if/return` | `node:assert` | `zod` / `yup` | **AssertCheck** |
+|---|:---:|:---:|:---:|:---:|
+| Fails loudly | No | Yes | Yes | Yes |
+| Type narrowing | No | Partial | Yes | Yes |
 | Structured, readable errors | No | Partial | Partial | Yes |
+| Structural diff on deep equality | No | Partial | No | Yes |
 | Chainable fluent API | No | No | No | Yes |
-| Works on functions/purity | No | No | No | Yes |
+| Async assertions (`rejects` / `resolves`) | No | Yes | No | Yes |
+| Function properties (purity, idempotence) | No | No | No | Yes |
 | AI skills included | No | No | No | Yes |
+
+Zod and Yup validate data crossing the outside boundary (forms, APIs, JSON). AssertCheck enforces invariants at every **internal** boundary: function arguments, state transitions, external responses, collection shapes. They complement each other.
 
 ---
 
 ## Install
 
 ```bash
-# npm / yarn / pnpm
+# npm / yarn / pnpm / bun
 npm install assertcheck
 yarn add assertcheck
 pnpm add assertcheck
-
-# Bun
 bun add assertcheck
 
-# Deno / JSR
-deno add jsr:assertcheck
-bunx jsr add assertcheck
+# JSR (Deno / Bun / npm)
+deno add jsr:@thonymg/assertcheck
+bunx jsr add @thonymg/assertcheck
+npx jsr add @thonymg/assertcheck
 ```
+
+Requirements: Node.js 18+, Bun 1+, or Deno 1.38+. TypeScript 5+. `lodash` is a regular dependency and is installed automatically.
+
+When installed from JSR, import from `@thonymg/assertcheck` instead of `assertcheck`.
 
 ---
 
@@ -90,6 +98,8 @@ assert.equal(order.status, "pending", {
 })
 ```
 
+Every assertion takes an optional last argument: a plain string (the message) or an options object with `msg`, `actual` (label for the received value) and `note` (what the caller should do).
+
 ### Fluent chains
 
 ```ts
@@ -103,6 +113,17 @@ check(users)
   .sortedBy("createdAt")
 ```
 
+### Async
+
+```ts
+const user = await assert.resolvesNotNil(db.users.findById(id), "user must exist")
+
+await assert.rejects(() => api.charge(expiredCard), PaymentError, "expired card must be rejected")
+await assert.rejectsMatching(api.pay(order), /insufficient funds/)
+```
+
+Async assertions accept a `Promise` or a zero-arg thunk `() => Promise`. Use the thunk when the callee may throw synchronously before returning a promise.
+
 ---
 
 ## Error output that actually helps
@@ -110,7 +131,7 @@ check(users)
 When an assertion fires, you get a precise, ELM-inspired diagnostic — not a 40-line stack trace.
 
 ```
-══════════════════ ● Order status mismatch ════════════════════
+══════════════════ ● order must be pending before charge ══════
 
 ── values ──────────────────────────────────────────────────────
   + expected        "pending"
@@ -138,63 +159,104 @@ Deep equality failures include a structural diff, field by field:
 ```
 
 Output adapts automatically:
-- **Node / Bun / Deno** — ANSI colours on TTY, plain text in pipes. Respects `NO_COLOR`.
+- **Node / Bun / Deno** — ANSI colours on a TTY, plain text in pipes and CI. Respects `NO_COLOR`.
 - **Browser** — collapsible `console.groupCollapsed` in DevTools.
-- **CI** — clean plain text, no escape codes.
+
+The stack trace is trimmed so the first frame points at your call site, not inside the library.
 
 ---
 
 ## Full API
 
+Every function is available as `assert.<name>(...)`. The last parameter is always `opts?: string | AssertOptions`.
+
 ### Existence
 
 | | |
 |---|---|
-| `assert.nil(v)` | Must be `null` or `undefined` |
-| `assert.notNil(v)` | Must not be `null` or `undefined` — narrows to `NonNullable<T>` |
-| `assert.empty(v)` | Must be empty (string / array / object / Map / Set) |
-| `assert.notEmpty(v)` | Must not be empty |
+| `nil(v)` | Must be `null` or `undefined` |
+| `notNil(v)` | Must not be `null` or `undefined` — narrows to `NonNullable<T>` |
+| `empty(v)` | Must be empty (string / array / object / Map / Set) |
+| `notEmpty(v)` | Must not be empty — narrows to `NonNullable<T>` |
 
 ### Type guards
 
 | | Narrows to |
 |---|---|
-| `assert.string(v)` | `string` |
-| `assert.number(v)` | `number` |
-| `assert.integer(v)` | `number` (integer) |
-| `assert.finite(v)` | `number` (finite) |
-| `assert.boolean(v)` | `boolean` |
-| `assert.array<T>(v)` | `T[]` |
-| `assert.object<T>(v)` | `T` |
-| `assert.func<T>(v)` | `T` |
-| `assert.instanceOf(v, Ctor)` | `Ctor instance` |
+| `string(v)` | `string` |
+| `number(v)` | `number` |
+| `integer(v)` | `number` (integer) |
+| `finite(v)` | `number` (finite) |
+| `boolean(v)` | `boolean` |
+| `array<T>(v)` | `T[]` |
+| `object<T>(v)` | `T` |
+| `func<T>(v)` | `T` |
+| `instanceOf(v, Ctor)` | instance of `Ctor` |
 
 ### Equality
 
 | | |
 |---|---|
-| `assert.equal(a, b)` | Strict `===` |
-| `assert.deepEqual(a, b)` | Deep equality with structural diff |
+| `equal(actual, expected)` | Strict `===` |
+| `deepEqual(actual, expected)` | Deep equality with structural diff |
 
 ### Numerics
 
-`positive` · `negative` · `zero` · `greater` · `greaterOrEqual` · `less` · `lessOrEqual` · `withinRange` · `inDelta`
+`positive(n)` · `negative(n)` · `zero(n)` · `greater(a, b)` · `greaterOrEqual(a, b)` · `less(a, b)` · `lessOrEqual(a, b)` · `withinRange(v, min, max)` · `inDelta(actual, expected, delta)`
 
 ### Arrays _(Ruby-inspired)_
 
-`len` · `longerThan` · `shorterThan` · `includes` · `all` · `any` · `none` · `one` · `count` · `containsAll` · `containsNone` · `elementsMatch` · `subset` · `unique` · `uniqueBy` · `increasing` · `nonDecreasing` · `sortedBy` · `first` · `last` · `sumBy` · `noNils` · `flat` · `allInstanceOf` · `zippedWith` · `groupedBy` · `partition`
+| | |
+|---|---|
+| `len(arr, n)` · `longerThan(arr, n)` · `shorterThan(arr, n)` | Length |
+| `includes(arr, item)` · `containsAll(arr, items)` · `containsNone(arr, items)` · `subset(arr, sub)` | Membership |
+| `all(arr, pred)` · `any(arr, pred)` · `none(arr, pred)` · `one(arr, pred)` · `count(arr, pred, n)` | Predicates — `all` narrows with a type guard |
+| `elementsMatch(a, b)` | Same elements, any order |
+| `unique(arr)` · `uniqueBy(arr, key)` | Uniqueness |
+| `increasing(arr)` · `nonDecreasing(arr)` · `sortedBy(arr, key)` | Ordering |
+| `first(arr, expected)` · `last(arr, expected)` | Boundary elements |
+| `sumBy(arr, key, expected)` | Aggregation |
+| `noNils(arr)` · `flat(arr)` · `allInstanceOf(arr, Ctor)` | Shape — `noNils` and `allInstanceOf` narrow |
+| `zippedWith(a, b, pred)` · `groupedBy(arr, key, groups)` · `partition(arr, pred, nMatch, nRest)` | Structure |
 
 ### Objects _(Ruby Hash-inspired)_
 
-`hasKey` · `hasKeys` · `hasExactKeys` · `hasOnlyKeys` · `hasValue` · `containsSubset` · `allValuesMatch` · `noNilValues` · `dig`
+| | |
+|---|---|
+| `hasKey(obj, key)` · `hasKeys(obj, keys)` | Required keys — narrow to `T & Record<K, unknown>` |
+| `hasExactKeys(obj, keys)` · `hasOnlyKeys(obj, allowed)` | Exact / allowed key set |
+| `hasValue(obj, key, expected)` | Key holds the expected value |
+| `containsSubset(obj, subset)` | Partial deep match |
+| `allValuesMatch(obj, pred)` · `noNilValues(obj)` | Value constraints |
+| `dig(obj, "a.b.c", expected)` | Nested path equals expected value |
 
 ### Functions _(mathematical properties)_
 
-`returns` · `pure` · `idempotent` · `arity` · `mapsDistinct` · `homomorphic`
+| | |
+|---|---|
+| `returns(fn, args, expected)` | `fn(...args)` deep-equals `expected` |
+| `pure(fn, args)` | Same output on repeated calls, arguments untouched |
+| `idempotent(fn, arg)` | `fn(fn(x)) === fn(x)` |
+| `arity(fn, n)` | Declared parameter count |
+| `mapsDistinct(fn, inputs)` | Distinct inputs give distinct outputs |
+| `homomorphic(fn, a, b, op)` | `fn(op(a, b)) === op(fn(a), fn(b))` |
+
+### Async _(Promise or thunk)_
+
+| | |
+|---|---|
+| `rejects(p)` · `rejects(p, ErrorCtor)` | Rejects, optionally with an instance of `ErrorCtor` |
+| `rejectsWithMessage(p, msg)` | Rejection message equals `msg` |
+| `rejectsMatching(p, /re/)` | Rejection message matches the pattern |
+| `rejectsSatisfying(p, pred)` | Rejection value satisfies the predicate |
+| `resolves(p)` | Resolves — returns the value |
+| `resolvesWith(p, expected)` | Resolves to a deep-equal value |
+| `resolvesSatisfying(p, pred)` | Resolved value satisfies the predicate |
+| `resolvesNotNil(p)` | Resolves to a non-nil value — returns `NonNullable<T>` |
 
 ### Negation
 
-`assert.not(fn, ...args)` — the only negation API. Wraps any assertion.
+`assert.not(fn, ...args)` is the only negation API. It passes when the wrapped assertion would throw, and works with built-in and custom assertions alike.
 
 ```ts
 assert.not(assert.equal, user.role, "admin")
@@ -206,13 +268,15 @@ assert.not(assert.hasKey, patch, "id")
 
 ## Chainable API
 
+`check(value)` returns an `ArrayChecker` for arrays, an `ObjectChecker` for plain objects, and a bare `Checker` for anything else. Each method calls the matching `assert.*` and returns `this`, so the chain stops at the first failure.
+
 ```ts
 import { check } from "assertcheck"
 
 // Arrays
 check(users)
   .notEmpty()
-  .noNils()
+  .noNils()            // narrows the rest of the chain to NonNullable<T>[]
   .uniqueBy("id")
   .all(u => u.active)
   .sortedBy("createdAt")
@@ -223,7 +287,16 @@ check(config)
   .hasKeys(["host", "port"])
   .noNilValues()
   .dig("database.pool.max", 10)
+
+// Any value — tap for side effects mid-chain
+check(orders)
+  .tap(v => console.log("orders:", v.length))
+  .all(o => o.status === "paid")
 ```
+
+Array methods: `notEmpty` · `len` · `longerThan` · `shorterThan` · `includes` · `all` · `any` · `none` · `one` · `count` · `unique` · `uniqueBy` · `noNils` · `sortedBy` · `increasing` · `nonDecreasing` · `first` · `last` · `sumBy` · `subset` · `elementsMatch` · `containsAll` · `containsNone` · `flat` · `groupedBy` · `allInstanceOf` · `zippedWith` · `partition`
+
+Object methods: `notEmpty` · `hasKey` · `hasKeys` · `hasExactKeys` · `hasOnlyKeys` · `deepEqual` · `containsSubset` · `noNilValues` · `allValuesMatch` · `dig`
 
 ---
 
@@ -239,26 +312,56 @@ try {
     err.assertion // "equal"
     err.actual    // "paid"
     err.expected  // "pending"
+    err.message   // the full formatted block
   }
 }
 ```
 
 ---
 
-## AI Skills — from day one
+## Custom assertions
 
-Assertcheck ships with [AI skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your AI assistant understands and applies the library's patterns automatically.
+The formatting primitives are exported so domain assertions look native: `buildBlock`, `fmtValue`, `diffObjects`, `color`, `output`, `parseOpts`.
+
+```ts
+import { AssertionError, buildBlock, color, fmtValue, output, parseOpts } from "assertcheck"
+import type { AssertOptions } from "assertcheck"
+
+export function assertOrderId(v: unknown, opts?: string | AssertOptions): asserts v is string {
+  if (typeof v === "string" && /^ord_[a-z0-9]{16}$/.test(v)) return
+  const o = parseOpts(opts)
+  const message = buildBlock({
+    assertion: "orderId",
+    title: o.msg ?? "Invalid order ID",
+    rows: [
+      { label: "expected", value: "ord_<16 chars>", indicator: color.added("+") },
+      { label: o.actual ?? "received", value: fmtValue(v), indicator: color.removed("✗") },
+    ],
+    note: o.note,
+  })
+  output(message)
+  throw new AssertionError({ assertion: "orderId", message, actual: v, expected: "order ID" })
+}
+```
+
+See the [custom assertions guide](https://thonymg.github.io/assertcheck/guide/custom-assertions) for the full walkthrough.
+
+---
+
+## AI Skills
+
+AssertCheck ships with [AI skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your coding assistant applies the library's patterns for you.
 
 | Skill | What it does |
 |---|---|
-| `assertcheck-audit` | Audits existing code for missing or weak assertions |
-| `assertcheck-feature` | Designs a new assertion following the library's contracts |
-| `assertcheck-refactor` | Refactors code toward negative-space programming |
-| `assertcheck-selector` | Selects the right assertion for a given scenario |
-| `assertcheck-spec` | Writes invariant-driven specs |
+| `assertcheck-spec` | Writes the precondition / postcondition table before any implementation |
+| `assertcheck-feature` | Builds a new function or service with its guard block first |
+| `assertcheck-audit` | Scans existing code for unguarded boundaries and proposes assertions |
+| `assertcheck-refactor` | Modifies code without silently dropping a safety check |
+| `assertcheck-selector` | Picks the most specific `assert.*` for a given invariant |
 
 ```bash
-# Install all skills
+# Install all skills in the current project
 bunx skills add thonymg/assertcheck --skill='*'
 npx skills add thonymg/assertcheck --skill='*'
 
@@ -274,27 +377,40 @@ Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills).
 
 ```
 src/
-  index.ts    — barrel export
-  types.ts    — shared types and interfaces
-  env.ts      — runtime detection (Node / Bun / Deno / browser)
-  error.ts    — AssertionError class
-  format.ts   — ANSI/browser formatter, diff engine, block builder
-  fail.ts     — internal fail() dispatcher
-  assert.ts   — all assertion functions
-  checker.ts  — chainable wrapper (check())
+  index.ts      — public barrel export
+  types.ts      — AssertOptions, AssertionErrorOptions, BlockDef, RowDef
+  env.ts        — runtime detection (Node / Bun / Deno / browser, NO_COLOR)
+  error.ts      — AssertionError
+  format.ts     — block builder, value formatter, diff engine, ANSI / DevTools output
+  fail.ts       — internal: output + throw
+  assert.ts     — every assertion, sync and async
+  checker.ts    — check(), Checker, ArrayChecker, ObjectChecker
 tests/
-  assert.test.ts
+  assert.test.ts       — sync assertions
+  assert.deep.test.ts  — deepEqual and diff output
+  async.test.ts        — rejects / resolves family
+examples/
+  ecommerce/    — services and tests using assertcheck end to end
+skills/         — AI skills (one folder per skill, SKILL.md + references)
+docs-src/       — VitePress site (guide, skills, generated API reference)
 ```
 
 ---
 
-## Build
+## Development
 
 ```bash
-bun run build      # compile to ./dist
-bun run typecheck  # tsc --noEmit
-bun test           # run test suite
+bun install
+bun test               # test suite against src/
+bun run test:dist      # same suite against the built dist/
+bun run typecheck      # tsc --noEmit
+bun run format         # prettier
+bun run build          # bundle to ./dist
+bun run docs:dev       # regenerate API docs (typedoc) and serve the site
+bun run release        # interactive version bump, tag and publish (npm + JSR)
 ```
+
+Pushing a `v*` tag triggers the publish workflow in `.github/workflows/publish.yml`.
 
 ---
 
@@ -308,7 +424,7 @@ Apache License 2.0 — free to use, modify, and distribute commercially as long 
 
 **[Vagabond Studio](https://vagabond.work)** is a fully remote, senior-only collective of engineers and designers. We build TypeScript, Vue.js, Rails, and Django products from greenfield to production — and we stay until it ships right.
 
-Assertcheck is one of the open-source tools we maintain as a demonstration of how we approach software: explicit contracts, zero defensive noise, and code that communicates intent at every boundary.
+AssertCheck is one of the open-source tools we maintain as a demonstration of how we approach software: explicit contracts, zero defensive noise, and code that communicates intent at every boundary.
 
 **What we do:**
 

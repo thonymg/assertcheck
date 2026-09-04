@@ -39,7 +39,7 @@ For every field access on a shared/passed object that implies a lifecycle:
 
 | Pattern | Implicit assumption | Assert with |
 |:--------|:--------------------|:------------|
-| `order.total` computed | `order` was created, not cancelled | `assert.notEqual(order.status, "cancelled")` |
+| `order.total` computed | `order` was created, not cancelled | `assert.not(assert.equal, order.status, "cancelled")` |
 | `user.session.token` accessed | user is authenticated | `assert.notNil(user.session)` |
 | `this.connection.query(…)` | connection is open/established | `assert.notNil(this.connection)` |
 
