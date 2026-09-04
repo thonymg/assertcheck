@@ -10,7 +10,7 @@
 function resolvesNotNil<T>(promise, opts?): Promise<NonNullable<T>>;
 ```
 
-Defined in: [src/assert.ts:324](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/assert.ts#L324)
+Defined in: [src/assert.ts:336](https://github.com/thonymg/assertcheck/blob/d10e4dd99a64cd5c4ba04c3147d48ef32bb74c99/src/assert.ts#L336)
 
 ## Type Parameters
 

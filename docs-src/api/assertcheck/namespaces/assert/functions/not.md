@@ -10,7 +10,7 @@
 function not<TArgs>(fn, ...args): void;
 ```
 
-Defined in: [src/assert.ts:302](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/assert.ts#L302)
+Defined in: [src/assert.ts:314](https://github.com/thonymg/assertcheck/blob/d10e4dd99a64cd5c4ba04c3147d48ef32bb74c99/src/assert.ts#L314)
 
 ## Type Parameters
 

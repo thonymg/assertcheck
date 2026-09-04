@@ -13,7 +13,7 @@ function hasKeys<T, K>(
    opts?): asserts obj is T & Record<K, unknown>;
 ```
 
-Defined in: [src/assert.ts:261](https://github.com/thonymg/assertcheck/blob/a4f674791ee66694604d65e54a1ef37326d7e87a/src/assert.ts#L261)
+Defined in: [src/assert.ts:273](https://github.com/thonymg/assertcheck/blob/d10e4dd99a64cd5c4ba04c3147d48ef32bb74c99/src/assert.ts#L273)
 
 ## Type Parameters
 
