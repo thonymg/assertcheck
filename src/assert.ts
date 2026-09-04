@@ -55,7 +55,7 @@ import {
 import type { ValueIteratee } from "lodash"
 import { fail } from "./fail.ts"
 import { buildBlock, fmtValue, color, parseOpts, diffObjects } from "./format.ts"
-import type { AssertOptions } from "./types.ts"
+import type { AssertOptions, RowDef } from "./types.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
 // INTERNAL SHORTHAND
@@ -94,6 +94,56 @@ const rejectionMsg = (e: unknown): string => (e instanceof Error ? e.message : S
 
 /** Extracts a readable type name from any thrown value. @internal */
 const rejectionName = (e: unknown): string => (e instanceof Error ? e.constructor.name : typeof e)
+
+/** Fails a `rejects*` assertion whose promise unexpectedly resolved. @internal */
+const failResolved = (
+  assertion: string,
+  o: { msg?: string; note?: string },
+  extraRows: RowDef[] = []
+): never =>
+  fail({
+    assertion,
+    message: buildBlock({
+      assertion,
+      title: o.msg ?? "Expected promise to reject",
+      rows: [
+        {
+          label: "result",
+          value: color.removed("resolved — expected rejection"),
+          indicator: color.removed("✗"),
+        },
+        ...extraRows,
+      ],
+      note: o.note,
+    }),
+  })
+
+/** `type` row for a rejection reason — appended by some `resolves*` failures. @internal */
+const typeRow = (e: unknown): RowDef => ({ label: "type", value: fmtValue(rejectionName(e)) })
+
+/** Fails a `resolves*` assertion whose promise unexpectedly rejected. @internal */
+const failRejected = (
+  assertion: string,
+  o: { msg?: string; note?: string },
+  error: unknown,
+  title: string,
+  expected: unknown,
+  extraRows: RowDef[] = []
+): never =>
+  fail({
+    assertion,
+    message: buildBlock({
+      assertion,
+      title: o.msg ?? title,
+      rows: [
+        { label: "thrown", value: fmtValue(rejectionMsg(error)), indicator: color.removed("✗") },
+        ...extraRows,
+      ],
+      note: o.note,
+    }),
+    actual: error,
+    expected,
+  })
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASSERT
@@ -2157,23 +2207,7 @@ export const assert: Assert = {
     const o = parseOpts(isCtor ? opts : (ctorOrOpts as Opts))
     const outcome = await settle(promise)
     if (outcome.ok) {
-      fail({
-        assertion: "rejects",
-        message: buildBlock({
-          assertion: "rejects",
-          title: o.msg ?? "Expected promise to reject",
-          rows: [
-            {
-              label: "result",
-              value: color.removed("resolved — expected rejection"),
-              indicator: color.removed("✗"),
-            },
-            { label: "resolved to", value: fmtValue(outcome.value) },
-          ],
-          note: o.note,
-        }),
-      })
-      return
+      return failResolved("rejects", o, [{ label: "resolved to", value: fmtValue(outcome.value) }])
     }
     if (ctor && !(outcome.error instanceof ctor)) {
       fail({
@@ -2218,24 +2252,7 @@ export const assert: Assert = {
   ): Promise<void> {
     const o = parseOpts(opts)
     const outcome = await settle(promise)
-    if (outcome.ok) {
-      fail({
-        assertion: "rejectsWithMessage",
-        message: buildBlock({
-          assertion: "rejectsWithMessage",
-          title: o.msg ?? "Expected promise to reject",
-          rows: [
-            {
-              label: "result",
-              value: color.removed("resolved — expected rejection"),
-              indicator: color.removed("✗"),
-            },
-          ],
-          note: o.note,
-        }),
-      })
-      return
-    }
+    if (outcome.ok) return failResolved("rejectsWithMessage", o)
     const actual = rejectionMsg(outcome.error)
     if (actual !== message) {
       fail({
@@ -2271,24 +2288,7 @@ export const assert: Assert = {
   async rejectsMatching(promise: Awaitable<unknown>, pattern: RegExp, opts?: Opts): Promise<void> {
     const o = parseOpts(opts)
     const outcome = await settle(promise)
-    if (outcome.ok) {
-      fail({
-        assertion: "rejectsMatching",
-        message: buildBlock({
-          assertion: "rejectsMatching",
-          title: o.msg ?? "Expected promise to reject",
-          rows: [
-            {
-              label: "result",
-              value: color.removed("resolved — expected rejection"),
-              indicator: color.removed("✗"),
-            },
-          ],
-          note: o.note,
-        }),
-      })
-      return
-    }
+    if (outcome.ok) return failResolved("rejectsMatching", o)
     const actual = rejectionMsg(outcome.error)
     if (!pattern.test(actual)) {
       fail({
@@ -2330,24 +2330,7 @@ export const assert: Assert = {
   ): Promise<void> {
     const o = parseOpts(opts)
     const outcome = await settle(promise)
-    if (outcome.ok) {
-      fail({
-        assertion: "rejectsSatisfying",
-        message: buildBlock({
-          assertion: "rejectsSatisfying",
-          title: o.msg ?? "Expected promise to reject",
-          rows: [
-            {
-              label: "result",
-              value: color.removed("resolved — expected rejection"),
-              indicator: color.removed("✗"),
-            },
-          ],
-          note: o.note,
-        }),
-      })
-      return
-    }
+    if (outcome.ok) return failResolved("rejectsSatisfying", o)
     if (!predicate(outcome.error)) {
       fail({
         assertion: "rejectsSatisfying",
@@ -2396,26 +2379,14 @@ export const assert: Assert = {
   async resolves<T>(promise: Awaitable<T>, opts?: Opts): Promise<T> {
     const outcome = await settle(promise)
     if (outcome.ok) return outcome.value
-    const o = parseOpts(opts)
-    fail({
-      assertion: "resolves",
-      message: buildBlock({
-        assertion: "resolves",
-        title: o.msg ?? "Expected promise to resolve",
-        rows: [
-          {
-            label: "thrown",
-            value: fmtValue(rejectionMsg(outcome.error)),
-            indicator: color.removed("✗"),
-          },
-          { label: "type", value: fmtValue(rejectionName(outcome.error)) },
-        ],
-        note: o.note,
-      }),
-      actual: outcome.error,
-      expected: "resolved",
-    })
-    return undefined as T
+    return failRejected(
+      "resolves",
+      parseOpts(opts),
+      outcome.error,
+      "Expected promise to resolve",
+      "resolved",
+      [typeRow(outcome.error)]
+    )
   },
 
   /**
@@ -2440,25 +2411,14 @@ export const assert: Assert = {
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (!outcome.ok) {
-      fail({
-        assertion: "resolvesWith",
-        message: buildBlock({
-          assertion: "resolvesWith",
-          title: o.msg ?? "Promise rejected — expected resolution",
-          rows: [
-            {
-              label: "thrown",
-              value: fmtValue(rejectionMsg(outcome.error)),
-              indicator: color.removed("✗"),
-            },
-            { label: "type", value: fmtValue(rejectionName(outcome.error)) },
-          ],
-          note: o.note,
-        }),
-        actual: outcome.error,
+      return failRejected(
+        "resolvesWith",
+        o,
+        outcome.error,
+        "Promise rejected — expected resolution",
         expected,
-      })
-      return
+        [typeRow(outcome.error)]
+      )
     }
     if (!isEqual(outcome.value, expected)) {
       fail({
@@ -2500,24 +2460,13 @@ export const assert: Assert = {
     const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (!outcome.ok) {
-      fail({
-        assertion: "resolvesSatisfying",
-        message: buildBlock({
-          assertion: "resolvesSatisfying",
-          title: o.msg ?? "Promise rejected — expected resolution",
-          rows: [
-            {
-              label: "thrown",
-              value: fmtValue(rejectionMsg(outcome.error)),
-              indicator: color.removed("✗"),
-            },
-          ],
-          note: o.note,
-        }),
-        actual: outcome.error,
-        expected: "resolved",
-      })
-      return
+      return failRejected(
+        "resolvesSatisfying",
+        o,
+        outcome.error,
+        "Promise rejected — expected resolution",
+        "resolved"
+      )
     }
     if (!predicate(outcome.value)) {
       fail({
@@ -2556,24 +2505,13 @@ export const assert: Assert = {
     const outcome = await settle(promise)
     const o = parseOpts(opts)
     if (!outcome.ok) {
-      fail({
-        assertion: "resolvesNotNil",
-        message: buildBlock({
-          assertion: "resolvesNotNil",
-          title: o.msg ?? "Promise rejected — expected non-null resolution",
-          rows: [
-            {
-              label: "thrown",
-              value: fmtValue(rejectionMsg(outcome.error)),
-              indicator: color.removed("✗"),
-            },
-          ],
-          note: o.note,
-        }),
-        actual: outcome.error,
-        expected: "non-null resolved value",
-      })
-      return undefined as unknown as NonNullable<T>
+      return failRejected(
+        "resolvesNotNil",
+        o,
+        outcome.error,
+        "Promise rejected — expected non-null resolution",
+        "non-null resolved value"
+      )
     }
     if (isNil(outcome.value)) {
       fail({

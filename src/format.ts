@@ -414,7 +414,7 @@ export const buildBlock = (def: BlockDef): string => {
  * @internal
  */
 export const output = (msg: string): void => {
-  if (ENV.hasBrowserStyle) {
+  if (ENV.isBrowser) {
     console.groupCollapsed(
       "%cAssertionError %c(click to expand)",
       "color:#e74c3c;font-weight:bold",

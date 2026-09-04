@@ -38,13 +38,6 @@ import type { AssertOptions } from "./types.ts"
 
 type Opts = string | AssertOptions | undefined
 
-// TS2775: TypeScript requires an explicit type annotation on any variable used
-// as a call target when the function signature contains `asserts`. Since the
-// checker methods carry their own type narrowing via return types, we strip
-// the `asserts` clause from these specific calls using a cast helper.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _call = (fn: (...args: any[]) => void, ...args: unknown[]): void => fn(...args)
-
 // ─────────────────────────────────────────────────────────────────────────────
 // BASE CHECKER
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,7 +93,7 @@ export class Checker<T> {
 export class ArrayChecker<T> extends Checker<T[]> {
   /** @see {@link assert.notEmpty} */
   notEmpty(opts?: Opts): this {
-    _call(assert.notEmpty, this.value, opts)
+    assert.notEmpty(this.value, opts)
     return this
   }
 
@@ -130,7 +123,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
 
   /** @see {@link assert.all} */
   all(predicate: (v: T) => boolean, opts?: Opts): this {
-    _call(assert.all, this.value, predicate as (v: unknown) => boolean, opts)
+    assert.all(this.value, predicate as (v: unknown) => boolean, opts)
     return this
   }
 
@@ -166,7 +159,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
 
   /** @see {@link assert.noNils} */
   noNils(opts?: Opts): ArrayChecker<NonNullable<T>> {
-    _call(assert.noNils, this.value as (T | null | undefined)[], opts)
+    assert.noNils(this.value as (T | null | undefined)[], opts)
     return this as unknown as ArrayChecker<NonNullable<T>>
   }
 
@@ -253,7 +246,7 @@ export class ArrayChecker<T> extends Checker<T[]> {
     ctor: new (...args: TArgs) => U,
     opts?: Opts
   ): ArrayChecker<U> {
-    _call(assert.allInstanceOf, this.value, ctor, opts)
+    assert.allInstanceOf(this.value, ctor, opts)
     return this as unknown as ArrayChecker<U>
   }
 
@@ -300,25 +293,25 @@ export class ArrayChecker<T> extends Checker<T[]> {
 export class ObjectChecker<T extends object> extends Checker<T> {
   /** @see {@link assert.notEmpty} */
   notEmpty(opts?: Opts): this {
-    _call(assert.notEmpty, this.value, opts)
+    assert.notEmpty(this.value, opts)
     return this
   }
 
   /** @see {@link assert.hasKey} */
   hasKey<K extends string>(key: K, opts?: Opts): ObjectChecker<T & Record<K, unknown>> {
-    _call(assert.hasKey, this.value, key, opts)
+    assert.hasKey(this.value, key, opts)
     return this as unknown as ObjectChecker<T & Record<K, unknown>>
   }
 
   /** @see {@link assert.hasKeys} */
   hasKeys<K extends string>(keys: K[], opts?: Opts): ObjectChecker<T & Record<K, unknown>> {
-    _call(assert.hasKeys, this.value, keys, opts)
+    assert.hasKeys(this.value, keys, opts)
     return this as unknown as ObjectChecker<T & Record<K, unknown>>
   }
 
   /** @see {@link assert.hasExactKeys} */
   hasExactKeys<K extends string>(keys: K[], opts?: Opts): ObjectChecker<Record<K, unknown>> {
-    _call(assert.hasExactKeys, this.value, keys, opts)
+    assert.hasExactKeys(this.value, keys, opts)
     return this as unknown as ObjectChecker<Record<K, unknown>>
   }
 
