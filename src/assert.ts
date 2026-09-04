@@ -54,7 +54,7 @@ import {
 } from "lodash"
 import type { ValueIteratee } from "lodash"
 import { fail } from "./fail.ts"
-import { buildBlock, fmtValue, color, parseOpts, diffObjects } from "./format.ts"
+import { buildBlock, fmtValue, color, parseOpts } from "./format.ts"
 import type { AssertOptions, BlockDef, RowDef } from "./types.ts"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -82,6 +82,20 @@ const failWith = (
     ...outcome,
   })
 }
+
+/** `expected` row — `shown` is already formatted. @internal */
+const expectedRow = (shown: string): RowDef => ({
+  label: "expected",
+  value: shown,
+  indicator: color.added("+"),
+})
+
+/** `actual` row — label overridable through `opts.actual`. @internal */
+const actualRow = (opts: Opts, v: unknown): RowDef => ({
+  label: parseOpts(opts).actual ?? "actual",
+  value: fmtValue(v),
+  indicator: color.removed("✗"),
+})
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASYNC HELPERS
@@ -116,26 +130,16 @@ const rejectionMsg = (e: unknown): string => (e instanceof Error ? e.message : S
 const rejectionName = (e: unknown): string => (e instanceof Error ? e.constructor.name : typeof e)
 
 /** Fails a `rejects*` assertion whose promise unexpectedly resolved. @internal */
-const failResolved = (
-  assertion: string,
-  o: { msg?: string; note?: string },
-  extraRows: RowDef[] = []
-): never =>
-  fail({
-    assertion,
-    message: buildBlock({
-      assertion,
-      title: o.msg ?? "Expected promise to reject",
-      rows: [
-        {
-          label: "result",
-          value: color.removed("resolved — expected rejection"),
-          indicator: color.removed("✗"),
-        },
-        ...extraRows,
-      ],
-      note: o.note,
-    }),
+const failResolved = (assertion: string, opts: Opts, extraRows: RowDef[] = []): never =>
+  failWith(assertion, opts, "Expected promise to reject", {
+    rows: [
+      {
+        label: "result",
+        value: color.removed("resolved — expected rejection"),
+        indicator: color.removed("✗"),
+      },
+      ...extraRows,
+    ],
   })
 
 /** `type` row for a rejection reason — appended by some `resolves*` failures. @internal */
@@ -144,26 +148,24 @@ const typeRow = (e: unknown): RowDef => ({ label: "type", value: fmtValue(reject
 /** Fails a `resolves*` assertion whose promise unexpectedly rejected. @internal */
 const failRejected = (
   assertion: string,
-  o: { msg?: string; note?: string },
+  opts: Opts,
   error: unknown,
   title: string,
   expected: unknown,
   extraRows: RowDef[] = []
 ): never =>
-  fail({
+  failWith(
     assertion,
-    message: buildBlock({
-      assertion,
-      title: o.msg ?? title,
+    opts,
+    title,
+    {
       rows: [
         { label: "thrown", value: fmtValue(rejectionMsg(error)), indicator: color.removed("✗") },
         ...extraRows,
       ],
-      note: o.note,
-    }),
-    actual: error,
-    expected,
-  })
+    },
+    { actual: error, expected }
+  )
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ASSERT
@@ -346,25 +348,13 @@ export const assert: Assert = {
    */
   nil(v: unknown, opts?: Opts): asserts v is null | undefined {
     if (isNil(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "nil",
-      message: buildBlock({
-        assertion: "nil",
-        title: o.msg ?? "Expected null or undefined",
-        rows: [
-          { label: o.actual ?? "actual", value: fmtValue(v), indicator: color.removed("✗") },
-          {
-            label: "expected",
-            value: color.added("null | undefined"),
-            indicator: color.added("+"),
-          },
-        ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: null,
-    })
+    failWith(
+      "nil",
+      opts,
+      "Expected null or undefined",
+      { rows: [actualRow(opts, v), expectedRow(color.added("null | undefined"))] },
+      { actual: v, expected: null }
+    )
   },
 
   /**
@@ -382,21 +372,18 @@ export const assert: Assert = {
    */
   notNil<T>(v: T | null | undefined, opts?: Opts): asserts v is NonNullable<T> {
     if (!isNil(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "notNil",
-      message: buildBlock({
-        assertion: "notNil",
-        title: o.msg ?? "Unexpected null or undefined",
+    failWith(
+      "notNil",
+      opts,
+      "Unexpected null or undefined",
+      {
         rows: [
           { label: "received", value: fmtValue(v), indicator: color.removed("✗") },
-          { label: "expected", value: color.added("non-null value"), indicator: color.added("+") },
+          expectedRow(color.added("non-null value")),
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "non-null",
-    })
+      },
+      { actual: v, expected: "non-null" }
+    )
   },
 
   /**
@@ -413,18 +400,13 @@ export const assert: Assert = {
    */
   empty(v: unknown, opts?: Opts): void {
     if (isEmpty(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "empty",
-      message: buildBlock({
-        assertion: "empty",
-        title: o.msg ?? "Expected empty value",
-        rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "empty",
-    })
+    failWith(
+      "empty",
+      opts,
+      "Expected empty value",
+      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { actual: v, expected: "empty" }
+    )
   },
 
   /**
@@ -441,18 +423,13 @@ export const assert: Assert = {
    */
   notEmpty<T>(v: T, opts?: Opts): asserts v is NonNullable<T> {
     if (!isEmpty(v as unknown)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "notEmpty",
-      message: buildBlock({
-        assertion: "notEmpty",
-        title: o.msg ?? "Unexpected empty value",
-        rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "non-empty",
-    })
+    failWith(
+      "notEmpty",
+      opts,
+      "Unexpected empty value",
+      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { actual: v, expected: "non-empty" }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -465,12 +442,11 @@ export const assert: Assert = {
    */
   string(v: unknown, opts?: Opts): asserts v is string {
     if (isString(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "string",
-      message: buildBlock({
-        assertion: "string",
-        title: o.msg ?? "Expected string",
+    failWith(
+      "string",
+      opts,
+      "Expected string",
+      {
         rows: [
           {
             label: "received",
@@ -478,11 +454,9 @@ export const assert: Assert = {
             indicator: color.removed("✗"),
           },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "string",
-    })
+      },
+      { actual: v, expected: "string" }
+    )
   },
 
   /**
@@ -491,12 +465,11 @@ export const assert: Assert = {
    */
   number(v: unknown, opts?: Opts): asserts v is number {
     if (isNumber(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "number",
-      message: buildBlock({
-        assertion: "number",
-        title: o.msg ?? "Expected number",
+    failWith(
+      "number",
+      opts,
+      "Expected number",
+      {
         rows: [
           {
             label: "received",
@@ -504,11 +477,9 @@ export const assert: Assert = {
             indicator: color.removed("✗"),
           },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "number",
-    })
+      },
+      { actual: v, expected: "number" }
+    )
   },
 
   /**
@@ -517,18 +488,13 @@ export const assert: Assert = {
    */
   integer(v: unknown, opts?: Opts): asserts v is number {
     if (isInteger(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "integer",
-      message: buildBlock({
-        assertion: "integer",
-        title: o.msg ?? "Expected integer",
-        rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "integer",
-    })
+    failWith(
+      "integer",
+      opts,
+      "Expected integer",
+      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { actual: v, expected: "integer" }
+    )
   },
 
   /**
@@ -537,18 +503,13 @@ export const assert: Assert = {
    */
   finite(v: unknown, opts?: Opts): asserts v is number {
     if (isFinite(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "finite",
-      message: buildBlock({
-        assertion: "finite",
-        title: o.msg ?? "Expected finite number",
-        rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "finite number",
-    })
+    failWith(
+      "finite",
+      opts,
+      "Expected finite number",
+      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { actual: v, expected: "finite number" }
+    )
   },
 
   /**
@@ -557,18 +518,13 @@ export const assert: Assert = {
    */
   boolean(v: unknown, opts?: Opts): asserts v is boolean {
     if (isBoolean(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "boolean",
-      message: buildBlock({
-        assertion: "boolean",
-        title: o.msg ?? "Expected boolean",
-        rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "boolean",
-    })
+    failWith(
+      "boolean",
+      opts,
+      "Expected boolean",
+      { rows: [{ label: "received", value: fmtValue(v), indicator: color.removed("✗") }] },
+      { actual: v, expected: "boolean" }
+    )
   },
 
   /**
@@ -579,12 +535,11 @@ export const assert: Assert = {
    */
   array<T = unknown>(v: unknown, opts?: Opts): asserts v is T[] {
     if (isArray(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "array",
-      message: buildBlock({
-        assertion: "array",
-        title: o.msg ?? "Expected array",
+    failWith(
+      "array",
+      opts,
+      "Expected array",
+      {
         rows: [
           {
             label: "received",
@@ -592,11 +547,9 @@ export const assert: Assert = {
             indicator: color.removed("✗"),
           },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "array",
-    })
+      },
+      { actual: v, expected: "array" }
+    )
   },
 
   /**
@@ -608,12 +561,11 @@ export const assert: Assert = {
    */
   object<T extends object = object>(v: unknown, opts?: Opts): asserts v is T {
     if (isPlainObject(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "object",
-      message: buildBlock({
-        assertion: "object",
-        title: o.msg ?? "Expected plain object",
+    failWith(
+      "object",
+      opts,
+      "Expected plain object",
+      {
         rows: [
           {
             label: "received",
@@ -621,11 +573,9 @@ export const assert: Assert = {
             indicator: color.removed("✗"),
           },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "object",
-    })
+      },
+      { actual: v, expected: "object" }
+    )
   },
 
   /**
@@ -638,12 +588,11 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts v is T {
     if (isFunction(v)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "func",
-      message: buildBlock({
-        assertion: "func",
-        title: o.msg ?? "Expected function",
+    failWith(
+      "func",
+      opts,
+      "Expected function",
+      {
         rows: [
           {
             label: "received",
@@ -651,11 +600,9 @@ export const assert: Assert = {
             indicator: color.removed("✗"),
           },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: "function",
-    })
+      },
+      { actual: v, expected: "function" }
+    )
   },
 
   /**
@@ -678,21 +625,18 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts v is T {
     if (v instanceof ctor) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "instanceOf",
-      message: buildBlock({
-        assertion: "instanceOf",
-        title: o.msg ?? `Expected instance of ${ctor.name}`,
+    failWith(
+      "instanceOf",
+      opts,
+      `Expected instance of ${ctor.name}`,
+      {
         rows: [
-          { label: "expected", value: color.added(ctor.name), indicator: color.added("+") },
+          expectedRow(color.added(ctor.name)),
           { label: "received", value: color.removed(typeof v), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: ctor.name,
-    })
+      },
+      { actual: v, expected: ctor.name }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -716,21 +660,13 @@ export const assert: Assert = {
    */
   equal<T>(actual: T, expected: T, opts?: Opts): void {
     if (actual === expected) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "equal",
-      message: buildBlock({
-        assertion: "equal",
-        title: o.msg ?? "Values are not strictly equal",
-        rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
-          { label: o.actual ?? "actual", value: fmtValue(actual), indicator: color.removed("✗") },
-        ],
-        note: o.note,
-      }),
-      actual,
-      expected,
-    })
+    failWith(
+      "equal",
+      opts,
+      "Values are not strictly equal",
+      { rows: [expectedRow(fmtValue(expected)), actualRow(opts, actual)] },
+      { actual, expected }
+    )
   },
 
   /**
@@ -748,18 +684,13 @@ export const assert: Assert = {
    */
   deepEqual<T>(actual: T, expected: T, opts?: Opts): void {
     if (isEqual(actual, expected)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "deepEqual",
-      message: buildBlock({
-        assertion: "deepEqual",
-        title: o.msg ?? "Deep equality failed",
-        diff: { actual, expected },
-        note: o.note,
-      }),
-      actual,
-      expected,
-    })
+    failWith(
+      "deepEqual",
+      opts,
+      "Deep equality failed",
+      { diff: { actual, expected } },
+      { actual, expected }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -772,21 +703,13 @@ export const assert: Assert = {
    */
   positive(n: number, opts?: Opts): void {
     if (isFinite(n) && n > 0) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "positive",
-      message: buildBlock({
-        assertion: "positive",
-        title: o.msg ?? "Expected positive number",
-        rows: [
-          { label: "expected", value: color.added("> 0"), indicator: color.added("+") },
-          { label: o.actual ?? "actual", value: fmtValue(n), indicator: color.removed("✗") },
-        ],
-        note: o.note,
-      }),
-      actual: n,
-      expected: "> 0",
-    })
+    failWith(
+      "positive",
+      opts,
+      "Expected positive number",
+      { rows: [expectedRow(color.added("> 0")), actualRow(opts, n)] },
+      { actual: n, expected: "> 0" }
+    )
   },
 
   /**
@@ -795,21 +718,13 @@ export const assert: Assert = {
    */
   negative(n: number, opts?: Opts): void {
     if (isFinite(n) && n < 0) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "negative",
-      message: buildBlock({
-        assertion: "negative",
-        title: o.msg ?? "Expected negative number",
-        rows: [
-          { label: "expected", value: color.added("< 0"), indicator: color.added("+") },
-          { label: o.actual ?? "actual", value: fmtValue(n), indicator: color.removed("✗") },
-        ],
-        note: o.note,
-      }),
-      actual: n,
-      expected: "< 0",
-    })
+    failWith(
+      "negative",
+      opts,
+      "Expected negative number",
+      { rows: [expectedRow(color.added("< 0")), actualRow(opts, n)] },
+      { actual: n, expected: "< 0" }
+    )
   },
 
   /**
@@ -818,21 +733,13 @@ export const assert: Assert = {
    */
   zero(n: number, opts?: Opts): void {
     if (n === 0) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "zero",
-      message: buildBlock({
-        assertion: "zero",
-        title: o.msg ?? "Expected zero",
-        rows: [
-          { label: "expected", value: color.added("0"), indicator: color.added("+") },
-          { label: o.actual ?? "actual", value: fmtValue(n), indicator: color.removed("✗") },
-        ],
-        note: o.note,
-      }),
-      actual: n,
-      expected: 0,
-    })
+    failWith(
+      "zero",
+      opts,
+      "Expected zero",
+      { rows: [expectedRow(color.added("0")), actualRow(opts, n)] },
+      { actual: n, expected: 0 }
+    )
   },
 
   /**
@@ -841,25 +748,13 @@ export const assert: Assert = {
    */
   greater(a: number, b: number, opts?: Opts): void {
     if (a > b) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "greater",
-      message: buildBlock({
-        assertion: "greater",
-        title: o.msg ?? "Expected greater value",
-        rows: [
-          {
-            label: "expected",
-            value: color.added(`> ${fmtValue(b)}`),
-            indicator: color.added("+"),
-          },
-          { label: o.actual ?? "actual", value: fmtValue(a), indicator: color.removed("✗") },
-        ],
-        note: o.note,
-      }),
-      actual: a,
-      expected: `> ${b}`,
-    })
+    failWith(
+      "greater",
+      opts,
+      "Expected greater value",
+      { rows: [expectedRow(color.added(`> ${fmtValue(b)}`)), actualRow(opts, a)] },
+      { actual: a, expected: `> ${b}` }
+    )
   },
 
   /**
@@ -868,26 +763,23 @@ export const assert: Assert = {
    */
   greaterOrEqual(a: number, b: number, opts?: Opts): void {
     if (a >= b) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "greaterOrEqual",
-      message: buildBlock({
-        assertion: "greaterOrEqual",
-        title: o.msg ?? "Value below minimum",
+    failWith(
+      "greaterOrEqual",
+      opts,
+      "Value below minimum",
+      {
         rows: [
           {
             label: "minimum",
             value: color.added(`>= ${fmtValue(b)}`),
             indicator: color.added("+"),
           },
-          { label: o.actual ?? "actual", value: fmtValue(a), indicator: color.removed("✗") },
+          actualRow(opts, a),
           { label: "shortfall", value: fmtValue(b - a) },
         ],
-        note: o.note,
-      }),
-      actual: a,
-      expected: `>= ${b}`,
-    })
+      },
+      { actual: a, expected: `>= ${b}` }
+    )
   },
 
   /**
@@ -896,25 +788,13 @@ export const assert: Assert = {
    */
   less(a: number, b: number, opts?: Opts): void {
     if (a < b) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "less",
-      message: buildBlock({
-        assertion: "less",
-        title: o.msg ?? "Expected smaller value",
-        rows: [
-          {
-            label: "expected",
-            value: color.added(`< ${fmtValue(b)}`),
-            indicator: color.added("+"),
-          },
-          { label: o.actual ?? "actual", value: fmtValue(a), indicator: color.removed("✗") },
-        ],
-        note: o.note,
-      }),
-      actual: a,
-      expected: `< ${b}`,
-    })
+    failWith(
+      "less",
+      opts,
+      "Expected smaller value",
+      { rows: [expectedRow(color.added(`< ${fmtValue(b)}`)), actualRow(opts, a)] },
+      { actual: a, expected: `< ${b}` }
+    )
   },
 
   /**
@@ -923,25 +803,22 @@ export const assert: Assert = {
    */
   lessOrEqual(a: number, b: number, opts?: Opts): void {
     if (a <= b) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "lessOrEqual",
-      message: buildBlock({
-        assertion: "lessOrEqual",
-        title: o.msg ?? "Value above maximum",
+    failWith(
+      "lessOrEqual",
+      opts,
+      "Value above maximum",
+      {
         rows: [
           {
             label: "maximum",
             value: color.added(`<= ${fmtValue(b)}`),
             indicator: color.added("+"),
           },
-          { label: o.actual ?? "actual", value: fmtValue(a), indicator: color.removed("✗") },
+          actualRow(opts, a),
         ],
-        note: o.note,
-      }),
-      actual: a,
-      expected: `<= ${b}`,
-    })
+      },
+      { actual: a, expected: `<= ${b}` }
+    )
   },
 
   /**
@@ -959,26 +836,23 @@ export const assert: Assert = {
    */
   withinRange(v: number, min: number, max: number, opts?: Opts): void {
     if (v >= min && v <= max) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "withinRange",
-      message: buildBlock({
-        assertion: "withinRange",
-        title: o.msg ?? "Value out of range",
+    failWith(
+      "withinRange",
+      opts,
+      "Value out of range",
+      {
         rows: [
           {
             label: "range",
             value: `${fmtValue(min)} → ${fmtValue(max)}`,
             indicator: color.added("+"),
           },
-          { label: o.actual ?? "actual", value: fmtValue(v), indicator: color.removed("✗") },
+          actualRow(opts, v),
           { label: "distance", value: fmtValue(v < min ? min - v : v - max) },
         ],
-        note: o.note,
-      }),
-      actual: v,
-      expected: `[${min}, ${max}]`,
-    })
+      },
+      { actual: v, expected: `[${min}, ${max}]` }
+    )
   },
 
   /**
@@ -991,26 +865,23 @@ export const assert: Assert = {
    * ```
    */
   inDelta(actual: number, expected: number, delta: number, opts?: Opts): void {
-    if (Math.abs(actual - expected) <= delta) return
-    const o = parseOpts(opts)
     const distance = Math.abs(actual - expected)
-    fail({
-      assertion: "inDelta",
-      message: buildBlock({
-        assertion: "inDelta",
-        title: o.msg ?? "Value outside delta tolerance",
+    if (distance <= delta) return
+    failWith(
+      "inDelta",
+      opts,
+      "Value outside delta tolerance",
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
           { label: "delta", value: color.added(`± ${delta}`) },
           { label: "distance", value: color.removed(String(distance)) },
           { label: "excess", value: fmtValue(distance - delta) },
         ],
-        note: o.note,
-      }),
-      actual,
-      expected,
-    })
+      },
+      { actual, expected }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1024,21 +895,18 @@ export const assert: Assert = {
   len<T>(arr: T[], n: number, opts?: Opts): void {
     const size = _size(arr)
     if (size === n) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "len",
-      message: buildBlock({
-        assertion: "len",
-        title: o.msg ?? "Unexpected array length",
+    failWith(
+      "len",
+      opts,
+      "Unexpected array length",
+      {
         rows: [
-          { label: "expected", value: fmtValue(n), indicator: color.added("+") },
+          expectedRow(fmtValue(n)),
           { label: "actual", value: color.removed(String(size)), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: size,
-      expected: n,
-    })
+      },
+      { actual: size, expected: n }
+    )
   },
 
   /**
@@ -1048,21 +916,18 @@ export const assert: Assert = {
   longerThan<T>(arr: T[], n: number, opts?: Opts): void {
     const size = _size(arr)
     if (size > n) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "longerThan",
-      message: buildBlock({
-        assertion: "longerThan",
-        title: o.msg ?? "Array too short",
+    failWith(
+      "longerThan",
+      opts,
+      "Array too short",
+      {
         rows: [
-          { label: "expected", value: color.added(`> ${n}`), indicator: color.added("+") },
+          expectedRow(color.added(`> ${n}`)),
           { label: "actual", value: fmtValue(size), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: size,
-      expected: `> ${n}`,
-    })
+      },
+      { actual: size, expected: `> ${n}` }
+    )
   },
 
   /**
@@ -1072,21 +937,18 @@ export const assert: Assert = {
   shorterThan<T>(arr: T[], n: number, opts?: Opts): void {
     const size = _size(arr)
     if (size < n) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "shorterThan",
-      message: buildBlock({
-        assertion: "shorterThan",
-        title: o.msg ?? "Array too long",
+    failWith(
+      "shorterThan",
+      opts,
+      "Array too long",
+      {
         rows: [
-          { label: "expected", value: color.added(`< ${n}`), indicator: color.added("+") },
+          expectedRow(color.added(`< ${n}`)),
           { label: "actual", value: fmtValue(size), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: size,
-      expected: `< ${n}`,
-    })
+      },
+      { actual: size, expected: `< ${n}` }
+    )
   },
 
   /**
@@ -1095,21 +957,18 @@ export const assert: Assert = {
    */
   includes<T>(arr: T[], item: T, opts?: Opts): void {
     if (includes(arr, item)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "includes",
-      message: buildBlock({
-        assertion: "includes",
-        title: o.msg ?? "Item not found in array",
+    failWith(
+      "includes",
+      opts,
+      "Item not found in array",
+      {
         rows: [
           { label: "item", value: fmtValue(item), indicator: color.removed("✗") },
           { label: "array", value: fmtValue(arr) },
         ],
-        note: o.note,
-      }),
-      actual: arr,
-      expected: item,
-    })
+      },
+      { actual: arr, expected: item }
+    )
   },
 
   /**
@@ -1135,22 +994,19 @@ export const assert: Assert = {
   ): asserts arr is U[] {
     const index = arr.findIndex((v) => !predicate(v))
     if (index === -1) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "all",
-      message: buildBlock({
-        assertion: "all",
-        title: o.msg ?? "Not all elements match predicate",
+    failWith(
+      "all",
+      opts,
+      "Not all elements match predicate",
+      {
         rows: [
           { label: "index", value: color.index(String(index)), indicator: color.removed("✗") },
           { label: "value", value: fmtValue(arr[index]) },
         ],
         extras: { "array size": arr.length },
-        note: o.note,
-      }),
-      actual: arr[index],
-      expected: "match predicate",
-    })
+      },
+      { actual: arr[index], expected: "match predicate" }
+    )
   },
 
   /**
@@ -1194,21 +1050,18 @@ export const assert: Assert = {
   one<T>(arr: T[], predicate: (v: T) => boolean, opts?: Opts): void {
     const count = arr.filter(predicate).length
     if (count === 1) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "one",
-      message: buildBlock({
-        assertion: "one",
-        title: o.msg ?? "Expected exactly one match",
+    failWith(
+      "one",
+      opts,
+      "Expected exactly one match",
+      {
         rows: [
-          { label: "expected", value: color.added("1"), indicator: color.added("+") },
+          expectedRow(color.added("1")),
           { label: "matches", value: color.removed(String(count)), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: count,
-      expected: 1,
-    })
+      },
+      { actual: count, expected: 1 }
+    )
   },
 
   /**
@@ -1218,21 +1071,18 @@ export const assert: Assert = {
   count<T>(arr: T[], predicate: (v: T) => boolean, n: number, opts?: Opts): void {
     const count = arr.filter(predicate).length
     if (count === n) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "count",
-      message: buildBlock({
-        assertion: "count",
-        title: o.msg ?? "Unexpected predicate count",
+    failWith(
+      "count",
+      opts,
+      "Unexpected predicate count",
+      {
         rows: [
-          { label: "expected", value: fmtValue(n), indicator: color.added("+") },
+          expectedRow(fmtValue(n)),
           { label: "actual", value: color.removed(String(count)), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: count,
-      expected: n,
-    })
+      },
+      { actual: count, expected: n }
+    )
   },
 
   /**
@@ -1242,22 +1092,19 @@ export const assert: Assert = {
   containsAll<T>(arr: T[], items: T[], opts?: Opts): void {
     const missing = difference(items, arr)
     if (!missing.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "containsAll",
-      message: buildBlock({
-        assertion: "containsAll",
-        title: o.msg ?? "Missing required elements",
+    failWith(
+      "containsAll",
+      opts,
+      "Missing required elements",
+      {
         rows: missing.map((m) => ({
           label: "missing",
           value: fmtValue(m),
           indicator: color.removed("✗"),
         })),
-        note: o.note,
-      }),
-      actual: arr,
-      expected: items,
-    })
+      },
+      { actual: arr, expected: items }
+    )
   },
 
   /**
@@ -1267,22 +1114,19 @@ export const assert: Assert = {
   containsNone<T>(arr: T[], items: T[], opts?: Opts): void {
     const found = intersection(arr, items)
     if (!found.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "containsNone",
-      message: buildBlock({
-        assertion: "containsNone",
-        title: o.msg ?? "Forbidden elements found",
+    failWith(
+      "containsNone",
+      opts,
+      "Forbidden elements found",
+      {
         rows: found.map((f) => ({
           label: "found",
           value: fmtValue(f),
           indicator: color.removed("✗"),
         })),
-        note: o.note,
-      }),
-      actual: found,
-      expected: "none present",
-    })
+      },
+      { actual: found, expected: "none present" }
+    )
   },
 
   /**
@@ -1292,14 +1136,13 @@ export const assert: Assert = {
    */
   elementsMatch<T>(a: T[], b: T[], opts?: Opts): void {
     if (isEqual(sortBy(a), sortBy(b))) return
-    const o = parseOpts(opts)
     const only_a = differenceWith(a, b, isEqual)
     const only_b = differenceWith(b, a, isEqual)
-    fail({
-      assertion: "elementsMatch",
-      message: buildBlock({
-        assertion: "elementsMatch",
-        title: o.msg ?? "Arrays do not contain the same elements",
+    failWith(
+      "elementsMatch",
+      opts,
+      "Arrays do not contain the same elements",
+      {
         rows: [
           ...only_a.map((v) => ({
             label: "only in a",
@@ -1312,11 +1155,9 @@ export const assert: Assert = {
             indicator: color.added("+"),
           })),
         ],
-        note: o.note,
-      }),
-      actual: a,
-      expected: b,
-    })
+      },
+      { actual: a, expected: b }
+    )
   },
 
   /**
@@ -1326,22 +1167,19 @@ export const assert: Assert = {
   subset<T>(arr: T[], sub: T[], opts?: Opts): void {
     const missing = difference(sub, arr)
     if (!missing.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "subset",
-      message: buildBlock({
-        assertion: "subset",
-        title: o.msg ?? "Subset check failed",
+    failWith(
+      "subset",
+      opts,
+      "Subset check failed",
+      {
         rows: missing.map((m) => ({
           label: "missing",
           value: fmtValue(m),
           indicator: color.removed("✗"),
         })),
-        note: o.note,
-      }),
-      actual: arr,
-      expected: sub,
-    })
+      },
+      { actual: arr, expected: sub }
+    )
   },
 
   /**
@@ -1351,23 +1189,20 @@ export const assert: Assert = {
   unique<T>(arr: T[], opts?: Opts): void {
     const dupes = arr.filter((v, i) => arr.indexOf(v) !== i)
     if (!dupes.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "unique",
-      message: buildBlock({
-        assertion: "unique",
-        title: o.msg ?? "Duplicate elements found",
+    failWith(
+      "unique",
+      opts,
+      "Duplicate elements found",
+      {
         rows: uniq(dupes).map((d) => ({
           label: "duplicate",
           value: fmtValue(d),
           indicator: color.removed("✗"),
         })),
         extras: { "total duplicates": dupes.length },
-        note: o.note,
-      }),
-      actual: dupes,
-      expected: "unique",
-    })
+      },
+      { actual: dupes, expected: "unique" }
+    )
   },
 
   /**
@@ -1380,22 +1215,19 @@ export const assert: Assert = {
     const vals = arr.map(fn)
     const dupes = vals.filter((v, i) => vals.indexOf(v) !== i)
     if (!dupes.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "uniqueBy",
-      message: buildBlock({
-        assertion: "uniqueBy",
-        title: o.msg ?? "Duplicate values for iteratee",
+    failWith(
+      "uniqueBy",
+      opts,
+      "Duplicate values for iteratee",
+      {
         rows: uniq(dupes).map((d) => ({
           label: "duplicate",
           value: fmtValue(d),
           indicator: color.removed("✗"),
         })),
-        note: o.note,
-      }),
-      actual: dupes,
-      expected: "unique",
-    })
+      },
+      { actual: dupes, expected: "unique" }
+    )
   },
 
   /**
@@ -1405,21 +1237,18 @@ export const assert: Assert = {
   increasing(arr: number[], opts?: Opts): void {
     const i = arr.findIndex((v, i) => i > 0 && v <= arr[i - 1]!)
     if (i === -1) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "increasing",
-      message: buildBlock({
-        assertion: "increasing",
-        title: o.msg ?? "Array is not strictly increasing",
+    failWith(
+      "increasing",
+      opts,
+      "Array is not strictly increasing",
+      {
         rows: [
           { label: `[${i - 1}]`, value: fmtValue(arr[i - 1]) },
           { label: `[${i}]`, value: fmtValue(arr[i]), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: arr[i],
-      expected: `> ${arr[i - 1]}`,
-    })
+      },
+      { actual: arr[i], expected: `> ${arr[i - 1]}` }
+    )
   },
 
   /**
@@ -1429,21 +1258,18 @@ export const assert: Assert = {
   nonDecreasing(arr: number[], opts?: Opts): void {
     const i = arr.findIndex((v, i) => i > 0 && v < arr[i - 1]!)
     if (i === -1) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "nonDecreasing",
-      message: buildBlock({
-        assertion: "nonDecreasing",
-        title: o.msg ?? "Array is not non-decreasing",
+    failWith(
+      "nonDecreasing",
+      opts,
+      "Array is not non-decreasing",
+      {
         rows: [
           { label: `[${i - 1}]`, value: fmtValue(arr[i - 1]) },
           { label: `[${i}]`, value: fmtValue(arr[i]), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: arr[i],
-      expected: `>= ${arr[i - 1]}`,
-    })
+      },
+      { actual: arr[i], expected: `>= ${arr[i - 1]}` }
+    )
   },
 
   /**
@@ -1452,18 +1278,13 @@ export const assert: Assert = {
    */
   sortedBy<T>(arr: T[], iteratee: ValueIteratee<T>, opts?: Opts): void {
     if (isEqual(arr, sortBy(arr, iteratee))) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "sortedBy",
-      message: buildBlock({
-        assertion: "sortedBy",
-        title: o.msg ?? "Array is not sorted",
-        rows: [{ label: "iteratee", value: fmtValue(iteratee) }],
-        note: o.note,
-      }),
-      actual: arr,
-      expected: "sorted",
-    })
+    failWith(
+      "sortedBy",
+      opts,
+      "Array is not sorted",
+      { rows: [{ label: "iteratee", value: fmtValue(iteratee) }] },
+      { actual: arr, expected: "sorted" }
+    )
   },
 
   /**
@@ -1472,21 +1293,18 @@ export const assert: Assert = {
    */
   first<T>(arr: T[], expected: T, opts?: Opts): void {
     if (isEqual(first(arr), expected)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "first",
-      message: buildBlock({
-        assertion: "first",
-        title: o.msg ?? "Unexpected first element",
+    failWith(
+      "first",
+      opts,
+      "Unexpected first element",
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(first(arr)), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: first(arr),
-      expected,
-    })
+      },
+      { actual: first(arr), expected }
+    )
   },
 
   /**
@@ -1495,21 +1313,18 @@ export const assert: Assert = {
    */
   last<T>(arr: T[], expected: T, opts?: Opts): void {
     if (isEqual(last(arr), expected)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "last",
-      message: buildBlock({
-        assertion: "last",
-        title: o.msg ?? "Unexpected last element",
+    failWith(
+      "last",
+      opts,
+      "Unexpected last element",
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(last(arr)), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: last(arr),
-      expected,
-    })
+      },
+      { actual: last(arr), expected }
+    )
   },
 
   /**
@@ -1524,22 +1339,19 @@ export const assert: Assert = {
   ): void {
     const actual = sumBy(arr, iteratee)
     if (actual === expected) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "sumBy",
-      message: buildBlock({
-        assertion: "sumBy",
-        title: o.msg ?? "Sum mismatch",
+    failWith(
+      "sumBy",
+      opts,
+      "Sum mismatch",
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
           { label: "difference", value: fmtValue(actual - expected) },
         ],
-        note: o.note,
-      }),
-      actual,
-      expected,
-    })
+      },
+      { actual, expected }
+    )
   },
 
   /**
@@ -1550,18 +1362,13 @@ export const assert: Assert = {
   noNils<T>(arr: (T | null | undefined)[], opts?: Opts): asserts arr is T[] {
     const i = arr.findIndex(isNil)
     if (i === -1) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "noNils",
-      message: buildBlock({
-        assertion: "noNils",
-        title: o.msg ?? "Null or undefined element found",
-        rows: [{ label: `index [${i}]`, value: fmtValue(arr[i]), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: arr[i],
-      expected: "non-null",
-    })
+    failWith(
+      "noNils",
+      opts,
+      "Null or undefined element found",
+      { rows: [{ label: `index [${i}]`, value: fmtValue(arr[i]), indicator: color.removed("✗") }] },
+      { actual: arr[i], expected: "non-null" }
+    )
   },
 
   /**
@@ -1570,18 +1377,13 @@ export const assert: Assert = {
    */
   flat(arr: unknown[], opts?: Opts): void {
     if (isEqual(arr, arr.flat(Infinity))) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "flat",
-      message: buildBlock({
-        assertion: "flat",
-        title: o.msg ?? "Array is nested",
-        rows: [{ label: "received", value: fmtValue(arr) }],
-        note: o.note,
-      }),
-      actual: arr,
-      expected: "flat array",
-    })
+    failWith(
+      "flat",
+      opts,
+      "Array is nested",
+      { rows: [{ label: "received", value: fmtValue(arr) }] },
+      { actual: arr, expected: "flat array" }
+    )
   },
 
   /**
@@ -1596,19 +1398,16 @@ export const assert: Assert = {
   ): asserts arr is T[] {
     const bad = arr.find((v) => !(v instanceof ctor))
     if (bad === undefined) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "allInstanceOf",
-      message: buildBlock({
-        assertion: "allInstanceOf",
-        title: o.msg ?? `Expected all elements to be ${ctor.name}`,
+    failWith(
+      "allInstanceOf",
+      opts,
+      `Expected all elements to be ${ctor.name}`,
+      {
         rows: [{ label: "found", value: fmtValue(bad), indicator: color.removed("✗") }],
         extras: { index: arr.indexOf(bad) },
-        note: o.note,
-      }),
-      actual: bad,
-      expected: ctor.name,
-    })
+      },
+      { actual: bad, expected: ctor.name }
+    )
   },
 
   /**
@@ -1619,18 +1418,13 @@ export const assert: Assert = {
   zippedWith<A, B>(a: A[], b: B[], predicate: (a: A, b: B) => boolean, opts?: Opts): void {
     const bad = zip(a, b).find(([x, y]) => !predicate(x as A, y as B))
     if (!bad) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "zippedWith",
-      message: buildBlock({
-        assertion: "zippedWith",
-        title: o.msg ?? "Zipped pair failed predicate",
-        rows: [{ label: "pair", value: fmtValue(bad), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: bad,
-      expected: "pair to match",
-    })
+    failWith(
+      "zippedWith",
+      opts,
+      "Zipped pair failed predicate",
+      { rows: [{ label: "pair", value: fmtValue(bad), indicator: color.removed("✗") }] },
+      { actual: bad, expected: "pair to match" }
+    )
   },
 
   /**
@@ -1642,12 +1436,11 @@ export const assert: Assert = {
     const missing = difference(expectedGroups, Object.keys(groups))
     const extra = difference(Object.keys(groups), expectedGroups)
     if (!missing.length && !extra.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "groupedBy",
-      message: buildBlock({
-        assertion: "groupedBy",
-        title: o.msg ?? "Unexpected group keys",
+    failWith(
+      "groupedBy",
+      opts,
+      "Unexpected group keys",
+      {
         rows: [
           ...missing.map((k) => ({
             label: k,
@@ -1660,11 +1453,9 @@ export const assert: Assert = {
             indicator: color.removed("-"),
           })),
         ],
-        note: o.note,
-      }),
-      actual: Object.keys(groups),
-      expected: expectedGroups,
-    })
+      },
+      { actual: Object.keys(groups), expected: expectedGroups }
+    )
   },
 
   /**
@@ -1680,23 +1471,20 @@ export const assert: Assert = {
   ): void {
     const [matched, rest] = partition(arr, predicate)
     if (matched.length === expectedMatch && rest.length === expectedRest) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "partition",
-      message: buildBlock({
-        assertion: "partition",
-        title: o.msg ?? "Partition sizes mismatch",
+    failWith(
+      "partition",
+      opts,
+      "Partition sizes mismatch",
+      {
         rows: [
           { label: "match expected", value: fmtValue(expectedMatch), indicator: color.added("+") },
           { label: "match actual", value: fmtValue(matched.length), indicator: color.removed("✗") },
           { label: "rest expected", value: fmtValue(expectedRest), indicator: color.added("+") },
           { label: "rest actual", value: fmtValue(rest.length), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: [matched.length, rest.length],
-      expected: [expectedMatch, expectedRest],
-    })
+      },
+      { actual: [matched.length, rest.length], expected: [expectedMatch, expectedRest] }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1714,21 +1502,18 @@ export const assert: Assert = {
     opts?: Opts
   ): asserts obj is T & Record<K, unknown> {
     if (has(obj, key)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "hasKey",
-      message: buildBlock({
-        assertion: "hasKey",
-        title: o.msg ?? `Missing key "${key}"`,
+    failWith(
+      "hasKey",
+      opts,
+      `Missing key "${key}"`,
+      {
         rows: [
           { label: "key", value: color.removed(key), indicator: color.removed("✗") },
           { label: "available", value: fmtValue(Object.keys(obj)) },
         ],
-        note: o.note,
-      }),
-      actual: obj,
-      expected: key,
-    })
+      },
+      { actual: obj, expected: key }
+    )
   },
 
   /**
@@ -1743,22 +1528,19 @@ export const assert: Assert = {
   ): asserts obj is T & Record<K, unknown> {
     const missing = keys.filter((k) => !has(obj, k))
     if (!missing.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "hasKeys",
-      message: buildBlock({
-        assertion: "hasKeys",
-        title: o.msg ?? "Missing required keys",
+    failWith(
+      "hasKeys",
+      opts,
+      "Missing required keys",
+      {
         rows: missing.map((k) => ({
           label: "missing",
           value: color.removed(k),
           indicator: color.removed("✗"),
         })),
-        note: o.note,
-      }),
-      actual: obj,
-      expected: keys,
-    })
+      },
+      { actual: obj, expected: keys }
+    )
   },
 
   /**
@@ -1775,12 +1557,11 @@ export const assert: Assert = {
     const missing = difference(keys, actual)
     const extra = difference(actual, keys)
     if (!missing.length && !extra.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "hasExactKeys",
-      message: buildBlock({
-        assertion: "hasExactKeys",
-        title: o.msg ?? "Unexpected object shape",
+    failWith(
+      "hasExactKeys",
+      opts,
+      "Unexpected object shape",
+      {
         rows: [
           ...missing.map((k) => ({
             label: k,
@@ -1794,11 +1575,9 @@ export const assert: Assert = {
           })),
         ],
         extras: { "expected keys": keys.length, "actual keys": actual.length },
-        note: o.note,
-      }),
-      actual,
-      expected: keys,
-    })
+      },
+      { actual, expected: keys }
+    )
   },
 
   /**
@@ -1808,22 +1587,19 @@ export const assert: Assert = {
   hasOnlyKeys(obj: object, allowed: string[], opts?: Opts): void {
     const extra = difference(_keys(obj), allowed)
     if (!extra.length) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "hasOnlyKeys",
-      message: buildBlock({
-        assertion: "hasOnlyKeys",
-        title: o.msg ?? "Forbidden keys found",
+    failWith(
+      "hasOnlyKeys",
+      opts,
+      "Forbidden keys found",
+      {
         rows: extra.map((k) => ({
           label: "forbidden",
           value: color.removed(k),
           indicator: color.removed("✗"),
         })),
-        note: o.note,
-      }),
-      actual: extra,
-      expected: allowed,
-    })
+      },
+      { actual: extra, expected: allowed }
+    )
   },
 
   /**
@@ -1833,21 +1609,18 @@ export const assert: Assert = {
    */
   hasValue<T extends object, K extends keyof T>(obj: T, key: K, expected: T[K], opts?: Opts): void {
     if (isEqual(obj[key], expected)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "hasValue",
-      message: buildBlock({
-        assertion: "hasValue",
-        title: o.msg ?? `Wrong value for key "${String(key)}"`,
+    failWith(
+      "hasValue",
+      opts,
+      `Wrong value for key "${String(key)}"`,
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(obj[key]), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: obj[key],
-      expected,
-    })
+      },
+      { actual: obj[key], expected }
+    )
   },
 
   /**
@@ -1857,22 +1630,19 @@ export const assert: Assert = {
   containsSubset<T extends object>(obj: T, subset: Partial<T>, opts?: Opts): void {
     const bad = (_keys(subset) as (keyof T)[]).find((k) => !isEqual(obj[k], subset[k]))
     if (bad === undefined) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "containsSubset",
-      message: buildBlock({
-        assertion: "containsSubset",
-        title: o.msg ?? "Subset mismatch",
+    failWith(
+      "containsSubset",
+      opts,
+      "Subset mismatch",
+      {
         rows: [
           { label: String(bad), value: "" },
           { label: "  expected", value: fmtValue(subset[bad]), indicator: color.added("+") },
           { label: "  actual", value: fmtValue(obj[bad]), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: obj[bad],
-      expected: subset[bad],
-    })
+      },
+      { actual: obj[bad], expected: subset[bad] }
+    )
   },
 
   /**
@@ -1886,18 +1656,13 @@ export const assert: Assert = {
   ): void {
     const bad = (_keys(obj) as (keyof T)[]).find((k) => !predicate(obj[k], k))
     if (bad === undefined) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "allValuesMatch",
-      message: buildBlock({
-        assertion: "allValuesMatch",
-        title: o.msg ?? "Value failed predicate",
-        rows: [{ label: String(bad), value: fmtValue(obj[bad]), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: obj[bad],
-      expected: "match predicate",
-    })
+    failWith(
+      "allValuesMatch",
+      opts,
+      "Value failed predicate",
+      { rows: [{ label: String(bad), value: fmtValue(obj[bad]), indicator: color.removed("✗") }] },
+      { actual: obj[bad], expected: "match predicate" }
+    )
   },
 
   /**
@@ -1907,18 +1672,13 @@ export const assert: Assert = {
   noNilValues<T extends object>(obj: T, opts?: Opts): void {
     const bad = (_keys(obj) as (keyof T)[]).find((k) => isNil(obj[k]))
     if (bad === undefined) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "noNilValues",
-      message: buildBlock({
-        assertion: "noNilValues",
-        title: o.msg ?? "Nil value found in object",
-        rows: [{ label: String(bad), value: fmtValue(obj[bad]), indicator: color.removed("✗") }],
-        note: o.note,
-      }),
-      actual: obj[bad],
-      expected: "non-null",
-    })
+    failWith(
+      "noNilValues",
+      opts,
+      "Nil value found in object",
+      { rows: [{ label: String(bad), value: fmtValue(obj[bad]), indicator: color.removed("✗") }] },
+      { actual: obj[bad], expected: "non-null" }
+    )
   },
 
   /**
@@ -1928,21 +1688,18 @@ export const assert: Assert = {
   dig<T>(obj: T, path: string | string[], expected: unknown, opts?: Opts): void {
     const actual = get(obj as object, path)
     if (isEqual(actual, expected)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "dig",
-      message: buildBlock({
-        assertion: "dig",
-        title: o.msg ?? `Wrong value at path "${Array.isArray(path) ? path.join(".") : path}"`,
+    failWith(
+      "dig",
+      opts,
+      `Wrong value at path "${Array.isArray(path) ? path.join(".") : path}"`,
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual,
-      expected,
-    })
+      },
+      { actual, expected }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -1961,21 +1718,18 @@ export const assert: Assert = {
   ): void {
     const actual = fn(...args)
     if (isEqual(actual, expected)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "returns",
-      message: buildBlock({
-        assertion: "returns",
-        title: o.msg ?? `Unexpected return value from ${fn.name || "fn"}`,
+    failWith(
+      "returns",
+      opts,
+      `Unexpected return value from ${fn.name || "fn"}`,
+      {
         rows: [
-          { label: "expected", value: fmtValue(expected), indicator: color.added("+") },
+          expectedRow(fmtValue(expected)),
           { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual,
-      expected,
-    })
+      },
+      { actual, expected }
+    )
   },
 
   /**
@@ -1991,21 +1745,18 @@ export const assert: Assert = {
     const r1 = fn(...args)
     const r2 = fn(...args)
     if (isEqual(r1, r2)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "pure",
-      message: buildBlock({
-        assertion: "pure",
-        title: o.msg ?? `${fn.name || "fn"} is not deterministic`,
+    failWith(
+      "pure",
+      opts,
+      `${fn.name || "fn"} is not deterministic`,
+      {
         rows: [
           { label: "call 1", value: fmtValue(r1) },
           { label: "call 2", value: fmtValue(r2), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: r2,
-      expected: r1,
-    })
+      },
+      { actual: r2, expected: r1 }
+    )
   },
 
   /**
@@ -2016,21 +1767,18 @@ export const assert: Assert = {
     const r1 = fn(arg)
     const r2 = fn(r1)
     if (isEqual(r1, r2)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "idempotent",
-      message: buildBlock({
-        assertion: "idempotent",
-        title: o.msg ?? `${fn.name || "fn"} is not idempotent`,
+    failWith(
+      "idempotent",
+      opts,
+      `${fn.name || "fn"} is not idempotent`,
+      {
         rows: [
           { label: "fn(x)", value: fmtValue(r1) },
           { label: "fn(fn(x))", value: fmtValue(r2), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: r2,
-      expected: r1,
-    })
+      },
+      { actual: r2, expected: r1 }
+    )
   },
 
   /**
@@ -2043,21 +1791,18 @@ export const assert: Assert = {
     opts?: Opts
   ): void {
     if (fn.length === n) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "arity",
-      message: buildBlock({
-        assertion: "arity",
-        title: o.msg ?? `Wrong arity for ${fn.name || "fn"}`,
+    failWith(
+      "arity",
+      opts,
+      `Wrong arity for ${fn.name || "fn"}`,
+      {
         rows: [
-          { label: "expected", value: fmtValue(n), indicator: color.added("+") },
+          expectedRow(fmtValue(n)),
           { label: "actual", value: fmtValue(fn.length), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: fn.length,
-      expected: n,
-    })
+      },
+      { actual: fn.length, expected: n }
+    )
   },
 
   /**
@@ -2069,22 +1814,19 @@ export const assert: Assert = {
     const ra = fn(a)
     const rb = fn(b)
     if (!isEqual(ra, rb)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "mapsDistinct",
-      message: buildBlock({
-        assertion: "mapsDistinct",
-        title: o.msg ?? `${fn.name || "fn"} maps two distinct inputs to the same output`,
+    failWith(
+      "mapsDistinct",
+      opts,
+      `${fn.name || "fn"} maps two distinct inputs to the same output`,
+      {
         rows: [
           { label: "input a", value: fmtValue(a) },
           { label: "input b", value: fmtValue(b) },
           { label: "output", value: fmtValue(ra), indicator: color.removed("✗") },
         ],
-        note: o.note,
-      }),
-      actual: [a, b],
-      expected: "distinct outputs",
-    })
+      },
+      { actual: [a, b], expected: "distinct outputs" }
+    )
   },
 
   /**
@@ -2106,21 +1848,18 @@ export const assert: Assert = {
     const combined = fn(combine(a, b))
     const distributed = combine(fn(a), fn(b))
     if (isEqual(combined, distributed)) return
-    const o = parseOpts(opts)
-    fail({
-      assertion: "homomorphic",
-      message: buildBlock({
-        assertion: "homomorphic",
-        title: o.msg ?? `${fn.name || "fn"} is not homomorphic`,
+    failWith(
+      "homomorphic",
+      opts,
+      `${fn.name || "fn"} is not homomorphic`,
+      {
         rows: [
           { label: "fn(a + b)", value: fmtValue(combined), indicator: color.removed("✗") },
           { label: "fn(a)+fn(b)", value: fmtValue(distributed), indicator: color.added("+") },
         ],
-        note: o.note,
-      }),
-      actual: combined,
-      expected: distributed,
-    })
+      },
+      { actual: combined, expected: distributed }
+    )
   },
 
   // ═══════════════════════════════════════════════════════════════════════════
@@ -2151,26 +1890,19 @@ export const assert: Assert = {
    * ```
    */
   not<TArgs extends unknown[]>(fn: (...args: TArgs) => void, ...args: TArgs): void {
-    let threw = false
     try {
       fn(...args)
     } catch {
-      threw = true
+      return
     }
-    if (threw) return
-    fail({
-      assertion: "not",
-      message: buildBlock({
-        assertion: "not",
-        title: `not(${fn.name || "fn"}): assertion should have failed`,
-        rows: [
-          {
-            label: "result",
-            value: color.removed("passed — expected failure"),
-            indicator: color.removed("✗"),
-          },
-        ],
-      }),
+    failWith("not", undefined, `not(${fn.name || "fn"}): assertion should have failed`, {
+      rows: [
+        {
+          label: "result",
+          value: color.removed("passed — expected failure"),
+          indicator: color.removed("✗"),
+        },
+      ],
     })
   },
 
@@ -2215,19 +1947,19 @@ export const assert: Assert = {
   ): Promise<void> {
     const isCtor = typeof ctorOrOpts === "function"
     const ctor = isCtor ? (ctorOrOpts as new (...args: TArgs) => E) : undefined
-    const o = parseOpts(isCtor ? opts : (ctorOrOpts as Opts))
+    const o = isCtor ? opts : (ctorOrOpts as Opts)
     const outcome = await settle(promise)
     if (outcome.ok) {
       return failResolved("rejects", o, [{ label: "resolved to", value: fmtValue(outcome.value) }])
     }
     if (ctor && !(outcome.error instanceof ctor)) {
-      fail({
-        assertion: "rejects",
-        message: buildBlock({
-          assertion: "rejects",
-          title: o.msg ?? `Expected rejection to be instance of ${ctor.name}`,
+      failWith(
+        "rejects",
+        o,
+        `Expected rejection to be instance of ${ctor.name}`,
+        {
           rows: [
-            { label: "expected", value: color.added(ctor.name), indicator: color.added("+") },
+            expectedRow(color.added(ctor.name)),
             {
               label: "received",
               value: color.removed(rejectionName(outcome.error)),
@@ -2235,11 +1967,9 @@ export const assert: Assert = {
             },
             { label: "message", value: fmtValue(rejectionMsg(outcome.error)) },
           ],
-          note: o.note,
-        }),
-        actual: outcome.error,
-        expected: ctor.name,
-      })
+        },
+        { actual: outcome.error, expected: ctor.name }
+      )
     }
   },
 
@@ -2261,25 +1991,22 @@ export const assert: Assert = {
     message: string,
     opts?: Opts
   ): Promise<void> {
-    const o = parseOpts(opts)
     const outcome = await settle(promise)
-    if (outcome.ok) return failResolved("rejectsWithMessage", o)
+    if (outcome.ok) return failResolved("rejectsWithMessage", opts)
     const actual = rejectionMsg(outcome.error)
     if (actual !== message) {
-      fail({
-        assertion: "rejectsWithMessage",
-        message: buildBlock({
-          assertion: "rejectsWithMessage",
-          title: o.msg ?? "Rejection message mismatch",
+      failWith(
+        "rejectsWithMessage",
+        opts,
+        "Rejection message mismatch",
+        {
           rows: [
-            { label: "expected", value: fmtValue(message), indicator: color.added("+") },
+            expectedRow(fmtValue(message)),
             { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
           ],
-          note: o.note,
-        }),
-        actual,
-        expected: message,
-      })
+        },
+        { actual, expected: message }
+      )
     }
   },
 
@@ -2297,25 +2024,22 @@ export const assert: Assert = {
    * ```
    */
   async rejectsMatching(promise: Awaitable<unknown>, pattern: RegExp, opts?: Opts): Promise<void> {
-    const o = parseOpts(opts)
     const outcome = await settle(promise)
-    if (outcome.ok) return failResolved("rejectsMatching", o)
+    if (outcome.ok) return failResolved("rejectsMatching", opts)
     const actual = rejectionMsg(outcome.error)
     if (!pattern.test(actual)) {
-      fail({
-        assertion: "rejectsMatching",
-        message: buildBlock({
-          assertion: "rejectsMatching",
-          title: o.msg ?? "Rejection message does not match pattern",
+      failWith(
+        "rejectsMatching",
+        opts,
+        "Rejection message does not match pattern",
+        {
           rows: [
             { label: "pattern", value: color.added(String(pattern)), indicator: color.added("+") },
             { label: "actual", value: fmtValue(actual), indicator: color.removed("✗") },
           ],
-          note: o.note,
-        }),
-        actual,
-        expected: String(pattern),
-      })
+        },
+        { actual, expected: String(pattern) }
+      )
     }
   },
 
@@ -2339,15 +2063,14 @@ export const assert: Assert = {
     predicate: (err: unknown) => boolean,
     opts?: Opts
   ): Promise<void> {
-    const o = parseOpts(opts)
     const outcome = await settle(promise)
-    if (outcome.ok) return failResolved("rejectsSatisfying", o)
+    if (outcome.ok) return failResolved("rejectsSatisfying", opts)
     if (!predicate(outcome.error)) {
-      fail({
-        assertion: "rejectsSatisfying",
-        message: buildBlock({
-          assertion: "rejectsSatisfying",
-          title: o.msg ?? "Rejection did not satisfy predicate",
+      failWith(
+        "rejectsSatisfying",
+        opts,
+        "Rejection did not satisfy predicate",
+        {
           rows: [
             {
               label: "type",
@@ -2356,11 +2079,9 @@ export const assert: Assert = {
             },
             { label: "message", value: fmtValue(rejectionMsg(outcome.error)) },
           ],
-          note: o.note,
-        }),
-        actual: outcome.error,
-        expected: "match predicate",
-      })
+        },
+        { actual: outcome.error, expected: "match predicate" }
+      )
     }
   },
 
@@ -2392,7 +2113,7 @@ export const assert: Assert = {
     if (outcome.ok) return outcome.value
     return failRejected(
       "resolves",
-      parseOpts(opts),
+      opts,
       outcome.error,
       "Expected promise to resolve",
       "resolved",
@@ -2419,12 +2140,11 @@ export const assert: Assert = {
    * ```
    */
   async resolvesWith<T>(promise: Awaitable<T>, expected: T, opts?: Opts): Promise<void> {
-    const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (!outcome.ok) {
       return failRejected(
         "resolvesWith",
-        o,
+        opts,
         outcome.error,
         "Promise rejected — expected resolution",
         expected,
@@ -2432,17 +2152,13 @@ export const assert: Assert = {
       )
     }
     if (!isEqual(outcome.value, expected)) {
-      fail({
-        assertion: "resolvesWith",
-        message: buildBlock({
-          assertion: "resolvesWith",
-          title: o.msg ?? "Resolved value mismatch",
-          diff: { actual: outcome.value, expected },
-          note: o.note,
-        }),
-        actual: outcome.value,
-        expected,
-      })
+      failWith(
+        "resolvesWith",
+        opts,
+        "Resolved value mismatch",
+        { diff: { actual: outcome.value, expected } },
+        { actual: outcome.value, expected }
+      )
     }
   },
 
@@ -2468,29 +2184,26 @@ export const assert: Assert = {
     predicate: (v: T) => boolean,
     opts?: Opts
   ): Promise<void> {
-    const o = parseOpts(opts)
     const outcome = await settle(promise)
     if (!outcome.ok) {
       return failRejected(
         "resolvesSatisfying",
-        o,
+        opts,
         outcome.error,
         "Promise rejected — expected resolution",
         "resolved"
       )
     }
     if (!predicate(outcome.value)) {
-      fail({
-        assertion: "resolvesSatisfying",
-        message: buildBlock({
-          assertion: "resolvesSatisfying",
-          title: o.msg ?? "Resolved value did not satisfy predicate",
+      failWith(
+        "resolvesSatisfying",
+        opts,
+        "Resolved value did not satisfy predicate",
+        {
           rows: [{ label: "value", value: fmtValue(outcome.value), indicator: color.removed("✗") }],
-          note: o.note,
-        }),
-        actual: outcome.value,
-        expected: "match predicate",
-      })
+        },
+        { actual: outcome.value, expected: "match predicate" }
+      )
     }
   },
 
@@ -2514,35 +2227,27 @@ export const assert: Assert = {
     opts?: Opts
   ): Promise<NonNullable<T>> {
     const outcome = await settle(promise)
-    const o = parseOpts(opts)
     if (!outcome.ok) {
       return failRejected(
         "resolvesNotNil",
-        o,
+        opts,
         outcome.error,
         "Promise rejected — expected non-null resolution",
         "non-null resolved value"
       )
     }
     if (isNil(outcome.value)) {
-      fail({
-        assertion: "resolvesNotNil",
-        message: buildBlock({
-          assertion: "resolvesNotNil",
-          title: o.msg ?? "Resolved value is null or undefined",
+      return failWith(
+        "resolvesNotNil",
+        opts,
+        "Resolved value is null or undefined",
+        {
           rows: [
-            {
-              label: "received",
-              value: fmtValue(outcome.value),
-              indicator: color.removed("✗"),
-            },
+            { label: "received", value: fmtValue(outcome.value), indicator: color.removed("✗") },
           ],
-          note: o.note,
-        }),
-        actual: outcome.value,
-        expected: "non-null value",
-      })
-      return undefined as unknown as NonNullable<T>
+        },
+        { actual: outcome.value, expected: "non-null value" }
+      )
     }
     return outcome.value as NonNullable<T>
   },
