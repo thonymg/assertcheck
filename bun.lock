@@ -5,12 +5,12 @@
     "": {
       "name": "@assertly/core",
       "dependencies": {
-        "@theojs/lumen": "^6.4.7",
+        "@types/lodash": "^4.14.0",
         "lodash": "^4.17.21",
       },
       "devDependencies": {
+        "@theojs/lumen": "^6.4.7",
         "@types/bun": "latest",
-        "@types/lodash": "^4.14.0",
         "prettier": "^3.8.4",
         "typedoc": "^0.28.19",
         "typedoc-plugin-markdown": "^4.12.0",

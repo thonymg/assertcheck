@@ -31,7 +31,8 @@
  * ```
  */
 
-import { isPlainObject } from "lodash"
+import lodash from "lodash"
+const { isPlainObject } = lodash
 import type { ValueIteratee } from "lodash"
 import { assert } from "./assert.ts"
 import type { AssertOptions } from "./types.ts"

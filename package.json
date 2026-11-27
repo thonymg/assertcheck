@@ -10,21 +10,24 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./assert": {
-      "import": "./dist/assert.js",
-      "types": "./dist/assert.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./checker": {
-      "import": "./dist/checker.js",
-      "types": "./dist/checker.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./format": {
-      "import": "./dist/format.js",
-      "types": "./dist/format.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     }
   },
   "publishConfig": {
@@ -35,7 +38,7 @@
     "src"
   ],
   "scripts": {
-    "build": "rm -rf dist && bun build ./src/index.ts --outdir ./dist --target node --format esm --external lodash --minify && bun build ./src/index.ts --target node --format cjs --outfile ./dist/index.cjs --external lodash --minify",
+    "build": "rm -rf dist && bun build ./src/index.ts --outdir ./dist --target node --format esm --external lodash --minify && bun build ./src/index.ts --target node --format cjs --outfile ./dist/index.cjs --external lodash --minify && tsc --emitDeclarationOnly --allowImportingTsExtensions",
     "typecheck": "tsc --project tsconfig.check.json",
     "test": "bun test",
     "test:src": "bun test",
@@ -47,12 +50,13 @@
     "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
     "version": "node -e \"const fs=require('fs');const v=JSON.parse(fs.readFileSync('package.json','utf8')).version;const j=JSON.parse(fs.readFileSync('jsr.json','utf8'));j.version=v;fs.writeFileSync('jsr.json',JSON.stringify(j,null,2)+'\\n')\" && git add jsr.json",
-    "prepublishOnly": "bun run build && bun run typecheck && bun run format:check",
+    "prepublishOnly": "bun run build && bun run typecheck && bun run format:check && npm run test:node",
     "release": "bash scripts/release.sh",
     "release:npm": "npm publish",
     "release:jsr": "npx jsr publish --allow-slow-types",
     "release:dry": "npm publish --dry-run",
-    "publish": "npm publish && npx jsr publish --allow-slow-types"
+    "release:all": "npm publish && npx jsr publish --allow-slow-types",
+    "test:node": "node --test tests/node-import.mjs tests/package-types.mjs"
   },
   "keywords": [
     "assert",
@@ -63,12 +67,12 @@
     "negative-space"
   ],
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "@types/lodash": "^4.14.0"
   },
   "devDependencies": {
     "@theojs/lumen": "^6.4.7",
     "@types/bun": "latest",
-    "@types/lodash": "^4.14.0",
     "prettier": "^3.8.4",
     "typedoc": "^0.28.19",
     "typedoc-plugin-markdown": "^4.12.0",

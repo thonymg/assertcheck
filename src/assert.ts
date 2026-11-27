@@ -22,7 +22,8 @@
  * ```
  */
 
-import {
+import lodash from "lodash"
+const {
   isNil,
   isEmpty,
   isString,
@@ -34,24 +35,24 @@ import {
   isPlainObject,
   isFunction,
   isEqual,
-  size as _size,
+  size: _size,
   includes,
   difference,
   differenceWith,
   intersection,
   sortBy,
   uniq,
-  iteratee as _iteratee,
+  iteratee: _iteratee,
   first,
   last,
   sumBy,
   zip,
   groupBy,
-  keys as _keys,
+  keys: _keys,
   partition,
   has,
   get,
-} from "lodash"
+} = lodash
 import type { ValueIteratee } from "lodash"
 import { fail } from "./fail.ts"
 import { buildBlock, fmtValue, color, parseOpts } from "./format.ts"

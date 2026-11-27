@@ -27,7 +27,8 @@
  * ```
  */
 
-import { isPlainObject, union, isEqual } from "lodash"
+import lodash from "lodash"
+const { isPlainObject, union, isEqual } = lodash
 import { ENV } from "./env.ts"
 import type { AssertOptions, BlockDef } from "./types.ts"
 
