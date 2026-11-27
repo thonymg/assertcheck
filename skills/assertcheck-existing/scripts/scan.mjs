@@ -6,7 +6,8 @@
 //   --diff [ref]   only report lines changed vs ref (default HEAD) + untracked files
 //   --json         machine-readable output
 //   --include-tests  also scan *.test.ts / *.spec.ts / tests/ folders
-// Waive a finding with `// assertcheck-ignore` on the same or the previous line.
+// Waive a finding with `// assertcheck-ignore` on the same or the previous line, or settle it for good in
+// .assertcheck/decisions.md: `- <file> <function> <rule>[, <rule>] — <reason>` (a reason is required).
 // After the findings, text output lists the functions that need a second, logical analysis:
 // every function holding a low or debatable finding (even hidden below --min). JSON keeps an array
 // of findings, each carrying its enclosing `fn`.
@@ -95,6 +96,10 @@ compilerOptions = { ...compilerOptions, noEmit: true, allowImportingTsExtensions
 const program = ts.createProgram(files, compilerOptions)
 const checker = program.getTypeChecker()
 
+// ── settled decisions ────────────────────────────────────────────────
+const settled = loadSettled()
+let settledCount = 0
+
 // ── scan ─────────────────────────────────────────────────────────────
 const findings = []
 for (const file of files) {
@@ -120,7 +125,8 @@ if (opts.json) {
   const n = (s) => findings.filter((f) => f.severity === s).length
   console.log(
     `${findings.length} findings (${n("high")} high, ${n("medium")} medium, ${n("low")} low) in ${files.length} files` +
-      (hidden ? ` (+${hidden} hidden below --min ${opts.min})` : "")
+      (hidden ? ` (+${hidden} hidden below --min ${opts.min})` : "") +
+      (settledCount ? ` (+${settledCount} settled in .assertcheck/decisions.md)` : "")
   )
   if (review.length) {
     console.log(
@@ -175,6 +181,18 @@ function scanFile(sf) {
     )
       return
     const file = path.relative(cwd, sf.fileName)
+    const fn = enclosing(start)
+    if (
+      settled.some(
+        (d) =>
+          d.file === file.split(path.sep).join("/") &&
+          d.fn === fn.name &&
+          (d.rules.has("*") || d.rules.has(rule))
+      )
+    ) {
+      settledCount++
+      return
+    }
     if (findings.some((f) => f.file === file && f.line === line + 1 && f.rule === rule)) return // one per line per rule
     findings.push({
       file,
@@ -184,7 +202,7 @@ function scanFile(sf) {
       rule,
       code: code ?? snippet(node, sf),
       fix,
-      fn: enclosing(start),
+      fn,
     })
   }
 
@@ -225,7 +243,8 @@ function scanFile(sf) {
         node,
         topLevelLog ? "low" : "high",
         "swallowed-catch",
-        'remove the try/catch and let it throw, or rethrow with context: throw new Error("…", { cause: e })'
+        'remove the try/catch and let it throw, or rethrow with context: throw new Error("…", { cause: e })' +
+          awaitedOnly(node.parent.tryBlock, sf)
       )
     }
 
@@ -343,11 +362,12 @@ function scanFile(sf) {
     if (ts.isDefaultClause(node) && isSilentDefault(node)) {
       const sw = node.parent.parent
       const e = text(sw.expression, sf)
+      const cases = sw.caseBlock.clauses.filter(ts.isCaseClause).map((c) => text(c.expression, sf))
       report(
         node,
         "medium",
         "silent-default",
-        `default: { const unreachable: never = ${e}; throw new Error(\`unexpected ${label(e)}: \${unreachable}\`) }`
+        `before the switch: assert.includes([${cases.join(", ")}], ${e}, "unexpected ${label(e)}") — then drop the silent default`
       )
     }
 
@@ -474,7 +494,7 @@ function scanFile(sf) {
             node,
             open ? "medium" : "low",
             "silent-ternary",
-            `switch (${e}) with default: { const unreachable: never = ${e}; throw new Error(\`unexpected ${label(e)}: \${unreachable}\`) }  (a value outside the compared literals silently takes the last branch; keep if the last branch is the real default)`
+            `assert.includes([<every literal ${label(e)} is compared to>], ${e}, "unexpected ${label(e)}") before the ternary  (a value outside the compared literals silently takes the last branch; keep if the last branch is the real default)`
           )
         }
       }
@@ -1050,6 +1070,16 @@ function suggest(cond, sf) {
   const msg = (n, what) => `"${label(t(n))} ${what}"`
 
   if (ts.isBinaryExpression(cond) && cond.operatorToken.kind === ts.SyntaxKind.BarBarToken) {
+    const lo = unwrap(cond.left),
+      hi = unwrap(cond.right)
+    if (
+      ts.isBinaryExpression(lo) &&
+      ts.isBinaryExpression(hi) &&
+      lo.operatorToken.kind === ts.SyntaxKind.LessThanToken &&
+      hi.operatorToken.kind === ts.SyntaxKind.GreaterThanToken &&
+      t(lo.left) === t(hi.left)
+    )
+      return `assert.withinRange(${t(lo.left)}, ${t(lo.right)}, ${t(hi.right)}, ${msg(lo.left, `must be within ${t(lo.right)}..${t(hi.right)}`)})`
     const a = suggest(cond.left, sf),
       b = suggest(cond.right, sf)
     return a && b ? `${a}; ${b}` : null
@@ -1057,7 +1087,7 @@ function suggest(cond, sf) {
   if (ts.isPrefixUnaryExpression(cond) && cond.operator === ts.SyntaxKind.ExclamationToken) {
     const e = unwrap(cond.operand)
     if (ts.isPropertyAccessExpression(e) && e.name.text === "length")
-      return `assert.notEmpty(${t(e.expression)}, ${msg(e.expression, "must not be empty")})`
+      return `assert.notEmpty(${emptySubject(e.expression, t)}, ${msg(e.expression, "must not be empty")})`
     if (ts.isCallExpression(e)) {
       const callee = t(e.expression),
         arg = e.arguments[0] && t(e.arguments[0])
@@ -1068,6 +1098,14 @@ function suggest(cond, sf) {
       }
       if (map[callee])
         return `assert.${map[callee]}(${arg}, ${msg(e.arguments[0], `must be ${map[callee] === "array" ? "an array" : map[callee]}`)})`
+      if (callee === "Number.isSafeInteger")
+        return `assert.integer(${arg}, ${msg(e.arguments[0], "must be an integer")})`
+      if (/^Object\.hasOwn$/.test(callee) && e.arguments.length === 2)
+        return `assert.hasKey(${arg}, ${t(e.arguments[1])}, ${msg(e.arguments[0], `must have key ${t(e.arguments[1])}`)})`
+      if (ts.isPropertyAccessExpression(e.expression) && e.expression.name.text === "hasOwnProperty" && e.arguments.length >= 1)
+        return `assert.hasKey(${t(e.expression.expression)}, ${arg}, ${msg(e.expression.expression, `must have key ${arg}`)})`
+      const coll = collectionAssert(e, true, t)
+      if (coll) return coll
     }
     if (ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword)
       return `assert.instanceOf(${t(e.left)}, ${t(e.right)}, ${msg(e.left, `must be a ${t(e.right)}`)})`
@@ -1081,6 +1119,10 @@ function suggest(cond, sf) {
   }
   if (ts.isCallExpression(cond) && t(cond.expression) === "Number.isNaN")
     return `assert.finite(${t(cond.arguments[0])}, ${msg(cond.arguments[0], "must be a finite number")})`
+  if (ts.isCallExpression(cond)) {
+    const coll = collectionAssert(cond, false, t)
+    if (coll) return coll
+  }
   if (!ts.isBinaryExpression(cond)) return null
 
   const k = cond.operatorToken.kind,
@@ -1090,6 +1132,110 @@ function suggest(cond, sf) {
   const neq =
     k === ts.SyntaxKind.ExclamationEqualsToken || k === ts.SyntaxKind.ExclamationEqualsEqualsToken
 
+  const isLen = (n) => ts.isPropertyAccessExpression(unwrap(n)) && unwrap(n).name.text === "length"
+  if (neq && ts.isPropertyAccessExpression(unwrap(L)) && unwrap(L).name.text === "size") {
+    const setNew = unwrap(unwrap(L).expression)
+    if (
+      ts.isNewExpression(setNew) &&
+      setNew.expression.getText() === "Set" &&
+      setNew.arguments?.length === 1 &&
+      isLen(R) &&
+      t(unwrap(R).expression) === t(setNew.arguments[0])
+    )
+      return `assert.unique(${t(setNew.arguments[0])}, ${msg(setNew.arguments[0], "must not contain duplicates")})`
+  }
+  const lenOf = (n) => (isLen(n) ? unwrap(unwrap(n).expression) : null)
+  const filtered = lenOf(L)
+  if (
+    (neq || eq) &&
+    filtered &&
+    ts.isCallExpression(filtered) &&
+    ts.isPropertyAccessExpression(filtered.expression) &&
+    filtered.expression.name.text === "filter" &&
+    filtered.arguments.length === 1 &&
+    ts.isNumericLiteral(R) &&
+    neq
+  ) {
+    const rcv = t(filtered.expression.expression),
+      f = t(filtered.arguments[0])
+    return R.text === "1"
+      ? `assert.one(${rcv}, ${f}, ${msg(filtered.expression.expression, `must have exactly one element matching ${f}`)})`
+      : `assert.count(${rcv}, ${f}, ${R.text}, ${msg(filtered.expression.expression, `must have ${R.text} elements matching ${f}`)})`
+  }
+  if (neq && ts.isPropertyAccessExpression(unwrap(L)) && unwrap(L).name.text === "size") {
+    const setNew = unwrap(unwrap(L).expression)
+    const inner = setNew.arguments?.[0] && unwrap(setNew.arguments[0])
+    if (
+      ts.isNewExpression(setNew) &&
+      setNew.expression.getText() === "Set" &&
+      inner &&
+      ts.isCallExpression(inner) &&
+      ts.isPropertyAccessExpression(inner.expression) &&
+      inner.expression.name.text === "map" &&
+      inner.arguments.length === 1 &&
+      isLen(R) &&
+      t(unwrap(R).expression) === t(inner.expression.expression)
+    ) {
+      const fn = unwrap(inner.arguments[0])
+      const prop =
+        ts.isArrowFunction(fn) &&
+        fn.parameters.length === 1 &&
+        !ts.isBlock(fn.body) &&
+        ts.isPropertyAccessExpression(unwrap(fn.body)) &&
+        t(unwrap(fn.body).expression) === fn.parameters[0].name.getText()
+          ? `"${unwrap(fn.body).name.text}"`
+          : t(fn)
+      return `assert.uniqueBy(${t(inner.expression.expression)}, ${prop}, ${msg(inner.expression.expression, "must not contain duplicates")})`
+    }
+  }
+  if (neq) {
+    const el = (n) => {
+      n = unwrap(n)
+      if (ts.isElementAccessExpression(n)) {
+        const i = unwrap(n.argumentExpression)
+        if (ts.isNumericLiteral(i) && i.text === "0") return ["first", n.expression]
+        if (
+          ts.isBinaryExpression(i) &&
+          i.operatorToken.kind === ts.SyntaxKind.MinusToken &&
+          isLen(i.left) &&
+          t(unwrap(i.left).expression) === t(n.expression) &&
+          ts.isNumericLiteral(i.right) &&
+          i.right.text === "1"
+        )
+          return ["last", n.expression]
+      }
+      if (ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression) && n.expression.name.text === "at" && n.arguments.length === 1) {
+        const i = unwrap(n.arguments[0])
+        if (ts.isNumericLiteral(i) && i.text === "0") return ["first", n.expression.expression]
+        if (ts.isPrefixUnaryExpression(i) && ts.isNumericLiteral(i.operand) && i.operand.text === "1") return ["last", n.expression.expression]
+      }
+      return null
+    }
+    const hit = el(L) ?? el(R)
+    if (hit) {
+      const other = el(L) ? R : L
+      return `assert.${hit[0]}(${t(hit[1])}, ${t(other)}, ${msg(hit[1], `${hit[0]} element must be ${t(other)}`)})`
+    }
+  }
+  if (neq && isLen(L) && ts.isNumericLiteral(R) && R.text !== "0")
+    return `assert.len(${t(unwrap(L).expression)}, ${R.text}, ${msg(unwrap(L).expression, `must have ${R.text} elements`)})`
+  if (neq && /^JSON\.stringify$/.test(unwrap(L).expression?.getText?.() ?? "") && /^JSON\.stringify$/.test(unwrap(R).expression?.getText?.() ?? ""))
+    return `assert.deepEqual(${t(unwrap(L).arguments[0])}, ${t(unwrap(R).arguments[0])}, ${msg(unwrap(L).arguments[0], "must deep-equal the expected value")})`
+  if (neq && ts.isNumericLiteral(R) && R.text === "0")
+    return `assert.zero(${t(L)}, ${msg(L, "must be zero")})`
+  if (k === ts.SyntaxKind.GreaterThanToken && !ts.isNumericLiteral(unwrap(L))) {
+    const abs = unwrap(L)
+    if (
+      ts.isCallExpression(abs) &&
+      abs.expression.getText() === "Math.abs" &&
+      abs.arguments.length === 1 &&
+      ts.isBinaryExpression(unwrap(abs.arguments[0])) &&
+      unwrap(abs.arguments[0]).operatorToken.kind === ts.SyntaxKind.MinusToken
+    ) {
+      const d = unwrap(abs.arguments[0])
+      return `assert.inDelta(${t(d.left)}, ${t(d.right)}, ${t(R)}, ${msg(d.left, `must be within ${t(R)} of ${t(d.right)}`)})`
+    }
+  }
   if (eq && isNullOrUndefined(R)) return `assert.notNil(${t(L)}, ${msg(L, "is required")})`
   if (eq && isNullOrUndefined(L)) return `assert.notNil(${t(R)}, ${msg(R, "is required")})`
   if (
@@ -1100,7 +1246,18 @@ function suggest(cond, sf) {
       (k === ts.SyntaxKind.LessThanToken && R.text === "1") ||
       (k === ts.SyntaxKind.LessThanEqualsToken && R.text === "0"))
   )
-    return `assert.notEmpty(${t(L.expression)}, ${msg(L.expression, "must not be empty")})`
+    return `assert.notEmpty(${emptySubject(L.expression, t)}, ${msg(L.expression, "must not be empty")})`
+  if (isLen(L) && ts.isNumericLiteral(R) && R.text !== "0") {
+    const arr = t(unwrap(L).expression),
+      n = Number(R.text)
+    const ordered = {
+      [ts.SyntaxKind.LessThanToken]: `assert.longerThan(${arr}, ${n - 1}, ${msg(unwrap(L).expression, `must have at least ${n} elements`)})`,
+      [ts.SyntaxKind.LessThanEqualsToken]: `assert.longerThan(${arr}, ${n}, ${msg(unwrap(L).expression, `must have more than ${n} elements`)})`,
+      [ts.SyntaxKind.GreaterThanToken]: `assert.shorterThan(${arr}, ${n + 1}, ${msg(unwrap(L).expression, `must have at most ${n} elements`)})`,
+      [ts.SyntaxKind.GreaterThanEqualsToken]: `assert.shorterThan(${arr}, ${n}, ${msg(unwrap(L).expression, `must have fewer than ${n} elements`)})`,
+    }[k]
+    if (ordered) return ordered
+  }
   if (neq && ts.isTypeOfExpression(L) && ts.isStringLiteral(R)) {
     const map = {
       string: "string",
@@ -1123,10 +1280,105 @@ function suggest(cond, sf) {
     case ts.SyntaxKind.GreaterThanToken:
       return `assert.lessOrEqual(${t(L)}, ${t(R)}, ${msg(L, `must be <= ${t(R)}`)})`
     case ts.SyntaxKind.GreaterThanEqualsToken:
+      if (zero) return `assert.negative(${t(L)}, ${msg(L, "must be negative")})`
       return `assert.less(${t(L)}, ${t(R)}, ${msg(L, `must be < ${t(R)}`)})`
   }
   if (neq) return `assert.equal(${t(L)}, ${t(R)}, ${msg(L, `must be ${t(R).replace(/"/g, "'")}`)})`
   return null // `if (a === b) return` is usually a business shortcut, not an invalid state
+}
+
+// `!r.every(v => p.includes(v))`, `r.some(v => v == null)`, …: the collection assertion that states the opposite
+function collectionAssert(call, negated, t) {
+  if (!ts.isCallExpression(call) || !ts.isPropertyAccessExpression(call.expression)) return null
+  const m = call.expression.name.text
+  const recv = unwrap(call.expression.expression)
+  const R = t(recv)
+  const q = (what) => `"${label(R)} ${what}"`
+  const values =
+    ts.isCallExpression(recv) && recv.expression.getText() === "Object.values" && recv.arguments.length === 1
+      ? t(recv.arguments[0])
+      : null
+  const arg0 = call.arguments[0]
+  if (!arg0) return null
+  const fn = unwrap(arg0)
+  const A = t(arg0)
+  if (m === "includes" && call.arguments.length === 1) {
+    if (negated) return `assert.includes(${R}, ${A}, ${q(`must include ${A}`)})`
+    return isNullOrUndefined(fn) ? `assert.noNils(${R}, ${q("must not contain null or undefined")})` : null
+  }
+  if (m !== "every" && m !== "some") return null
+  const param =
+    ts.isArrowFunction(fn) && fn.parameters.length === 1 && ts.isIdentifier(fn.parameters[0].name)
+      ? fn.parameters[0].name.text
+      : null
+  const body = param && !ts.isBlock(fn.body) ? unwrap(fn.body) : null
+  const isParam = (n) => ts.isIdentifier(unwrap(n)) && unwrap(n).text === param
+  const bin = body && ts.isBinaryExpression(body) ? body : null
+  const call2 = body && ts.isCallExpression(body) ? body : null
+  const nilTest =
+    bin &&
+    [ts.SyntaxKind.EqualsEqualsToken, ts.SyntaxKind.EqualsEqualsEqualsToken].includes(bin.operatorToken.kind) &&
+    isParam(bin.left) &&
+    isNullOrUndefined(bin.right)
+  const incl =
+    call2 &&
+    ts.isPropertyAccessExpression(call2.expression) &&
+    call2.expression.name.text === "includes" &&
+    call2.arguments.length === 1 &&
+    isParam(call2.arguments[0])
+      ? t(call2.expression.expression)
+      : null
+  const inst = bin && bin.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && isParam(bin.left) ? t(bin.right) : null
+  const keyIn =
+    bin && bin.operatorToken.kind === ts.SyntaxKind.InKeyword && isParam(bin.left)
+      ? t(bin.right)
+      : call2 && call2.expression.getText() === "Object.hasOwn" && call2.arguments.length === 2 && isParam(call2.arguments[1])
+        ? t(call2.arguments[0])
+        : null
+  if (negated && m === "every") {
+    if (incl) return `assert.containsAll(${incl}, ${R}, ${q(`must all be in ${incl}`)})`
+    if (inst) return `assert.allInstanceOf(${R}, ${inst}, ${q(`must all be ${inst}`)})`
+    if (keyIn) return `assert.hasKeys(${keyIn}, ${R}, ${q(`must all be keys of ${keyIn}`)})`
+    if (values) return `assert.allValuesMatch(${values}, ${A}, ${q(`values must match ${A}`)})`
+    return `assert.all(${R}, ${A}, ${q(`must have every element matching ${A}`)})`
+  }
+  if (negated && m === "some") return `assert.any(${R}, ${A}, ${q(`must have an element matching ${A}`)})`
+  if (!negated && m === "some") {
+    if (incl) return `assert.containsNone(${incl}, ${R}, ${q(`must not be in ${incl}`)})`
+    if (nilTest) return values ? `assert.noNilValues(${values}, ${q("values must not be null or undefined")})` : `assert.noNils(${R}, ${q("must not contain null or undefined")})`
+    return `assert.none(${R}, ${A}, ${q(`must have no element matching ${A}`)})`
+  }
+  return null
+}
+
+// try { x = await p } catch { … }: the call is "must resolve"
+function awaitedOnly(block, sf) {
+  const st = block.statements
+  if (st.length !== 1) return ""
+  let e = ts.isExpressionStatement(st[0])
+    ? st[0].expression
+    : ts.isVariableStatement(st[0]) && st[0].declarationList.declarations.length === 1
+      ? st[0].declarationList.declarations[0].initializer
+      : ts.isReturnStatement(st[0])
+        ? st[0].expression
+        : null
+  if (e && ts.isBinaryExpression(e) && e.operatorToken.kind === ts.SyntaxKind.EqualsToken) e = e.right
+  e = e && unwrap(e)
+  return e && ts.isAwaitExpression(e)
+    ? `  (the try only awaits one promise: await assert.resolves(${text(e.expression, sf)}, "…"), or resolvesNotNil if null is also a failure)`
+    : ""
+}
+
+// Object.keys(o).length → o ; a.length → a
+function emptySubject(e, t) {
+  e = unwrap(e)
+  if (
+    ts.isCallExpression(e) &&
+    /^Object\.(keys|values|entries)$/.test(e.expression.getText()) &&
+    e.arguments.length === 1
+  )
+    return t(e.arguments[0])
+  return t(e)
 }
 
 function text(n, sf) {
@@ -1160,6 +1412,26 @@ function changedLines(ref) {
     out.set(f, (line) => ranges.some(([a, b]) => line >= a && line <= b))
   for (const f of git("ls-files", "--others", "--exclude-standard").split("\n").filter(Boolean))
     out.set(path.join(root, f), () => true)
+  return out
+}
+
+// .assertcheck/decisions.md: `- <file> <function> <rule>[, <rule>|*] — <reason>`. Keyed on the function,
+// not the line, so an edit above does not resurrect a settled finding. No reason, no waiver.
+function loadSettled() {
+  const file = path.join(cwd, ".assertcheck", "decisions.md")
+  if (!fs.existsSync(file)) return []
+  const out = []
+  fs.readFileSync(file, "utf8")
+    .split("\n")
+    .forEach((line, i) => {
+      if (!/^\s*[-*]\s/.test(line)) return
+      const m = /^\s*[-*]\s+`?(\S+?)`?\s+`?(\S+?)`?\s+([\w*-]+(?:\s*,\s*[\w*-]+)*)\s+(?:—|--|:)\s*(\S.*)$/.exec(line)
+      if (!m) {
+        console.error(`assertcheck scan: .assertcheck/decisions.md:${i + 1} ignored (need: - <file> <function> <rule> — <reason>)`)
+        return
+      }
+      out.push({ file: m[1], fn: m[2], rules: new Set(m[3].split(/\s*,\s*/)) })
+    })
   return out
 }
 
