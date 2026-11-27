@@ -7,6 +7,9 @@
 //   --json         machine-readable output
 //   --include-tests  also scan *.test.ts / *.spec.ts / tests/ folders
 // Waive a finding with `// assertcheck-ignore` on the same or the previous line.
+// After the findings, text output lists the functions that need a second, logical analysis:
+// every function holding a low or debatable finding (even hidden below --min). JSON keeps an array
+// of findings, each carrying its enclosing `fn`.
 // Exit code: 1 if any finding, 0 otherwise.
 // Requires `typescript` installed in the scanned project (or next to this script).
 
@@ -100,6 +103,7 @@ for (const file of files) {
 }
 
 const RANK = { high: 0, medium: 1, low: 2 }
+const review = reviewList(findings)
 const hidden = findings.filter((f) => RANK[f.severity] > RANK[opts.min]).length
 findings.splice(0, findings.length, ...findings.filter((f) => RANK[f.severity] <= RANK[opts.min]))
 findings.sort(
@@ -118,6 +122,13 @@ if (opts.json) {
     `${findings.length} findings (${n("high")} high, ${n("medium")} medium, ${n("low")} low) in ${files.length} files` +
       (hidden ? ` (+${hidden} hidden below --min ${opts.min})` : "")
   )
+  if (review.length) {
+    console.log(
+      `\nsecond analysis: ${review.length} function(s) the scanner cannot settle (low or debatable findings).`
+    )
+    console.log("Read each one in full, trace its inputs, and decide: assert, validate, or keep (say why).")
+    for (const r of review) console.log(`  ${r.file}:${r.line} ${r.name}  [${[...r.rules].join(", ")}]`)
+  }
 }
 process.exitCode = findings.length ? 1 : 0
 
@@ -126,6 +137,32 @@ function scanFile(sf) {
   const lines = sf.text.split("\n")
   const lineChanged = changed?.get(sf.fileName)
   const envSeen = new Set()
+
+  const fns = []
+  const collectFns = (n) => {
+    if (ts.isFunctionLike(n) && n.body) fns.push(n)
+    ts.forEachChild(n, collectFns)
+  }
+  collectFns(sf)
+  const fnName = (n) => {
+    if (ts.isConstructorDeclaration(n)) return "constructor"
+    if (n.name) return n.name.getText(sf)
+    const p = n.parent
+    return p && (ts.isVariableDeclaration(p) || ts.isPropertyAssignment(p) || ts.isPropertyDeclaration(p))
+      ? p.name.getText(sf)
+      : null
+  }
+  // innermost named function around a position, "<module>" at top level
+  const enclosing = (pos) => {
+    let best = null
+    for (const f of fns) {
+      if (pos < f.getStart(sf) || pos > f.end || !fnName(f)) continue
+      if (!best || f.getStart(sf) >= best.getStart(sf)) best = f
+    }
+    return best
+      ? { name: fnName(best), line: sf.getLineAndCharacterOfPosition(best.getStart(sf)).line + 1 }
+      : { name: "<module>", line: 1 }
+  }
 
   // node: an AST node, or a text position (then `code` gives the snippet)
   const report = (node, severity, rule, fix, code) => {
@@ -147,6 +184,7 @@ function scanFile(sf) {
       rule,
       code: code ?? snippet(node, sf),
       fix,
+      fn: enclosing(start),
     })
   }
 
@@ -399,6 +437,73 @@ function scanFile(sf) {
       }
     }
 
+    // Number(s) / parseInt(s) / .map(Number): a bad string becomes NaN and flows on
+    if (ts.isCallExpression(node)) {
+      const re = /^(Number|parseInt|parseFloat)$/
+      const viaMap =
+        ts.isPropertyAccessExpression(node.expression) &&
+        node.expression.name.text === "map" &&
+        node.arguments.length === 1 &&
+        re.test(node.arguments[0].getText(sf))
+      const direct = re.test(node.expression.getText(sf)) && node.arguments.length > 0
+      if ((viaMap || direct) && !numberChecked(node)) {
+        const e = viaMap ? text(node.expression.expression, sf) : text(node.arguments[0], sf)
+        report(
+          node,
+          viaMap ? "medium" : "low",
+          "unchecked-number",
+          viaMap
+            ? `check each parsed item: for (const n of ${label(e)}) assert.finite(n, "…")  (a malformed string gives NaN, then "NaN" written downstream)`
+            : `assert.finite(${text(node, sf)}, "${label(e)} must be a number") if the string can be malformed; keep if NaN is handled next`
+        )
+      }
+    }
+
+    // a === "x" ? a : b === "y" ? c : d: anything else silently takes the last branch
+    if (ts.isConditionalExpression(node) && !isElseBranch(node)) {
+      const hit = literalCompare(node.condition)
+      if (hit) {
+        let chain = 1
+        for (let c = node.whenFalse; ts.isConditionalExpression(c); c = c.whenFalse) chain++
+        const ty = checker.getNonNullableType(checker.getTypeAtLocation(hit.subject))
+        const open = ty.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)
+        const closed = ty.isUnion() && ty.types.length >= 3 && ty.types.every((x) => x.isLiteral())
+        if (open || closed || chain >= 2) {
+          const e = text(hit.subject, sf)
+          report(
+            node,
+            open ? "medium" : "low",
+            "silent-ternary",
+            `switch (${e}) with default: { const unreachable: never = ${e}; throw new Error(\`unexpected ${label(e)}: \${unreachable}\`) }  (a value outside the compared literals silently takes the last branch; keep if the last branch is the real default)`
+          )
+        }
+      }
+    }
+
+    // record[key] typed as always present: a missing key gives undefined with no error
+    if (
+      ts.isElementAccessExpression(node) &&
+      !node.questionDotToken &&
+      !isNumberLiteral(node.argumentExpression) &&
+      !ts.isStringLiteralLike(node.argumentExpression) &&
+      !isAssignTarget(node)
+    ) {
+      const ot = checker.getNonNullableType(checker.getTypeAtLocation(node.expression))
+      const info = checker.getIndexInfosOfType(ot).find((i) => i.keyType.flags & ts.TypeFlags.String)
+      const rt = checker.getTypeAtLocation(node)
+      const parts = rt.isUnion() ? rt.types : [rt]
+      const mayBeUndefined = parts.some((x) => x.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Any))
+      if (info && !checker.isArrayType(ot) && !checker.isTupleType(ot) && !mayBeUndefined) {
+        const o = text(node.expression, sf)
+        report(
+          node,
+          "low",
+          "unchecked-index",
+          `assert.hasKey(${o}, ${text(node.argumentExpression, sf)}, "unknown key") before reading; the type says the key is always there, the data may not`
+        )
+      }
+    }
+
     // function f(x = 0): a missing required argument becomes a valid-looking value
     if (
       ts.isParameter(node) &&
@@ -443,6 +548,91 @@ function scanFile(sf) {
       )
     }
   }
+}
+
+function isCheckCall(t) {
+  return /^(assert\.\w+|check|Number\.(isFinite|isNaN|isInteger|isSafeInteger)|isNaN|isFinite)$/.test(t)
+}
+
+// the NaN of a parse is dealt with: checked in place, compared, or checked by a following statement
+function numberChecked(node) {
+  for (let p = node.parent; p && !ts.isFunctionLike(p); p = p.parent) {
+    if (ts.isCallExpression(p) && isCheckCall(p.expression.getText())) return true
+    if (ts.isBinaryExpression(p) && handledContext(node)) return true
+  }
+  if (handledContext(node)) return true
+  // `const n = Number(s)` then `if (Number.isNaN(n))` / `assert.finite(n)` later in the block
+  let decl = node.parent
+  while (decl && !ts.isVariableDeclaration(decl) && !ts.isStatement(decl)) decl = decl.parent
+  if (!decl || !ts.isVariableDeclaration(decl)) return false
+  const stmt = decl.parent?.parent
+  const list = stmt?.parent?.statements
+  if (!list) return false
+  const names = ts.isIdentifier(decl.name)
+    ? [decl.name.text]
+    : decl.name.elements.map((el) => el.name.getText())
+  let seen = false
+  for (const s of list.slice(list.indexOf(stmt) + 1)) {
+    const v = (n) => {
+      if (seen) return
+      if (ts.isCallExpression(n) && isCheckCall(n.expression.getText())) {
+        const args = n.arguments.map((a) => a.getText())
+        if (names.some((x) => args.some((a) => new RegExp(`\\b${x}\\b`).test(a)))) seen = true
+      }
+      ts.forEachChild(n, v)
+    }
+    v(s)
+  }
+  return seen
+}
+
+function isElseBranch(n) {
+  return ts.isConditionalExpression(n.parent) && n.parent.whenFalse === n
+}
+
+// `x === "lit"` / `x !== 3`: the subject being tested against a string or number literal
+function literalCompare(cond) {
+  cond = unwrap(cond)
+  if (!ts.isBinaryExpression(cond)) return null
+  const k = cond.operatorToken.kind
+  if (
+    ![
+      ts.SyntaxKind.EqualsEqualsEqualsToken,
+      ts.SyntaxKind.ExclamationEqualsEqualsToken,
+      ts.SyntaxKind.EqualsEqualsToken,
+      ts.SyntaxKind.ExclamationEqualsToken,
+    ].includes(k)
+  )
+    return null
+  const lit = (e) => ts.isStringLiteralLike(unwrap(e)) || ts.isNumericLiteral(unwrap(e))
+  if (lit(cond.right) && !lit(cond.left)) return { subject: cond.left }
+  if (lit(cond.left) && !lit(cond.right)) return { subject: cond.right }
+  return null
+}
+
+function isAssignTarget(n) {
+  const p = n.parent
+  return (
+    (ts.isBinaryExpression(p) &&
+      p.left === n &&
+      p.operatorToken.kind >= ts.SyntaxKind.FirstAssignment &&
+      p.operatorToken.kind <= ts.SyntaxKind.LastAssignment) ||
+    ts.isDeleteExpression(p) ||
+    ((ts.isPrefixUnaryExpression(p) || ts.isPostfixUnaryExpression(p)) &&
+      [ts.SyntaxKind.PlusPlusToken, ts.SyntaxKind.MinusMinusToken].includes(p.operator))
+  )
+}
+
+// functions that need a second, logical analysis: any low or debatable ("keep if…") finding in them
+function reviewList(all) {
+  const map = new Map()
+  for (const f of all) {
+    if (f.severity !== "low" && !/\bkeep\b/.test(f.fix)) continue
+    const key = `${f.file}:${f.fn.line}:${f.fn.name}`
+    if (!map.has(key)) map.set(key, { file: f.file, line: f.fn.line, name: f.fn.name, rules: new Set() })
+    map.get(key).rules.add(f.rule)
+  }
+  return [...map.values()].sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line)
 }
 
 function statesInvariant(comment) {

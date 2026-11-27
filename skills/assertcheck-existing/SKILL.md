@@ -5,7 +5,7 @@ description: Find and fix silent failures in existing TypeScript code with asser
 
 # assertcheck-existing
 
-Detection is done by a script, not by reading code. Do not scan files by hand.
+Detection is done by a script, not by reading code: do not hunt for patterns by hand. The script is syntactic, though. It cannot know what a function is *for*, so it also hands you a list of functions to analyse yourself (step 2).
 
 ## 1. Scan
 
@@ -24,7 +24,18 @@ If `${CLAUDE_SKILL_DIR}` is not expanded by your agent, use the `scripts/` folde
 Each finding prints `file:line:col severity rule code` then a ready `fix:` line. Scope by what the user gave you: a file, a folder, "the project" (`.`), or "what I just changed" (`--diff`).
 `--min low` also shows debatable findings (hidden by default: `??`, `.filter(Boolean)`, `?.`, `new Set` dedupe, `Math.max/min/abs` clamps, literal default params, invariant comments, empty in → empty out such as `if (!s) return ""`). Low findings are information, not work: do not fix them unless the user asked for `--min low`.
 
-## 2. Triage each finding: one decision, no essay
+## 2. Second analysis: the functions the scanner cannot settle
+
+The scan ends with a `second analysis:` list (also built from findings hidden below `--min`). Each entry is a function holding a low or debatable finding. For **every** function in that list, and for every function you modify, do not triage by the finding line alone. Read the whole function and answer, in your head, these four questions:
+
+1. **Contract**: what does it take and promise? Which inputs are valid, which are bugs?
+2. **Bad value path**: follow a value that can be `NaN`, `undefined`, `""`, out of range or an unknown literal (`parse`, `Number()`, `x[key]`, `?.`, ternary on a string, optional field). Where does it end up: written to a file or DB, returned, compared, thrown on?
+3. **Silent outcome**: does the function then do something plausible-looking with it (writes `"1.0.NaN"`, takes the last branch, returns `false` for "could not read", skips a project)?
+4. **Decision**: if the answer to 3 is yes and the bad value can only come from a bug or corrupt data, **assert** (or validate if it comes from outside). If the silent outcome is the documented behaviour (hook that must never block, optional field, "nothing to do"), **keep** and say why.
+
+The scanner also misses what it has no rule for. While you read the function, assert any bad-value path you find even if nothing flagged it, and say so in the report (`found by reading: …`).
+
+## 3. Triage each finding: one decision, no essay
 
 Decide from **where the value comes from**, not from how the line looks. Trace it (`grep` the callers) before choosing:
 
@@ -44,9 +55,9 @@ Rules:
 
 Rewrite each `fix:` message in domain language (`"order must be pending before charge"`, not `"order.status must be 'pending'"`). Add `note:` only when the caller needs to know what to do. For a whole-project scan, go file by file, highest severity first, and run the tests between files.
 
-## 3. Report
+## 4. Report
 
-One line per finding: `file:line: applied <assert call>`, `validated: <what the caller now handles>` or `kept: <reason>`. Rerun the scan: every finding left at the default level is one you listed as `kept`. If more than a third of the findings are `kept`, say so and list them: the triage is probably wrong.
+One line per finding: `file:line: applied <assert call>`, `validated: <what the caller now handles>` or `kept: <reason>`. One line per function of the second-analysis list: `file:line fn: reviewed, asserted <x>` or `reviewed, nothing to add: <why the silent path is the contract>`. A function from that list with no line in the report was not analysed. Rerun the scan: every finding left at the default level is one you listed as `kept`, and the second-analysis list only contains functions you reviewed. If more than a third of the findings are `kept`, say so and list them: the triage is probably wrong.
 
 ## Beyond the script (only if asked for a deep review)
 

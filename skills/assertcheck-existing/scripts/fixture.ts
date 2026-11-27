@@ -144,3 +144,15 @@ export function stillReal(id: string, byId: Record<string, string | undefined>) 
   if (!v) return // expect: silent-exit
   return v.length
 }
+
+// parse and ternary rules (unchecked-index needs noUncheckedIndexedAccess off: checked by hand)
+export function parsing(raw: string, level: unknown, key: string) {
+  const [a, b] = raw.split(".").map(Number) // expect: unchecked-number
+  const n = Number(raw) // expect: unchecked-number
+  const m = Number(raw)
+  if (Number.isNaN(m)) throw new Error("bad number")
+  const ok = Number.isFinite(Number(raw))
+  const w = level === "a" ? 1 : level === "b" ? 2 : 3 // expect: silent-ternary
+  const flag = key === "x" ? 1 : 2
+  return { a, b, n, m, ok, w, flag }
+}

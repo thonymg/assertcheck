@@ -61,7 +61,23 @@ In CI, scan only what a pull request changes:
 | `silent-default` | `switch` `default:` that breaks or returns nothing | medium |
 | `nullish-fallback`, `nil-filter`, `optional-chain` | `x ?? "default"`, `.filter(Boolean)`, `u?.email` | low (shown with `--min low`) |
 | `dedupe`, `clamp` | `[...new Set(ids)]`, `Math.max(0, qty)`, `Math.abs(delta)` | low |
+| `unchecked-number` | `s.split(".").map(Number)`, `parseInt(s)` with no `Number.isFinite` / `isNaN` / `assert` | medium for `.map(Number)`, else low |
+| `silent-ternary` | `level === "minor" ? a : b`: any other value silently takes the last branch | medium on `any`/`unknown`, else low |
+| `unchecked-index` | `record[key]` typed as always present (`Record<string, T>` without `noUncheckedIndexedAccess`) | low |
 | `default-param`, `comment-invariant` | `function f(limit = 10)`, `// price must be positive here` inside a function | low |
+
+### Second analysis
+
+A script reads syntax and types, not intent. After the findings it prints the functions that need a logical read: every function holding a low or debatable finding, including those hidden by `--min`.
+
+```
+second analysis: 2 function(s) the scanner cannot settle (low or debatable findings).
+Read each one in full, trace its inputs, and decide: assert, validate, or keep (say why).
+  src/version.ts:1 bump  [silent-ternary]
+  src/version.ts:46 check  [optional-chain]
+```
+
+The agent reads each listed function, follows the values that can be `NaN`, `undefined` or unknown, and decides between assert, validate and keep. The report has one line per listed function. `--json` keeps the findings array and adds an `fn` field (`name`, `line`) to each finding, so tooling can group them.
 
 Each rule maps the condition to the assertion that states its opposite: `typeof x !== "string"` gives `assert.string(x)`, `items.length === 0` gives `assert.notEmpty(items)`, `amount <= 0` gives `assert.positive(amount)`. Low rules are often legitimate (padding, distances, optional arguments), so they are hidden by default.
 
@@ -79,10 +95,11 @@ Each rule maps the condition to the assertion that states its opposite: `typeof 
 ## The workflow
 
 1. **Scan** the scope you were given.
-2. **Triage** each finding: apply the fix if the condition can only be true because of a bug upstream; otherwise keep it and mark it `// assertcheck-ignore: <reason>`.
-3. **Never delete a guard without a replacement.** Removing `if (!x) return`, a `?? fallback` or a `try/catch` means adding the matching assertion.
-4. **Check the callers** before turning a silent exit into an assertion: the function now throws where it used to return.
-5. **Guard what a change adds**: new parameter, new external call, new state dependency. Skip what the type already guarantees.
-6. **Rescan**: 0 findings at the default level.
+2. **Analyse** each function of the second-analysis list: read it whole, trace the bad-value paths, decide assert / validate / keep.
+3. **Triage** each finding: apply the fix if the condition can only be true because of a bug upstream; otherwise keep it and mark it `// assertcheck-ignore: <reason>`.
+4. **Never delete a guard without a replacement.** Removing `if (!x) return`, a `?? fallback` or a `try/catch` means adding the matching assertion.
+5. **Check the callers** before turning a silent exit into an assertion: the function now throws where it used to return.
+6. **Guard what a change adds**: new parameter, new external call, new state dependency. Skip what the type already guarantees.
+7. **Rescan**: 0 findings at the default level.
 
 For a deep review, the agent then checks the three things a scanner cannot see: entity state (`assert.equal(order.status, …)`), postconditions after external calls, and collection invariants (`uniqueBy`, `sortedBy`).
