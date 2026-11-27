@@ -157,7 +157,10 @@ function scanFile(sf) {
       const fix = exit && !followedByFailure(node) ? suggest(node.expression, sf) : null
       if (fix) {
         const optional = mentionsOptionalParam(node.expression)
-        const severity = optional ? "low" : exit === "continue" ? "medium" : exit
+        const passthrough =
+          isEmptyPassthrough(node) || returnsSubjectOrNil(node) || isBusinessThreshold(node.expression)
+        const severity =
+          optional || passthrough ? "low" : exit === "continue" ? "medium" : exit
         const rule = exit === "continue" ? "silent-skip" : "silent-exit"
         report(
           node,
@@ -166,7 +169,9 @@ function scanFile(sf) {
           fix +
             (optional
               ? "  (optional param: keep if absence is legitimate)"
-              : exit === "continue"
+              : passthrough
+                ? "  (empty/absent in, empty/absent out, or a business threshold: keep unless it is a bug upstream)"
+                : exit === "continue"
                 ? "  (or keep if skipping is business logic)"
                 : "")
         )
@@ -175,9 +180,12 @@ function scanFile(sf) {
 
     // swallowed-catch: try {} catch { console.log / return null / nothing }
     if (ts.isCatchClause(node) && isSwallowBody(node.block) && !followedByFailure(node.parent)) {
+      // top-level try of a script that logs: the program's last handler, a decision
+      const topLevelLog =
+        ts.isSourceFile(node.parent.parent) && node.block.statements.some(isConsoleCall)
       report(
         node,
-        "high",
+        topLevelLog ? "low" : "high",
         "swallowed-catch",
         'remove the try/catch and let it throw, or rethrow with context: throw new Error("…", { cause: e })'
       )
@@ -235,7 +243,7 @@ function scanFile(sf) {
       const name = envName(node)
       if (!envSeen.has(name)) {
         envSeen.add(name)
-        report(
+        if (!isEnvHandled(node)) report(
           node,
           "medium",
           "unguarded-env",
@@ -462,6 +470,84 @@ function exitKind(stmt) {
   return null // returning a real value is a decision, not a silent exit
 }
 
+// `if (!s) return ""` / `if (!xs.length) return []`: an empty string or array mapped to the
+// same empty value is a total function, not a hidden failure
+function isEmptyPassthrough(ifNode) {
+  const ret = unwrap(ifNode.thenStatement)
+  const stmt = ts.isBlock(ret) ? ret.statements.find((s) => !isConsoleCall(s)) : ret
+  if (!stmt || !ts.isReturnStatement(stmt)) return false
+  // bare `return` in a void function: nothing to do on an empty list
+  // (not on an empty string: `if (!id) return` hides a missing id)
+  const value = stmt.expression && unwrap(stmt.expression)
+  const wantString =
+    !!value && (ts.isStringLiteral(value) || ts.isNoSubstitutionTemplateLiteral(value))
+  const wantArray = !value || ts.isArrayLiteralExpression(value)
+  if (value && !(wantString ? value.text === "" : wantArray && value.elements.length === 0))
+    return false
+
+  const cond = unwrap(ifNode.expression)
+  let subject = null
+  if (ts.isPrefixUnaryExpression(cond) && cond.operator === ts.SyntaxKind.ExclamationToken)
+    subject = unwrap(cond.operand)
+  else if (
+    ts.isBinaryExpression(cond) &&
+    (cond.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken ||
+      cond.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken) &&
+    ts.isNumericLiteral(cond.right) &&
+    cond.right.text === "0"
+  )
+    subject = cond.left
+  if (!subject) return false
+  if (ts.isPropertyAccessExpression(subject) && subject.name.text === "length")
+    subject = subject.expression
+  const ty = checker.getNonNullableType(checker.getTypeAtLocation(subject))
+  return (
+    (wantString && !!(ty.flags & ts.TypeFlags.StringLike)) || (wantArray && checker.isArrayType(ty))
+  )
+}
+
+// `if (n > 2) return`, `if (age < 18) return`: a business threshold, not a validity check
+// (0 and 1 stay findings: `<= 0`, `< 1` are what "invalid" looks like)
+function isBusinessThreshold(cond) {
+  cond = unwrap(cond)
+  if (!ts.isBinaryExpression(cond)) return false
+  const rel = [
+    ts.SyntaxKind.GreaterThanToken,
+    ts.SyntaxKind.GreaterThanEqualsToken,
+    ts.SyntaxKind.LessThanToken,
+    ts.SyntaxKind.LessThanEqualsToken,
+  ].includes(cond.operatorToken.kind)
+  const lit = [cond.left, cond.right].map(unwrap).find(ts.isNumericLiteral)
+  return rel && !!lit && lit.text !== "0" && lit.text !== "1"
+}
+
+// `if (!found) return null; …; return found`: the function's result is `found` or nothing
+// (a lookup), so returning null is the answer, not a hidden failure
+function returnsSubjectOrNil(ifNode) {
+  const cond = unwrap(ifNode.expression)
+  if (!ts.isPrefixUnaryExpression(cond) || cond.operator !== ts.SyntaxKind.ExclamationToken) return false
+  const subject = unwrap(cond.operand)
+  if (!ts.isIdentifier(subject)) return false
+  if (exitKind(ifNode.thenStatement) !== "high") return false
+  let fn = ifNode.parent
+  while (fn && !ts.isFunctionLike(fn)) fn = fn.parent
+  if (!fn?.body) return false
+  let found = false
+  const v = (n) => {
+    if (found || (ts.isFunctionLike(n) && n !== fn)) return
+    if (
+      ts.isReturnStatement(n) &&
+      n.expression &&
+      ts.isIdentifier(unwrap(n.expression)) &&
+      unwrap(n.expression).text === subject.text
+    )
+      found = true
+    else ts.forEachChild(n, v)
+  }
+  v(fn.body)
+  return found
+}
+
 // `if (ok) return; fail(...)` or `try { x() } catch { return }; fail(...)` is a success exit, not a silent one
 function followedByFailure(stmt) {
   const list =
@@ -567,6 +653,64 @@ function envName(n) {
   return ts.isPropertyAccessExpression(n)
     ? n.name.text
     : n.argumentExpression.getText().replace(/^["'`]|["'`]$/g, "")
+}
+
+// the code already decides what happens without the var:
+// `if (process.env.X)`, `process.env.X ?? computed()`, `const x = process.env.X; if (!x) throw`
+function isEnvHandled(n) {
+  let c = n
+  while (
+    c.parent &&
+    (ts.isParenthesizedExpression(c.parent) ||
+      (ts.isPrefixUnaryExpression(c.parent) &&
+        c.parent.operator === ts.SyntaxKind.ExclamationToken) ||
+      (ts.isBinaryExpression(c.parent) &&
+        (c.parent.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
+          c.parent.operatorToken.kind === ts.SyntaxKind.BarBarToken)))
+  )
+    c = c.parent
+  if (ts.isIfStatement(c.parent) && c.parent.expression === c) return true
+  if (ts.isConditionalExpression(c.parent) && c.parent.condition === c) return true
+
+  const p = n.parent
+  if (
+    ts.isBinaryExpression(p) &&
+    p.left === n &&
+    (p.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken ||
+      p.operatorToken.kind === ts.SyntaxKind.BarBarToken) &&
+    !isLiteralish(unwrap(p.right))
+  )
+    return true
+
+  if (ts.isVariableDeclaration(p) && ts.isIdentifier(p.name)) {
+    const stmt = p.parent?.parent // VariableDeclarationList → VariableStatement
+    const list = stmt?.parent?.statements
+    const next = list?.[list.indexOf(stmt) + 1]
+    if (
+      next &&
+      ts.isIfStatement(next) &&
+      (ts.isThrowStatement(next.thenStatement) || containsThrow(next.thenStatement))
+    ) {
+      let mentioned = false
+      const v = (m) => {
+        if (ts.isIdentifier(m) && m.text === p.name.text) mentioned = true
+        else ts.forEachChild(m, v)
+      }
+      v(next.expression)
+      if (mentioned) return true
+    }
+    if (next && insideAssertStatement(next, p.name.text)) return true
+  }
+  return false
+}
+
+function insideAssertStatement(stmt, name) {
+  return (
+    ts.isExpressionStatement(stmt) &&
+    ts.isCallExpression(stmt.expression) &&
+    /^assert\.\w+$/.test(stmt.expression.expression.getText()) &&
+    stmt.expression.arguments[0]?.getText() === name
+  )
 }
 
 function insideAssert(n) {

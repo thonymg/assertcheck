@@ -41,25 +41,23 @@ Preconditions are P, postconditions are Q. Pick each assertion with [references/
 import { assert, check } from "assertcheck"
 
 function createOrder(customerId: string, items: CartItem[]): Order {
-  // ── guards ────────────────────────────────────────────────
-  assert.notEmpty(customerId, "customerId must not be empty")           // P1
+  assert.notEmpty(customerId, "customerId must not be empty")
   check(items)
-    .notEmpty("cart must have at least one item")                       // P2
+    .notEmpty("cart must have at least one item")
     .all(i => i.quantity > 0, {
       msg:  "all items must have a positive quantity",
       note: "remove items with quantity <= 0 before calling createOrder()",
     })
 
-  // ── logic: runs with proven invariants ────────────────────
   const order = { id: crypto.randomUUID(), customerId, items, status: "pending" as const }
 
-  // ── postconditions ────────────────────────────────────────
-  assert.notEmpty(order.id, "order must have a generated id")           // Q1
+  assert.notEmpty(order.id, "order must have a generated id")
   return order
 }
 ```
 
 Rules:
+- **Never write a code comment** (`//`, `/* */`, JSDoc, section banners, `// P1` markers, `assertcheck-ignore`) unless the user explicitly asks for one. The assertion `msg` is the documentation; guards, logic and postconditions are separated by a blank line.
 - The guard block is the first thing in the body. No logic before the last guard.
 - No `?.`, `??` or `if (!x) return` in the logic block. A nil check there belongs in the guards.
 - Every assertion has a `msg` that states the invariant (`"orderId must be a non-empty string"`, never `"value is null"`). Add `note` when the fix is non-obvious.

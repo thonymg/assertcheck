@@ -8,13 +8,11 @@ Copy and adapt these templates. Replace `<…>` placeholders with your actual na
 
 ```ts
 async function handle<Action>(req: Request, res: Response) {
-  // ── guards ────────────────────────────────────────────────────
   assert.notNil(req.body, "request body is required")
   assert.hasKeys(req.body, ["<field1>", "<field2>"], "body must have required fields")
   assert.string(req.body.<field1>, "<field1> must be a string")
   assert.notEmpty(req.body.<field1>, "<field1> must not be empty")
 
-  // ── logic ─────────────────────────────────────────────────────
 }
 ```
 
@@ -24,7 +22,6 @@ async function handle<Action>(req: Request, res: Response) {
 
 ```ts
 async function <action><Entity>(id: string): Promise<<ReturnType>> {
-  // ── guards ────────────────────────────────────────────────────
   assert.string(id,    "<entityName>Id must be a string")
   assert.notEmpty(id,  "<entityName>Id must not be empty")
 
@@ -39,7 +36,6 @@ async function <action><Entity>(id: string): Promise<<ReturnType>> {
     note: "call <transitionMethod>() to reach <expectedStatus>",
   })
 
-  // ── logic ─────────────────────────────────────────────────────
 }
 ```
 
@@ -53,7 +49,6 @@ class <ServiceName> {
     private readonly <dep1>: <Dep1Type>,
     private readonly <dep2>: <Dep2Type>,
   ) {
-    // ── guards ────────────────────────────────────────────────────
     assert.notNil(<dep1>, "<ServiceName> requires a <dep1>")
     assert.notNil(<dep2>, "<ServiceName> requires a <dep2>")
   }
@@ -66,12 +61,10 @@ class <ServiceName> {
 
 ```ts
 function <process><Entities>(items: <ItemType>[]): <ReturnType>[] {
-  // ── guards ────────────────────────────────────────────────────
   check(items)
     .notEmpty("<entities> must not be empty")
-    .all(i => /* condition */, "all <entities> must satisfy <invariant>")
+    .all(i => <condition>, "all <entities> must satisfy <invariant>")
 
-  // ── logic ─────────────────────────────────────────────────────
 }
 ```
 
@@ -81,7 +74,6 @@ function <process><Entities>(items: <ItemType>[]): <ReturnType>[] {
 
 ```ts
 function loadConfig(): Config {
-  // ── guards ────────────────────────────────────────────────────
   assert.notNil(process.env.<VAR1>, {
     msg:  "<VAR1> environment variable is required",
     note: "add it to your .env file — see .env.example",
@@ -91,7 +83,6 @@ function loadConfig(): Config {
     note: "generate one with: openssl rand -hex 32",
   })
 
-  // ── logic ─────────────────────────────────────────────────────
   return { <field1>: process.env.<VAR1>, <field2>: process.env.<VAR2> }
 }
 ```
@@ -103,7 +94,6 @@ function loadConfig(): Config {
 ```ts
 const response = await <externalService>.<method>(payload)
 
-// ── integration guard ──────────────────────────────────────────
 assert.notNil(response.<requiredField>, {
   msg:  "<externalService> must return a <requiredField>",
   note: "check <externalService> logs if this fires",

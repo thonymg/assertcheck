@@ -24,3 +24,20 @@ test("scan reports exactly the expected findings", () => {
     .sort()
   expect(got).toEqual(want)
 })
+
+test("empty in, empty out is hidden at the default level", () => {
+  const dir = import.meta.dir
+  let out = "[]"
+  try {
+    out = execFileSync("node", [join(dir, "scan.mjs"), join(dir, "fixture.ts"), "--json"], {
+      encoding: "utf8",
+    })
+  } catch (e: any) {
+    out = e.stdout
+  }
+  const src = readFileSync(join(dir, "fixture.ts"), "utf8").split("\n")
+  const lines = JSON.parse(out).map((f: any) => src[f.line - 1].trim())
+  expect(lines).not.toContain('if (!digits) return "" // expect: silent-exit')
+  expect(lines.some((l: string) => l.startsWith("if (xs.length === 0)"))).toBe(true)
+  expect(lines.some((l: string) => l.startsWith("if (!user)"))).toBe(true)
+})

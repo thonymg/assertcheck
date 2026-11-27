@@ -108,3 +108,39 @@ export function defaults(limit = 10, name: string = "") { // expect: default-par
   // price must be positive at this point // expect: comment-invariant
   return { limit, name }
 }
+
+// empty in, empty out: low only (hidden at the default level)
+export function passthrough(raw: string, xs: number[], user: { name: string } | null) {
+  const digits = raw.replace(/\D/g, "")
+  if (!digits) return "" // expect: silent-exit
+  if (xs.length === 0) return "" // a number[] mapped to "": a real silent exit // expect: silent-exit
+  if (!user) return "" // expect: silent-exit
+  return digits
+}
+
+// env vars the code already handles: no finding
+export function envHandled(h: string) {
+  const apiUrl = process.env.FX_API_URL
+  if (!apiUrl || h !== apiUrl) throw new Error("refused")
+  const dev = process.env.FX_DEV_URL ? process.env.FX_DEV_URL : "file://index.html"
+  const id = process.env.FX_TENANT ?? h.toUpperCase()
+  const port = process.env.FX_PORT ?? "3000" // expect: unguarded-env
+  return { apiUrl, dev, id, port }
+}
+
+// lookup, business threshold, nothing-to-do list: low only
+export function lowOnly(names: string[], parents: number, ids: string[]) {
+  const found = names.find((n) => n === "x")
+  if (!found) return null // expect: silent-exit
+  if (parents > 2) return null // expect: silent-exit
+  if (!ids.length) return // expect: silent-exit
+  return found
+}
+
+// still real at the default level
+export function stillReal(id: string, byId: Record<string, string | undefined>) {
+  if (!id) return // expect: silent-exit
+  const v = byId[id]
+  if (!v) return // expect: silent-exit
+  return v.length
+}
