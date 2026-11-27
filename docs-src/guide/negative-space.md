@@ -8,6 +8,13 @@ const furtherReading = [
     icon: 'ri:link-m',
   },
   {
+    name: 'Agent skills and scanner',
+    desc: 'Write new code contract-first and fix silent failures in existing code, with an agent or in CI.',
+    link: '/skills/',
+    linkText: 'See the skills',
+    icon: 'ri:robot-2-line',
+  },
+  {
     name: 'Custom assertions',
     desc: 'Extend assertcheck with domain-specific contracts that look and format native.',
     link: '/guide/custom-assertions',
@@ -172,6 +179,18 @@ Five assertions. One function. Zero silent failures.
 ::: tip Assertion density as a design signal
 If you find yourself unable to write two meaningful assertions for a function, the function may be doing too little (merge it) or too much (split it). Assertion density is a proxy for cognitive complexity.
 :::
+
+---
+
+## Applying it to existing code
+
+You do not have to rewrite anything by hand. The scanner shipped with the [`assertcheck-existing`](/skills/existing) skill finds the silent exits, swallowed errors, falsy defaults and unchecked casts described above, in a file, a folder, the whole project, or only the lines you changed, and prints the assertion that replaces each one:
+
+```bash
+node node_modules/assertcheck/skills/assertcheck-existing/scripts/scan.mjs src --diff main
+```
+
+It is a parser, not a model: the result is the same on every run, and it exits with code 1 on findings, so it also works in CI. It only reports patterns that are almost always bugs; a legitimate business `if` is left alone, and any line you want to keep is waived with `// assertcheck-ignore: <reason>`.
 
 ---
 

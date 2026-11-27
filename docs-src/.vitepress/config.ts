@@ -119,11 +119,8 @@ export default defineConfig({
         {
           text: "Skills",
           items: [
-            { text: "AssertCheck Feature",  link: "/skills/feature" },
-            { text: "AssertCheck Audit",    link: "/skills/audit" },
-            { text: "AssertCheck Spec",     link: "/skills/spec" },
-            { text: "AssertCheck Refactor", link: "/skills/refactor" },
-            { text: "AssertCheck Selector", link: "/skills/selector" },
+            { text: "AssertCheck New",      link: "/skills/new" },
+            { text: "AssertCheck Existing", link: "/skills/existing" },
           ],
         },
       ],

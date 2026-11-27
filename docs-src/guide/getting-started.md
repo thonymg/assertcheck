@@ -21,6 +21,13 @@ const nextSteps = [
     linkText: 'Explore check()',
     icon: 'ri:link-m',
   },
+  {
+    name: 'Agent skills and scanner',
+    desc: 'Let your coding assistant write new code contract-first, and find silent failures in existing code.',
+    link: '/skills/',
+    linkText: 'See the skills',
+    icon: 'ri:robot-2-line',
+  },
 ]
 </script>
 

@@ -45,6 +45,16 @@ When installed from JSR, import from `@thonymg/assertcheck`:
 import { assert, check } from "@thonymg/assertcheck"
 ```
 
+## Agent skills (optional)
+
+Two skills help your coding assistant use the library: `assertcheck-new` for code you are about to write, `assertcheck-existing` for code that already exists. In Claude Code:
+
+```bash
+/plugin install assertcheck --marketplace thonymg/assertcheck
+```
+
+Claude Code also suggests the plugin by itself once a session reads a `package.json` that depends on `assertcheck`. For other agents, and to enable it for your whole team, see [AI skills](/skills/). The skills ship in the package too, in `node_modules/assertcheck/skills`.
+
 ## Entry points
 
 ```ts

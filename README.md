@@ -350,26 +350,47 @@ See the [custom assertions guide](https://thonymg.github.io/assertcheck/guide/cu
 
 ## AI Skills
 
-AssertCheck ships with [AI skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your coding assistant applies the library's patterns for you.
+AssertCheck ships two [agent skills](https://github.com/thonymg/assertcheck/tree/main/skills) so your coding assistant applies the library's patterns for you.
 
-| Skill | What it does |
+| Skill | Use it for |
 |---|---|
-| `assertcheck-spec` | Writes the precondition / postcondition table before any implementation |
-| `assertcheck-feature` | Builds a new function or service with its guard block first |
-| `assertcheck-audit` | Scans existing code for unguarded boundaries and proposes assertions |
-| `assertcheck-refactor` | Modifies code without silently dropping a safety check |
-| `assertcheck-selector` | Picks the most specific `assert.*` for a given invariant |
+| `assertcheck-new` | **Code you are about to write**: contract table first, then guards, logic and postconditions. Also picks the right `assert.*` for an invariant |
+| `assertcheck-existing` | **Code that already exists**, on a file, a folder, the whole project, or only the lines you changed. A deterministic scanner finds silent failures and gives the exact assertion for each |
+
+### Claude Code (suggested automatically)
 
 ```bash
-# Install all skills in the current project
-bunx skills add thonymg/assertcheck --skill='*'
-npx skills add thonymg/assertcheck --skill='*'
-
-# Or globally
-bunx skills add thonymg/assertcheck --skill='*' -g
+/plugin install assertcheck --marketplace thonymg/assertcheck
 ```
 
-Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills).
+When a session reads a `package.json` that depends on `assertcheck`, Claude Code suggests the plugin. To enable it for everyone who opens your project, commit this in `.claude/settings.json`:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "assertcheck": { "source": { "source": "github", "repo": "thonymg/assertcheck" } }
+  },
+  "enabledPlugins": { "assertcheck@assertcheck": true }
+}
+```
+
+Claude Code asks each person to trust the folder and install the plugin once.
+
+### Other agents (Cursor, Copilot, Codex, OpenCode…)
+
+```bash
+npx skills add thonymg/assertcheck --skill='*'        # this project
+npx skills add thonymg/assertcheck --skill='*' -g     # globally
+```
+
+Learn more at [vercel-labs/skills](https://github.com/vercel-labs/skills). The skills also ship inside the npm package (`node_modules/assertcheck/skills`).
+
+### Scanner without an agent
+
+```bash
+node node_modules/assertcheck/skills/assertcheck-existing/scripts/scan.mjs src
+node node_modules/assertcheck/skills/assertcheck-existing/scripts/scan.mjs src --diff main   # for CI: exits 1 on findings
+```
 
 ---
 
@@ -391,7 +412,8 @@ tests/
   async.test.ts        — rejects / resolves family
 examples/
   ecommerce/    — services and tests using assertcheck end to end
-skills/         — AI skills (one folder per skill, SKILL.md + references)
+skills/         — two AI skills: assertcheck-new, assertcheck-existing (ships scripts/scan.mjs)
+.claude-plugin/ — Claude Code plugin and marketplace manifests
 docs-src/       — VitePress site (guide, skills, generated API reference)
 ```
 

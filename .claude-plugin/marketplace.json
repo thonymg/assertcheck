@@ -1,0 +1,19 @@
+{
+  "name": "assertcheck",
+  "description": "AssertCheck skills for Claude Code",
+  "owner": { "name": "Anthony Michel" },
+  "plugins": [
+    {
+      "name": "assertcheck",
+      "source": "./",
+      "description": "Negative Space Programming for TypeScript: write new code contract-first, and replace silent failures in existing code with assertions.",
+      "relevance": {
+        "topic": "AssertCheck",
+        "signals": {
+          "manifestDeps": [{ "file": "package\\.json$", "pattern": "\"(@thonymg/)?assertcheck\"" }],
+          "filesRead": ["**/node_modules/assertcheck/**"]
+        }
+      }
+    }
+  ]
+}

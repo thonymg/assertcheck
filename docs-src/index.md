@@ -27,6 +27,10 @@ features:
     details: ELM-inspired output with diffs, labels, and notes. ANSI colours on TTY, plain text in pipes and CI, collapsible groups in browser DevTools. Respects NO_COLOR.
   - title: Chainable API
     details: check(value).noNils().uniqueBy("id").all(u => u.active) — fluent, readable, type-safe. Declare all invariants on a value in one place.
+  - title: Agent skills + scanner
+    details: Two skills for your coding assistant, one for new code and one for existing code. A deterministic scanner finds silent failures in a file, a folder or a whole project, and runs in CI without an agent.
+    link: /skills/
+    linkText: See the skills
   - title: Zero setup
     details: Import and use — no configuration files, no entry-point calls, no mode system. Assertions always throw on failure, in every environment.
 ---
@@ -119,7 +123,7 @@ Output adapts automatically: ANSI on TTY, plain text in CI, `console.groupCollap
 | Structured, readable errors | — | Partial | Partial | Yes |
 | Chainable fluent API | — | — | — | Yes |
 | Enforces function invariants | — | — | — | Yes |
-| AI Copilot skills included | — | — | — | Yes |
+| Agent skills + CI scanner for silent failures | — | — | — | Yes |
 
 Zod and Yup are schema validators — they validate data that comes in from the outside (forms, APIs, JSON). AssertCheck is a **contract system** — it enforces invariants at every internal boundary: function arguments, state transitions, external responses, collection shapes. The two are complementary, not competing.
 

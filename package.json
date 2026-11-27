@@ -1,6 +1,6 @@
 {
   "name": "assertcheck",
-  "version": "0.6.1",
+  "version": "0.8.1",
   "description": "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
   "license": "Apache-2.0",
   "author": "Anthony Michel (@thonymg) - Vagabond Studio (https://vagabond.work)",
@@ -35,7 +35,10 @@
   },
   "files": [
     "dist",
-    "src"
+    "src",
+    "skills",
+    "!skills/**/*.test.ts",
+    "!skills/**/fixture.ts"
   ],
   "scripts": {
     "build": "rm -rf dist && bun build ./src/index.ts --outdir ./dist --target node --format esm --external lodash --minify && bun build ./src/index.ts --target node --format cjs --outfile ./dist/index.cjs --external lodash --minify && tsc --emitDeclarationOnly --allowImportingTsExtensions",
@@ -64,7 +67,9 @@
     "testing",
     "invariant",
     "typescript",
-    "negative-space"
+    "negative-space",
+    "claude-code",
+    "agent-skills"
   ],
   "dependencies": {
     "lodash": "^4.17.21",

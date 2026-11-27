@@ -1,0 +1,9 @@
+{
+  "name": "assertcheck",
+  "description": "Negative Space Programming for TypeScript: write new code contract-first, and replace silent failures in existing code with assertions.",
+  "author": { "name": "Anthony Michel" },
+  "homepage": "https://thonymg.github.io/assertcheck/",
+  "repository": "https://github.com/thonymg/assertcheck",
+  "license": "Apache-2.0",
+  "keywords": ["assert", "invariant", "negative-space", "typescript"]
+}
