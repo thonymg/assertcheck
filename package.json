@@ -1,6 +1,6 @@
 {
   "name": "assertcheck",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Negative Space Programming for TypeScript — declare invalid states, fail fast, trust the boundary.",
   "license": "Apache-2.0",
   "author": "Anthony Michel (@thonymg) - Vagabond Studio (https://vagabond.work)",
@@ -37,10 +37,12 @@
     "dist",
     "src",
     "skills",
+    "scripts/postinstall.mjs",
     "!skills/**/*.test.ts",
     "!skills/**/fixture.ts"
   ],
   "scripts": {
+    "postinstall": "node scripts/postinstall.mjs || true",
     "build": "rm -rf dist && bun build ./src/index.ts --outdir ./dist --target node --format esm --external lodash --minify && bun build ./src/index.ts --target node --format cjs --outfile ./dist/index.cjs --external lodash --minify && tsc --emitDeclarationOnly --allowImportingTsExtensions",
     "typecheck": "tsc --project tsconfig.check.json",
     "test": "bun test",
